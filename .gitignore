@@ -1,0 +1,12 @@
+# Material-fonte (prints do Google Classroom) — já transcrito em planejamento/instrucoes_para_trabalho_final.md,
+# mantido fora do repositório público.
+planejamento/material-fonte/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# SO
+.DS_Store
+Thumbs.db
