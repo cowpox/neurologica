@@ -21,7 +21,7 @@ Lista de ferramentas/trabalhos relacionados encontrados durante a pesquisa de pr
   2. Nenhuma ligação com o neurônio de McCulloch-Pitts nem com a nuance de que NAND cabe em 1 neurônio com pesos aprendidos mas precisa de 2 neurônios com pesos fixos (Tópico 2 do curso).
   3. Ativação é só um toggle Step/Sigmoid, sem explicar por que existem funções de ativação diferentes (não responde de fato à questão orientadora Q4).
   4. Não tem Adaline — pula direto do Perceptron (regra discreta) para MLP com backpropagation, sem a ponte pedagógica via gradiente descendente sobre erro contínuo (Tópico 15 do curso), que dá corpo à nossa resposta à Q5.
-- **Encontrado por**: Adriano, em pesquisa adicional de prior art, 2026-09-06.
+- **Encontrado por**: Adriano Lúcio Uchôa Brandão, em pesquisa adicional de prior art, 2026-09-06.
 
 ## Como usar isso no trabalho
 
