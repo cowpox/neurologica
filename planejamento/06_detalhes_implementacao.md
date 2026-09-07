@@ -18,3 +18,19 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 **Escolha**: Opção A agora, ainda na Fase 1 (protótipo Python). As opções B e D ficam como possibilidades futuras, não descartadas — B se algum dia precisarmos de um log Python "de produção" com histórico completo, D naturalmente quando a Fase 2 começar.
 
 **Motivo**: A é a que dá mais retorno pelo esforço, nesta fase do projeto. Reaproveita o mesmo callback de animação (sincronia sem esforço extra de coordenar duas bibliotecas de UI diferentes), não adiciona nenhuma dependência nova, e é suficiente para o objetivo da Fase 1: validar a lógica e reforçar o entendimento didático, não polir a interface — isso é papel explícito da Fase 2, que é onde esse tipo de painel vai ganhar a versão definitiva, bonita e realmente rolável.
+
+---
+
+## Decisão 2 — Fluxo de trabalho em equipe no git (branches + Pull Request)
+
+**Demanda**: com o Herik agora aceitando o convite de colaborador no repositório, dois desenvolvedores vão trabalhar no mesmo código. É preciso um fluxo que evite um `push` de um sobrescrever/quebrar o trabalho do outro sem revisão.
+
+**Opções consideradas**:
+
+- **A. Sem regra nenhuma — os dois commitam direto na `main`.** Mais simples de começar, mas arriscado: qualquer `push` pode sobrescrever trabalho não commitado do outro, sem chance de revisão antes de ir para a branch estável, e o histórico fica mais difícil de acompanhar.
+- **B. Uma branch por marco/feature + Pull Request no GitHub antes de mesclar na `main`.** Cada mudança (novo marco, correção, documentação) nasce numa branch própria (`marco2-adaline`, `fix-tolerancia-degrau` etc.); ao terminar, sobe a branch e abre um PR para o outro revisar antes do merge.
+- **C. Branch por pessoa** (ex.: `adriano`, `herik`), mesclando periodicamente. Mais simples que B, mas mistura trabalhos não relacionados na mesma branch e dificulta revisar mudanças pontuais isoladamente.
+
+**Escolha**: Opção B.
+
+**Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), força uma revisão antes de qualquer coisa entrar na `main` (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".

@@ -25,6 +25,24 @@ pip install -r requirements.txt
 python prototipos/01_perceptron_gates.py --porta AND
 ```
 
+## Fluxo de trabalho em equipe
+
+**Nunca commitar direto na `main`** — ela deve sempre refletir a versão estável do projeto. Para qualquer mudança (novo marco, correção, documentação), criar uma branch nova:
+
+```bash
+git checkout main
+git pull
+git checkout -b nome-da-branch   # ex.: marco2-adaline, fix-tolerancia-degrau, docs-referencias
+```
+
+Depois de terminar, subir a branch e abrir um **Pull Request** no GitHub para revisão antes de mesclar na `main`:
+
+```bash
+git push -u origin nome-da-branch
+```
+
+Mesclar (merge) só depois de revisar o PR — mesmo sendo só nós dois, ajuda a pegar erros e manter um histórico organizado. Apagar a branch depois de mesclada (o próprio GitHub oferece isso na tela do PR).
+
 ## Trabalhos relacionados
 
 Ver `planejamento/03_referencias.md` para a comparação com ferramentas semelhantes (TensorFlow Playground, Perceptron Educational Lab) e os diferenciais deste projeto.
