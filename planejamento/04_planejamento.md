@@ -8,7 +8,7 @@ Planejamento de execução do projeto descrito em `01_brainstorming.md`, cobrind
 
 | Integrante | Papel |
 |---|---|
-| Adriano Lúcio Uchôa Brandão | Back-end e verificações do código; apresentação; revisão de todos os PRs |
+| Adriano Lúcio Uchôa Brandão | Back-end e verificações do código; apresentação; revisa PRs quando puder |
 | Heitor Oliveira Nunes | Front-end e suporte |
 | Herik Daurizio Ricardo | Back-end e verificações do código; integração com o front-end; apresentação |
 
@@ -251,7 +251,7 @@ Antes proposta para discussão com o Herik; agora definida para os três integra
 
 - **Fase 1**: o **Herik** faz os Marcos 2 e 3 (neurônio único); o **Adriano** faz o Marco 4 (MLP/backprop, o mais pesado). As duas frentes andam em paralelo. Cada marco é implementado em Python e verificado manualmente antes de ser dado como pronto.
 - **Fase 2, em paralelo à Fase 1**: o **Heitor** monta o esqueleto, a interface e o visual. O Herik porta a lógica de treino para JS **depois** de os Marcos 2 a 4 estarem validados (começando por Perceptron e Adaline, e a MLP quando o Marco 4 fechar), e confere se os resultados batem com o Python; ele também faz a integração entre lógica e interface, os controles extras do laboratório livre (semente, reinício, máximo de épocas) e cuida do Vercel.
-- **Revisão**: o **Adriano revisa todos os PRs**. Se necessário, os demais integrantes também podem mesclar (inclusive o próprio PR), mantendo o fluxo de branches e PR do `README.md`.
+- **Revisão (2026-10-11)**: criar branches, dividir tarefas e revisar PRs são **boas práticas, não obrigações**; ninguém fica bloqueado esperando outra pessoa. Quem tiver disponibilidade revisa (o Adriano, quando puder, mas qualquer integrante serve). Se não houver revisor a tempo, o **autor pode mesclar o próprio PR**, desde que antes confira o critério de pronto da sua branch, descreva o que mudou no PR e avise o grupo. Mudanças de plano (este arquivo) e de escopo entre integrantes continuam sendo combinadas entre os três. O fluxo de branches e PR do `README.md` continua valendo, para manter o histórico organizado.
 - **Registro**: cada branch atualiza o `05_aprendizados_obtidos.md`, o `06_detalhes_implementacao.md` (no formato demanda / opções / escolha / motivo) e o `02_diario.md` com o que aplicou ou descobriu. **Cada integrante registra o próprio trabalho no diário, com o nome na entrada** (ex.: "2026-10-09 — Herik: …"). Os números medidos aqui valem mais que os da demo.
 - **Documento de texto final**: escrito por **Adriano e Herik**; o **Heitor** revisa e dá suporte (figuras, parte de front-end e design). A fundamentação teórica pode ser escrita em paralelo, à medida que cada marco vai sendo validado (aproveitando o que já está registrado em `01_brainstorming.md` e nos Tópicos do curso).
 - **Apresentação**: Adriano e Herik apresentam, com o Heitor no suporte. Como dividir a fala fica para depois do site pronto.
@@ -283,7 +283,7 @@ docs-plano-importacao
 
 - `marco3-xor-falha` depende de `marco2-adaline`; `fase2-logica` depende dos três marcos; `fase2-base` e `fase2-estetica` não dependem dos marcos e andam em paralelo; o **deploy** depende de resolver o Vercel.
 - **Se uma branch descobrir algo que contradiz a demo** (um número que não bate, um comportamento diferente): (1) não ajustar o código até "bater com a demo" — primeiro descobrir **qual dos dois está certo**, como foi feito no Aprendizado 4 com a conta à mão; (2) registrar a divergência no `05_aprendizados_obtidos.md`, dizendo o que a demo tinha e o que foi medido aqui; (3) se afetar um gabarito usado por branches seguintes (por exemplo as épocas 7, 40 e 1357), atualizar este documento no mesmo PR.
-- **Riscos gerais**: virar cópia (o PR traz arquivos inteiros da demo sem que o autor saiba explicar cada parte — o revisor pergunta o porquê de trechos não óbvios); estourar o prazo (a demo levou três dias de uma pessoa, mas boa parte foi estética e acabamento; os pontos de controle servem para isso); números de referência que dependem de semente, gerador aleatório, ordem das operações e velocidade da animação (se qualquer um mudar, os gabaritos de época mudam — não é defeito, mas tem que ser explicado).
+- **Riscos gerais**: virar cópia (o PR traz arquivos inteiros da demo sem que o autor saiba explicar cada parte — quem revisa, ou o próprio autor ao se autorrevisar, pergunta o porquê de trechos não óbvios); estourar o prazo (a demo levou três dias de uma pessoa, mas boa parte foi estética e acabamento; os pontos de controle servem para isso); números de referência que dependem de semente, gerador aleatório, ordem das operações e velocidade da animação (se qualquer um mudar, os gabaritos de época mudam — não é defeito, mas tem que ser explicado).
 
 ## Sequência de marcos (visão geral)
 

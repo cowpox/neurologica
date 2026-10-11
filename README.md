@@ -35,13 +35,13 @@ git pull
 git checkout -b nome-da-branch   # ex.: marco2-adaline, fix-tolerancia-degrau, docs-referencias
 ```
 
-Depois de terminar, subir a branch e abrir um **Pull Request** no GitHub para revisão antes de mesclar na `main`:
+Depois de terminar, subir a branch e abrir um **Pull Request** no GitHub (de preferência para alguém revisar antes de mesclar na `main`):
 
 ```bash
 git push -u origin nome-da-branch
 ```
 
-Mesclar (merge) só depois de revisar o PR — mesmo sendo só nós dois, ajuda a pegar erros e manter um histórico organizado. Apagar a branch depois de mesclada (o próprio GitHub oferece isso na tela do PR).
+Revisar o PR antes de mesclar ajuda a pegar erros e manter um histórico organizado, mas **é uma recomendação, não uma obrigação**: se ninguém puder revisar a tempo, quem fez a mudança pode mesclar o próprio PR, desde que confira antes o que mudou e avise o grupo. O mesmo vale para criar branches e dividir tarefas — são boas práticas, não regras. Apagar a branch depois de mesclada (o próprio GitHub oferece isso na tela do PR).
 
 ## Trabalhos relacionados
 
