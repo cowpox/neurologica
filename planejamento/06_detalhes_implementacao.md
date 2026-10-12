@@ -34,3 +34,34 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 **Escolha**: Opção B.
 
 **Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), força uma revisão antes de qualquer coisa entrar na `main` (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".
+
+---
+
+## Decisão 3 — Alvos bipolares (−1/+1) no treino do Adaline (Marco 2)
+
+**Demanda**: o Marco 1 treina com as classes da porta em 0/1 e classifica com `degrau(z) = 1 se z ≥ 0`. Ao portar para o Adaline, que treina com o erro **contínuo** `alvo − z`, era preciso decidir com que valores de alvo treinar.
+
+**Opções consideradas**:
+
+- **A. Alvos 0/1 e degrau em z ≥ 0 (igual ao Marco 1).** Não funciona: o Adaline converge para o mínimo do erro quadrático, e com alvos 0/1 esse mínimo fica com a fronteira no lugar errado. Conferido por mínimos quadrados: AND fica com só 2 de 4 acertos (`w=(0,5; 0,5)`, `b=−0,25`, os pontos (0,1) e (1,0) dão `z=+0,25`), NOR também com 2, OR e NAND com 3.
+- **B. Alvos 0/1 e degrau em z ≥ 0,5.** Funciona, mas cria um limiar diferente do Marco 1 e do Tópico 14, o que complica comparar os dois lado a lado.
+- **C. Alvos bipolares (classe 0 → −1, classe 1 → +1) e o mesmo degrau em z ≥ 0.** É a convenção do Tópico 15 (o exemplo do AND usa alvo bipolar, mínimo em `w=(1,1)`, `b=−1,5`). As 5 portas ficam 100% corretas no mínimo.
+
+**Escolha**: Opção C. Os gráficos continuam mostrando as classes como 0/1 (a tabela-verdade da porta não muda), só o alvo usado no cálculo do erro é bipolar.
+
+**Motivo**: mantém o mesmo degrau e a mesma fronteira `z = 0` do Marco 1 (comparação justa), segue a notação do material do curso e é a única das três em que "minimizar o erro quadrático" e "classificar certo" apontam para o mesmo lugar nas 5 portas sem ajuste extra. Fica registrado como um ponto a mencionar na Fase 2: no site, mostrar o alvo bipolar explicitamente na coluna do algoritmo.
+
+---
+
+## Decisão 4 — Versão online e critério de parada do Adaline (Marco 2)
+
+**Demanda**: o Tópico 15 apresenta duas versões da regra delta (online, um ajuste por exemplo; em lote, um ajuste por época) e o Adaline nunca chega a "zero erro", então o critério de parada do Marco 1 (época sem nenhum erro) não serve.
+
+**Opções consideradas**:
+
+- **Versão**: (A) online, (B) em lote, (C) as duas com uma flag.
+- **Parada**: (1) número fixo de épocas; (2) parar quando todos os pontos forem classificados certo; (3) parar quando o SSE parar de mudar (`|ΔSSE| < tolerância` entre épocas seguidas).
+
+**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas. O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
+
+**Motivo**: a versão online é o pseudocódigo principal do Tópico 15 e tem a mesma granularidade do Marco 1 (um frame por exemplo), o que permite rodar os dois sincronizados no modo `--comparar`. Parar ao classificar tudo certo (2) esconderia justamente o que diferencia o Adaline: ele continua ajustando depois de acertar, levando a reta para o meio entre as classes. O lote fica como extensão possível (é o que converge para o mínimo exato em vez de rondá-lo).

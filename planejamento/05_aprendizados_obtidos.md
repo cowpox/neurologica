@@ -143,3 +143,21 @@ Essa observação também reencaixa perfeitamente com o Aprendizado 4: antes da 
 - Ao portar a lógica para o site (JS, Fase 2), ter em mente que JavaScript também usa `float64` (IEEE 754) — o mesmo tipo de resíduo de arredondamento pode aparecer lá, especialmente em qualquer ponto que fique exatamente sobre a fronteira aprendida. Não é um bug a corrigir, é um comportamento esperado a explicar se aparecer durante uma demonstração ao vivo.
 - Ao comparar com o Adaline (Marco 2), verificar se o fato de ele otimizar erro quadrático contínuo (em vez de só contar acertos/erros) tende a deixar os pontos mais "afastados" da fronteira aprendida, evitando esse tipo de caso de fronteira exata — bom contraste pedagógico para a Q5 (gradiente descendente) na apresentação.
 - Vale considerar, na fundamentação teórica do documento final, citar esse episódio como exemplo concreto de que o perceptron não maximiza margem — abre espaço para mencionar, ainda que brevemente, o conceito de margem (relevante para quem for além do escopo da disciplina, ex. SVM) como contraste.
+
+---
+
+# Aprendizados obtidos — Marco 2 (Adaline)
+
+Parâmetros padrão: alvos bipolares (−1/+1), η = 0,1, pesos iniciais aleatórios (semente 42, mesmos do Marco 1), bias inicial 0, versão online, parada quando `|ΔSSE| < 1e-4`.
+
+## Aprendizado 6 — com alvos 0/1, "minimizar o erro" e "classificar certo" não são a mesma coisa
+
+O Adaline não procura uma reta que separe as classes: ele procura a reta que deixa `z` o mais perto possível do alvo, em média quadrática. Com alvos 0/1 e o degrau em `z ≥ 0`, esse ótimo do AND é `w=(0,5; 0,5)`, `b=−0,25`, que classifica errado os pontos (0,1) e (1,0) (dão `z=+0,25`). Com alvos bipolares, o ótimo passa a ser `w=(1,1)`, `b=−1,5` e as 4 classificações ficam certas. Na prática, isso mostra que o custo que o algoritmo minimiza é uma escolha de projeto, e que ela precisa estar alinhada com a regra de decisão (ver Decisão 3 em `06_detalhes_implementacao.md`).
+
+## Aprendizado 7 — o Adaline continua ajustando depois de acertar tudo
+
+No AND, o Adaline já classifica os 4 pontos certo no fim da época 3, mas continua treinando até a época 43, porque o erro `alvo − z` ainda não é zero. A reta vai saindo de perto do ponto (1,1) e indo para o meio entre as classes, chegando a `w≈(1,06; 1,00)`, `b≈−1,48`. No mesmo cenário, o Perceptron para na época 3 com a reta quase encostada no (1,1), porque com erro `y − ŷ = 0` ele não tem mais motivo nenhum para se mover (ver Aprendizado 5). O modo `--comparar` mostra isso lado a lado. Os valores finais ficam perto do mínimo exato (`w=(1,1)`, `b=−1,5`), mas não exatamente nele: na versão online, cada exemplo puxa os pesos para um lado e eles ficam rondando o mínimo, como descrito no Tópico 15, seção 5. O SSE final é ~0,506, contra 0,5 do mínimo exato.
+
+## Aprendizado 8 — η grande demais pode prender o treino num ciclo, não só fazê-lo explodir
+
+Com η = 0,7 no AND (acima do limite online `2/||x̃||² = 2/3` do Tópico 15, seção 6), o treino não diverge para o infinito: ele cai num ciclo fixo em que cada um dos 4 exemplos erra por exatamente ±1,667 e os pesos voltam ao mesmo valor no fim de cada época. O SSE "estabiliza" em 4,58 (o mínimo é 0,5), com 1 ponto mal classificado. Por isso o script diferencia "estabilizou no mínimo" de "estabilizou num ciclo" quando o treino para com pontos ainda errados.
