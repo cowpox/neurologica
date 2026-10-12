@@ -10,6 +10,7 @@ Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo 
 
 - Adriano Lúcio Uchôa Brandão
 - Herik Daurízio Ricardo
+- Heitor Oliveira Nunes
 
 ## Estrutura do repositório
 
@@ -23,6 +24,8 @@ Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo 
 ```bash
 pip install -r requirements.txt
 python prototipos/01_perceptron_gates.py --porta AND
+python prototipos/02_adaline_gates.py --porta AND
+python prototipos/02_adaline_gates.py --porta AND --comparar   # Perceptron x Adaline lado a lado
 ```
 
 ## Fluxo de trabalho em equipe

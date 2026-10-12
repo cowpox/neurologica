@@ -53,12 +53,12 @@ NeuroLogica/
 
 | Arquivo | Mudança | Branch |
 |---|---|---|
-| `.gitignore` | `.venv/`, `venv/` | `marco2-adaline` (primeira branch de código) |
+| `.gitignore` | `.venv/`, `venv/` | `marco3-xor-falha` (primeira branch de código depois do Marco 2) |
 | `.gitignore` | `node_modules/` (só serve para baixar as bibliotecas) e `.vercel` (liga a pasta ao projeto da hospedagem) | `fase2-base` |
 | `.vercelignore` | criar: `node_modules/`, `docs/package*.json`, `prototipos/`, `testes/`, `.venv/`, `venv/`, `__pycache__/`, `*.pyc`, `requirements.txt`, `planejamento/`, `entrega/` | `fase2-base` |
 | `vercel.json` | criar: `outputDirectory: "docs"`, framework, `buildCommand` e `installCommand` nulos, e `Cache-Control: public, max-age=31536000, immutable` para `/vendor/(.*)` | `fase2-base` |
 | `requirements.txt` | sem mudança (numpy e matplotlib bastam) | — |
-| `README.md` | comandos do Marco 2 e nota sobre Python 3.11 (alvo do projeto; `.venv` criado localmente por cada um, fora do git) | `marco2-adaline` |
+| `README.md` | nota sobre Python 3.11 e ambiente virtual (`.venv` criado localmente por cada um, fora do git); os comandos do Marco 2 já foram acrescentados pelo Adriano | `marco3-xor-falha` |
 | `README.md` | comando do Marco 3 | `marco3-xor-falha` |
 | `README.md` | comando do Marco 4 e opções (`--taxa`, `--epocas`, `--quiet`, `--ocultos`, `--ativacao`, `--testar-sementes`) | `marco4-mlp` |
 | `README.md` | site: GitHub Pages → Vercel; "D3 + KaTeX via CDN" → bibliotecas em `docs/vendor/`; seção de como rodar o site local; Heitor em "Autores" | `fase2-base` |
@@ -82,27 +82,84 @@ prototipos/
 
 A demo já tem uma versão de cada script e serve de **gabarito** (números a esperar, armadilhas já encontradas), lida com `git show demo/main:<caminho>`. Os números abaixo foram medidos nela e são **conferidos de novo aqui**: se diferirem, vale o medido no oficial, com uma frase no `05_aprendizados_obtidos.md` dizendo o que a demo tinha.
 
+### Convenções de código dos protótipos (observadas nos Marcos 1 e 2, 2026-10-12)
+
+Os scripts de cada marco seguem as mesmas práticas, para que o leitor (e o port para JS) reconheça a mesma estrutura em todos. **Os Marcos 3 e 4 mantêm estas convenções**; quando uma delas não se aplicar (ver "Pontos de atenção"), a exceção é registrada no docstring e numa decisão do `06_detalhes_implementacao.md`.
+
+**Estrutura do arquivo**
+- Nome `NN_descricao.py` (`01_perceptron_gates.py`, `02_adaline_gates.py`), em português, `snake_case`. Docstring de módulo no formato: "Marco N do projeto NeuroLógica: <nome> (Modo ...)", a regra de aprendizagem com a fórmula e o Tópico do curso, as portas em que roda e um bloco `Uso:` com exemplos de linha de comando.
+- Imports em três grupos: biblioteca padrão (`argparse`, `sys`, `importlib`), terceiros (`matplotlib.animation`, `matplotlib.pyplot`, `numpy as np`) e `from utils_plot import (...)`, com os nomes em ordem alfabética, um por linha.
+- Constantes em `MAIÚSCULAS` logo depois dos imports, com um comentário dizendo **por que** o valor existe: `PORTAS_VALIDAS` (lista de nomes de porta aceitos pelo marco), `TOLERANCIA_ZERO = 1e-9`, `TOLERANCIA_SSE = 1e-4`.
+- Ordem das funções: funções de ativação ou classificação (`degrau`), gerador de treino (`treinar_<modelo>`), formatador de log do marco (se não for o de `utils_plot`), `animar_2d`, `animar_1d`, resumo, `main()` e `if __name__ == "__main__": main()`.
+- Reaproveitar código de outro marco por `importlib.import_module("01_perceptron_gates")` (um módulo cujo nome começa com dígito não se importa com `import`), usando `perceptron.degrau` e `perceptron.treinar_perceptron`, sem duplicar. O Marco 3 usa exatamente os treinos dos Marcos 1 e 2 desse modo.
+- Funções que só servem a um marco ficam no próprio script (como `formatar_linhas_log_adaline`); só sobem para `utils_plot.py` o que mais de um script usa ou o que o plano já pede lá (`draw_network_diagram`, no Marco 4).
+
+**Nomes (português, sem abreviações novas)**
+- Dados: `X` (entradas, matriz), `y` (classes **0/1**, vêm de `get_gate`), `x` (um exemplo), `y_real`, `y_previsto`, `z` (soma ponderada, antes da ativação), `erro`, `pesos` (vetor), `bias`, `n_entradas`, `n_exemplos`.
+- Hiperparâmetros: `taxa_aprendizado` (nos parâmetros da função), `max_epocas`, `semente`, `pesos_iniciais`, `bias_inicial`, `tolerancia_sse`. Na linha de comando, `--taxa`, `--epocas`, `--semente`, `--pesos-iniciais`, `--bias-inicial`. O símbolo $\eta$ só aparece em texto (logs, títulos e comentários), nunca como nome de variável.
+- Contadores: `epoca` começa em **1**; `indice` (posição do exemplo dentro da época) começa em **0**. Aleatoriedade: `rng = np.random.default_rng(semente)`.
+- Custo: `sse` e `sse_anterior`. O `sse` do Adaline é $E = \tfrac12 \sum (\text{alvo}-z)^2$ (o $E(w,b)$ do Tópico 15), calculado **no fim da época com os pesos finais**, e é isso que o log e o gráfico chamam de "SSE".
+
+**Representação dos valores (0/1, −1/+1 e limiares)**
+- **As classes são sempre 0/1** em `y`, nas tabelas-verdade, nos gráficos (azul = 0, vermelho = 1) e nas mensagens. Nenhum script altera o `y` de `get_gate`.
+- **Alvos bipolares (−1/+1) só existem dentro do treino do Adaline**: `alvos = 2 * y - 1` (classe 0 → −1, classe 1 → +1), com `alvo` no singular, impresso com `:+d`. É uma tradução interna; o `passo` entregue à animação continua trazendo `y_real` em 0/1 e `alvo` à parte.
+- **Decisão de classe**: `degrau(z)` do Marco 1 (`1 se z >= 0`, com `TOLERANCIA_ZERO`), reaproveitado sem cópia pelo Marco 2. Todo teste "z está sobre a fronteira?" usa essa tolerância (Aprendizado 4).
+- Com alvos bipolares a fronteira do Adaline é $z = 0$, a mesma do Perceptron; é isso que torna a comparação lado a lado justa. (Com alvos 0/1 a conta é equivalente, com $z_{bip} = 2z - 1$ e limiar 0,5, mas os valores de $w$, $b$ e do custo mudam de escala; **os números da demo não são gabarito direto**.)
+
+**Gerador de treino**
+- Assinatura: `treinar_<modelo>(X, y, taxa_aprendizado=..., max_epocas=..., semente=42, verbose=True, pesos_iniciais=None, bias_inicial=0.0, ...)`. É um **gerador**: um `yield` por exemplo processado, com um dicionário `passo`. A animação e o resumo consomem a lista inteira (`list(treinar_...)`).
+- Chaves do `passo` comuns: `epoca`, `indice`, `x`, `y_real`, `y_previsto`, `z`, `pesos` (**cópia**, já depois do ajuste), `bias`, `houve_atualizacao`. **`erros_na_epoca` existe nos dois treinos, só no último exemplo de cada época, e significa a mesma coisa: quantos pontos ficam mal classificados com os pesos finais da época**, calculado pela mesma função `contar_erros` (em `01_perceptron_gates.py`). O Perceptron acrescenta `correcoes_na_epoca` (correções feitas até ali na época; é o critério de parada: época sem correção). O Adaline acrescenta `alvo` e `erro`, e, no último exemplo da época, `sse`.
+- Inicialização: `rng.uniform(-0.5, 0.5, size=n_entradas)`, bias em `bias_inicial` (0.0). A mesma `semente` gera os mesmos pesos iniciais em todos os marcos, e é isso que permite comparar modelos. `pesos_iniciais` de tamanho errado levanta `ValueError` com a mesma mensagem ("--pesos-iniciais precisa ter exatamente N valor(es) ..."), e `main()` imprime "Erro: ..." e sai com `sys.exit(1)`.
+- Parada: o Perceptron para na primeira época sem erros; o Adaline, quando $|\Delta \text{SSE}| < 10^{-4}$ entre duas épocas, no limite de épocas ou ao divergir (`not np.isfinite(sse) or sse > 1e6`). O gerador **retorna** (`return`) ao parar, e o resumo distingue convergiu, não estabilizou e divergiu.
+- Padrões: `--taxa 0.1`, `--semente 42`; épocas 20 (Marco 1) e 100 (Marco 2); `--intervalo` 400 e 120 ms.
+
+**Log do console (`verbose`)**
+- Cabeçalho entre linhas de 72 `=`: "MARCO N — NOME", hiperparâmetros, origem dos pesos iniciais, a regra de atualização escrita com a fórmula e, no Adaline, os alvos e o custo monitorado.
+- Uma linha por iteração, com os números substituídos: `[iteração i] x=... | z = (w1)*x1 + ... + (b) = ... | erro = ... | ŷ = ...`, seguida das linhas `-> w1: antigo + η * (erro) * x = novo` e `-> b : ...`. Linha de `--- Época k ---` e de `>> Fim da época k: ...`. Mensagens finais entre `***` (CONVERGIU, ESTABILIZOU, DIVERGIU, ou o aviso de limite de épocas).
+- Formatação: pesos com `.3f` (iterações) e `np.round(pesos, 4)` (resumos); erro com `{erro:+.3f}`; alvo com `{alvo:+d}`.
+- `--quiet` desliga o log; com `--comparar` o log detalhado também se desliga (dois logs intercalados ficariam ilegíveis), e o resumo de uma linha é impresso: "Porta X (Modelo): N passos ao longo de K época(s) | SSE final = ... | M mal classificado(s) no fim".
+
+**Animação**
+- `animar_2d(nome_porta, X, y, passos, intervalo)`, `animar_1d(...)` (NOT) e, para comparações, `animar_comparacao(...)`. Figura em grade: diagrama do neurônio, plano de decisão e gráfico de erro na linha de cima; painel de log (`setup_log_panel`) embaixo. `FuncAnimation(..., blit=False, repeat=False)`, depois `plt.tight_layout()`, `plt.show()` e `return anim`.
+- Cores fixas: classe 0 azul, classe 1 vermelho, reta de decisão verde, vetor normal roxo (`purple`), erro por época laranja, SSE verde. Elementos novos (por exemplo as duas retas dos neurônios ocultos) pegam cores distintas dessas.
+- Títulos e rótulos em português, com os símbolos $\eta$, Σ, ŷ, ½.
+
+**Linha de comando (`argparse`)**
+- Opções comuns, nesta ordem: `--porta` (com `choices=PORTAS_VALIDAS`), `--taxa`, `--epocas`, `--intervalo`, `--semente`, `--pesos-iniciais` (`nargs="+"`), `--bias-inicial`, opções do marco (`--comparar`), `--quiet`. Textos de ajuda em português, "(eta)" para a taxa. Validações no `main()`, com mensagem e `sys.exit(1)`.
+
+**Documentação e commit de cada marco**
+- Um Aprendizado novo no `05_aprendizados_obtidos.md` para cada achado, uma Decisão nova no `06_detalhes_implementacao.md` (demanda → opções → escolha → motivo) para cada escolha não trivial (no Marco 2, a Decisão 3 trata dos alvos bipolares e a 4, da versão online e da parada), uma entrada no `02_diario.md` com o nome de quem fez e a linha de comando no `README.md`.
+- Mensagem de commit em português, no imperativo, com o marco no título e a lista do que entrou no corpo: "Implementa Marco 2: Adaline (regra delta) nas 5 portas linearmente separaveis".
+- Verificação padrão antes de dar o marco por pronto: conferência à mão em aritmética exata (AND com `--pesos-iniciais 0 0 --bias-inicial 0`), as portas do marco com `--quiet`, e pelo menos um quadro da animação renderizado.
+
+**Pontos de atenção para os Marcos 3 e 4**
+1. **`erros_na_epoca` é homogêneo nos dois treinos (resolvido em 2026-10-12, Decisão 5 do `06`).** Antes, o do Perceptron era acumulado durante a época (com os pesos ainda mudando) e o do Adaline valia com os pesos finais; agora os dois entregam o veredito com os pesos finais, pela mesma `contar_erros`, e o Perceptron guarda as correções à parte (`correcoes_na_epoca`), que continuam sendo o critério de parada. O comportamento do Perceptron não mudou (trajetórias idênticas). O Marco 3 usa a chave direto, sem recalcular. **A MLP (Marco 4) não usa `contar_erros`** (a classificação dela é outra), mas deve entregar `erros_na_epoca` com o mesmo significado: último exemplo da época, pesos finais, classe decidida por `degrau(z_saída)`.
+2. **O Marco 3 não precisa mexer no `02_adaline_gates.py`**: ele chama `treinar_perceptron` e `treinar_adaline` por `importlib`, e a lista `PORTAS_VALIDAS` do `02` (só as 5 separáveis) vale para a linha de comando dele, não para as funções.
+3. **Marco 4: representação do alvo e do limiar (decidido em 2026-10-12, Decisão 6 do `06`).** Saída **sigmoide**, **alvos 0/1** e a classe decidida por **`degrau(z_saída)`**, onde `z_saída` é a soma ponderada do neurônio de saída antes da sigmoide (como $\sigma(z) \ge 0{,}5 \iff z \ge 0$, é o mesmo critério de $a \ge 0{,}5$). Isso **preserva a padronização**: a classe continua decidida pelo mesmo `degrau` e pela mesma `TOLERANCIA_ZERO` dos Marcos 1 e 2, `y` continua 0/1 em tudo e os alvos 0/1 só entram no erro e no gradiente. Diferença consciente em relação ao Adaline: o erro da MLP é medido **depois** da ativação da saída (como no Perceptron), porque o backpropagation precisa da derivada da sigmoide; o do Adaline é medido antes (saída linear). O −1/+1 fica restrito aos alvos do Adaline.
+4. **Marco 4: definir o custo.** O Adaline usa $E = \tfrac12 \sum (\text{alvo}-z)^2$ chamado `sse`; a demo usava o erro quadrático médio com limiares ($0{,}01$ de convergência e $3\times10^{-3}$ por janela) calibrados nele. Recomendação: manter o nome e a definição `sse` ($\tfrac12\sum$) e **converter os limiares da demo para essa escala**, anotando a conversão no docstring; ou usar `mse` com esse nome, explícito, e dizê-lo no cabeçalho do log. O que não pode é reaproveitar os números da demo sem checar a definição.
+5. **Marco 4: inicialização.** Usar `rng = np.random.default_rng(semente)`, como nos outros marcos; a amplitude do sorteio (`rng.uniform(-escala, escala, ...)`, com `--escala-init` na demo) precisa de decisão e de registro, e a simetria (pesos iguais) deve ser quebrada pelo sorteio.
+
 ### Marco 1 — Perceptron clássico (Modo 1a) — *concluído*
 - Regra de aprendizagem: correção de erro discreta pós-ativação $(y-\hat{y})$.
 - Rodar nas 5 portas linearmente separáveis: AND, OR, NOT, NOR, NAND (seletor por parâmetro/CLI, ex.: `python 01_perceptron_gates.py --porta AND`).
 - Animação (`matplotlib.animation.FuncAnimation`): pontos coloridos por classe + reta de decisão se movendo a cada época + contador de época + nº de pontos mal classificados.
 - **Critério de pronto**: as 5 portas convergem visivelmente e o código está limpo o suficiente para servir de referência direta na hora de escrever a versão em JS.
 - **Estado (2026-10-09)**: pronto e na `main` (`5388e31`), com tolerância numérica `TOLERANCIA_ZERO = 1e-9` na função `degrau` (Aprendizado 4). O script da demo é idêntico a este.
+- **(2026-10-12)** `erros_na_epoca` passou a ser o veredito com os pesos finais da época (função `contar_erros`, usada também pelo Adaline), e as correções feitas durante a época ficam em `correcoes_na_epoca`, que segue sendo o critério de parada. Conferido: pesos, bias e épocas idênticos aos de antes (5 portas × 3 taxas × 2 inicializações). Efeito visível: o gráfico pode mostrar zero erros uma época antes da convergência (a reta já acerta tudo, e falta a época sem correções para confirmar).
 
-### Marco 2 — Adaline (Modo 1b) — branch `marco2-adaline` — **Herik**
-- Mesma arquitetura de neurônio único, mesmas 5 portas, mas erro contínuo pré-ativação $(y-z)$ e regra delta (gradiente descendente sobre SSE/MSE).
-- Reaproveitar `utils_plot.py` do Marco 1, adicionando o gráfico de erro quadrático (SSE) por época.
-- **(2026-10-09)** Como os alvos são 0 e 1, o limiar de decisão do Adaline fica em $z = 0{,}5$ (a reta desenhada é $w\cdot x + b = 0{,}5$). O treino para quando o SSE **para de cair** (variação entre épocas abaixo de $10^{-4}$), e não quando o erro zera: com 4 pontos e 3 parâmetros o sistema é sobredeterminado e o erro nunca chega a zero (Aprendizado 6 da demo). Efeito contraintuitivo a registrar: o resíduo **sobe** com a taxa de aprendizado, porque a atualização estocástica faz a solução quicar em torno do mínimo.
-- Acrescentar a `utils_plot.py` o carregamento do Marco 1 de dentro do Marco 2 (`carregar_modulo_prototipo()`, porque um módulo Python não pode começar com dígito) e o log de erro contínuo (`formatar_linhas_log_continuo()`).
-- **Critério de pronto**: dá pra rodar Perceptron e Adaline lado a lado (mesma porta, mesma inicialização, `--comparar`) e ver a diferença de trajetória — reta "aos saltos" vs. reta suave — que é o gancho visual da Q5 (o erro contínuo permite corrigir a cada passo, e o gradiente aponta o caminho).
-- **Gabarito da demo**: as 5 portas terminam com **0 erros de classificação** (32 a 85 épocas com η = 0,1); SSE final com η = 0,1 em torno de 0,309 (AND, OR, NAND), 0,310 (NOR) e ~0,00001 (NOT, que é a exceção: 2 pontos e 2 parâmetros dão ajuste exato).
-- **Risco**: confundir erro de ajuste com erro de classificação ao definir a parada. A tabela da demo foi medida com os parâmetros padrão do script (semente 42, `--epocas 200`); outros valores dão outros números.
+### Marco 2 — Adaline (Modo 1b) — *concluído* — **Adriano** (commit `ab5ed35`, 2026-10-12)
+- Mesma arquitetura de neurônio único, mesmas 5 portas, mas erro contínuo pré-ativação $(\text{alvo}-z)$ e regra delta (gradiente descendente sobre o custo $E = \tfrac12\sum(\text{alvo}-z)^2$), versão **online** (um ajuste por exemplo, mesma granularidade da animação do Marco 1).
+- **Escolhas do Adriano** (Decisões 3 e 4 do `06_detalhes_implementacao.md`; Aprendizados 6 a 8 do `05_aprendizados_obtidos.md`): **alvos bipolares** (classe 0 → −1, classe 1 → +1) com o **mesmo `degrau` ($z \ge 0$)** do Marco 1; custo medido no fim de cada época com os pesos finais; parada quando $|\Delta E| < 10^{-4}$ (o Adaline nunca chega a erro zero), com máximo de 100 épocas e detecção de divergência; `--comparar` (Perceptron e Adaline lado a lado, mesmos pesos iniciais e η); reaproveita o Marco 1 por `importlib` (`perceptron.degrau`, `perceptron.treinar_perceptron`).
+- **Relação com a demo.** A demo treinou com alvos 0/1 e limiar $z = 0{,}5$. As duas convenções são equivalentes ($z_{bip} = 2z - 1$) e dão a **mesma fronteira**, mas o custo e os pesos mudam de escala (o custo com alvos −1/+1 é 4 vezes o da demo, e o $\tfrac12$ divide por 2); portanto **os números de SSE da demo não valem como gabarito aqui**. A demo também media o SSE acumulado durante a época, que fica acima do mínimo e sobe com o η; o custo no fim da época é a métrica mais limpa, e o Aprendizado 8 (η grande demais pode prender o treino num ciclo, em vez de fazê-lo explodir) é o resultado correspondente.
+- **Critério de pronto (cumprido)**: dá pra rodar Perceptron e Adaline lado a lado (mesma porta, mesma inicialização, `--comparar`) e ver a diferença de trajetória — reta "aos saltos" vs. reta suave — que é o gancho visual da Q5 (o erro contínuo permite corrigir a cada passo, e o gradiente aponta o caminho).
+- **Gabarito (script do Adriano, semente 42, η = 0,1, até 100 épocas; conferido em 2026-10-12)**: as 5 portas terminam com **0 mal classificados** e o custo estabiliza; épocas e custo final: AND 43 (0,5061), OR 61 (0,5105), NAND 44 (0,5060), NOR 64 (0,5105) e NOT 85 (0,0011); primeira época com tudo certo: 3, 9, 4, 12 e 7. O mínimo teórico do custo nas portas de 2 entradas é **0,5** (4 pontos para 3 parâmetros, conferido por mínimos quadrados), e na NOT o custo tende a 0 (2 pontos e 2 parâmetros), então o valor final da NOT depende da tolerância de parada.
+- **Risco (a manter em mente)**: confundir erro de ajuste (o custo) com erro de classificação (quantos pontos caem do lado errado de $z = 0$). O Adaline continua ajustando depois de classificar tudo certo (AND: certo na época 3, para na 43).
 
 ### Marco 3 — Tentando XOR/XNOR com 1 neurônio só (Transição) — branch `marco3-xor-falha` — **Herik**
-- Rodar o mesmo código dos Marcos 1 e 2 nas portas XOR/XNOR, sem nenhuma mudança de arquitetura. Depende do Marco 2 (usa os dois treinos).
+- Rodar o mesmo código dos Marcos 1 e 2 nas portas XOR/XNOR, sem nenhuma mudança de arquitetura. Depende do Marco 2 (já na `main`): usa `treinar_perceptron` e `treinar_adaline` por `importlib`, seguindo as convenções da seção acima (ver os pontos de atenção 1 e 2).
 - **Critério de pronto**: fica visualmente claro que o **Perceptron** nunca se estabiliza (a reta oscila e os erros nunca zeram) — confirma experimentalmente a não separabilidade linear antes de partir pra MLP.
-- **(2026-10-09)** O **Adaline** se comporta de outro jeito: ele **converge**, mas para a função constante 0,5 (a melhor aproximação linear do XOR), de modo que a reta para de se mexer num lugar inútil (Aprendizado 7 da demo). Isso fecha o argumento pelo outro lado: não faltou treino, o limite é da **arquitetura**. Gabarito da demo: o SSE estaciona por volta da época 35 com $z \approx [0{,}520;\ 0{,}487;\ 0{,}439;\ 0{,}406]$ nos quatro pontos (η = 0,1, semente 42).
-- **Risco**: dois erros que a demo cometeu no relatório do script e corrigiu — afirmar que o Adaline "convergiu" quando só bateu no limite de épocas, e reportar o acumulador de erros da época (somado com os pesos ainda mudando) em vez do veredito da reta final. O relatório deve dizer "convergiu" só quando houve convergência de fato e contar os erros **com os pesos finais**.
+- **(2026-10-12)** O **Adaline** se comporta de outro jeito: ele **converge**, mas para a função **constante** que melhor aproxima o XOR no sentido de mínimos quadrados, e a reta para de se mexer num lugar inútil (Aprendizado 7 da demo). Com os alvos bipolares do Marco 2, essa constante é **0** (o ponto médio de −1 e +1; na convenção 0/1 da demo era 0,5): $z \approx 0$ nos quatro pontos, e o custo mínimo do XOR é $E = 2{,}0$ (conferido por mínimos quadrados). Isso fecha o argumento pelo outro lado: não faltou treino, o limite é da **arquitetura**. Como $z$ fica colado em 0, o lado em que cada ponto cai é decidido pelo resíduo (a demo registrou 3 dos 4 pontos errados), então o relatório deve mostrar os quatro $z$ finais. Os números do Marco 3 (época em que o custo estaciona, $z$ finais) são **medidos aqui**: a demo usou alvos 0/1 e não serve de gabarito direto.
+- **Risco**: dois erros que a demo cometeu no relatório do script e corrigiu — afirmar que o Adaline "convergiu" quando só bateu no limite de épocas, e reportar o acumulador de erros da época (somado com os pesos ainda mudando) em vez do veredito da reta final. O relatório deve dizer "convergiu" só quando houve convergência de fato e contar os erros **com os pesos finais** (nos dois treinos isso já vale desde a Decisão 5 do `06`: `erros_na_epoca` é o mesmo).
 
 ### Marco 4 — MLP com backpropagation (Modo 2) — branch `marco4-mlp` — **Adriano**
 - Arquitetura mínima: 2 neurônios ocultos (ativação sigmoide) + 1 neurônio de saída.
@@ -112,6 +169,7 @@ A demo já tem uma versão de cada script e serve de **gabarito** (números a es
 - **(2026-10-09) Mínimos locais e reinício.** A MLP 2-2-1 tem mínimos locais reais: sem reinício, com sigmoide e η = 0,5, só 14 de 20 sementes convergiram na demo; com 3 ocultos a convergência foi de 100%, mas o `04` já proibia "adicionar neurônios só pra forçar". Trocar o erro quadrático por entropia cruzada não ajudou (teto ~83% com 2 ocultos), ou seja, o problema é a paisagem de erro, não a função de perda (Aprendizado 8 da demo). A solução é **reinício automático** ao detectar estagnação, mantendo os 2 ocultos da narrativa — e mostrá-lo na animação, porque torna visível que o gradiente descendente é um método local.
 - **(2026-10-09) Detector de estagnação por janela.** No mínimo local o erro não trava: ele "rasteja" (~$2{,}5\times10^{-6}$ por época), então comparar com o melhor erro já visto zerava o contador para sempre e a rede ficava presa (Aprendizado 9 da demo). O detector mede o progresso numa **janela fixa**: se em 300 épocas o erro não caiu pelo menos $3\times10^{-3}$, reinicia. O Python usa a mesma regra do site (na demo, o Python ainda usava a regra antiga).
 - **Critério de pronto**: XOR e XNOR convergem de forma confiável com a arquitetura mínima escolhida — se não convergir de forma consistente, ajustar inicialização/learning rate antes de seguir pra Fase 2 (não adicionar mais neurônios só pra "forçar" convergência sem entender por quê). **(2026-10-09)** "De forma confiável" significa **100% das sementes testadas** com o reinício automático (a demo mediu 40/40 em XOR e em XNOR); o número de épocas não é critério, só é registrado (a demo teve mediana de ~300).
+- **(2026-10-12)** Seguir as convenções de código da seção acima. **Decidido** (Decisão 6 do `06`): saída sigmoide, alvos 0/1, classe por `degrau(z_saída)` e `erros_na_epoca` com o mesmo significado dos Marcos 1 e 2. **A registrar no `06` quando for implementado**: a definição do custo (`sse` com $\tfrac12$, com os limiares da demo convertidos, ou `mse` explícito) e a amplitude da inicialização.
 - **Risco**: subir para 3 ocultos para "resolver"; simetria de pesos; reiniciar cedo demais e esconder o aprendizado em vez de mostrá-lo.
 
 ## Fase 2 — Website
@@ -152,13 +210,13 @@ A demo organizava a história por **modelo** (Ato 1: Perceptron e Adaline; Ato 2
 | Ato | Pergunta | Modelo | Laboratório | Aproveita da demo |
 |---|---|---|---|---|
 | **1** | **Q2** — por que o Perceptron não resolve todo tipo de problema? | Perceptron | modo Perceptron, 7 portas: as 5 separáveis convergem; XOR e XNOR falham | Ato 1 (parte Perceptron), Ato 2 (parte Perceptron) e o card do NAND |
-| **2** | **Q5** — como o gradiente descendente encontra uma solução? | Adaline | modos Adaline (padrão) e Perceptron, 7 portas | Ato 1 (parte Adaline) e o card do Adaline que "converge para 0,5" no XOR |
+| **2** | **Q5** — como o gradiente descendente encontra uma solução? | Adaline | modos Adaline (padrão) e Perceptron, 7 portas | Ato 1 (parte Adaline) e o card do Adaline que "converge para a constante" no XOR |
 | **3** | **Q4** — por que existem diferentes funções de ativação? | MLP 2-2-1 com backpropagation | modo MLP, **rede fixa 2-2-1**, seletor de ativação e de η | Ato 3 sem os botões +/−, com o card do mínimo local e do reinício |
 | **Bônus obrigatório** | — | rede livre | modo MLP **editável**, 7 portas, ativação, η e demais parâmetros | Ato 3 completo da demo |
 
 **Como cada ato responde** (resposta em uma frase, que vira o fecho do ato e o roteiro da fala):
 - **Q2:** um neurônio só traça uma reta, e XOR/XNOR não têm reta que os separe; o Perceptron corrige um ponto e estraga outro, e nunca para.
-- **Q5:** o gradiente aponta para onde o erro cai mais depressa; o Adaline mede o erro antes da decisão e dá um passo nessa direção a cada iteração, com o η controlando o tamanho do passo. Num neurônio a descida encontra o melhor ajuste possível, mesmo quando ele é inútil (no XOR, a constante 0,5). A mesma ideia atravessa camadas no Ato 3.
+- **Q5:** o gradiente aponta para onde o erro cai mais depressa; o Adaline mede o erro antes da decisão e dá um passo nessa direção a cada iteração, com o η controlando o tamanho do passo. Num neurônio a descida encontra o melhor ajuste possível, mesmo quando ele é inútil (no XOR, uma constante: 0 com os alvos −1/+1 do Marco 2, o ponto médio entre as classes). A mesma ideia atravessa camadas no Ato 3.
 - **Q4:** para o gradiente atravessar camadas, a ativação precisa ser **não linear** (uma composição de funções lineares é linear: $W_2(W_1x+b_1)+b_2=(W_2W_1)x+(W_2b_1+b_2)$, uma reta só) e **diferenciável** (o degrau tem derivada zero, e a regra da cadeia anula o gradiente). Sigmoide, tanh e ReLU atendem, e diferem em faixa de saída, saturação e velocidade de convergência (números medidos no Marco 4).
 
 **Elementos novos em relação à demo** (só HTML, texto e gráficos estáticos, a cargo do Heitor): mapa das três perguntas no topo da página, com cada uma apontando para o seu ato; selo "Respondendo à Q_" no início de cada ato; a resposta em uma frase no fim; um **resumo final** com as três respostas, antes de "Trabalhos relacionados"; e, no Ato 3, o card matemático e as gavetas das funções de ativação, descritos abaixo.
@@ -217,11 +275,11 @@ O site da demo tem 13 módulos JS e um PR único seria grande demais para revisa
 
 **`fase2-logica`**
 - Pontos a entender: `TOLERANCIA_ZERO = 1e-9` no `degrau` (Aprendizado 4); gerador `mulberry32`, porque `Math.random()` não aceita semente e a reprodutibilidade importa para repetir experimentos ao vivo; MLP generalizada para várias camadas, porque a arquitetura será editável no laboratório livre; reinício por janela (Aprendizado 9 da demo).
-- Pronto quando um script em Node (`testes/`, mantido pelo Herik) roda as 7 portas e mostra: Perceptron e Adaline com o mesmo desfecho do Python para a mesma porta e os mesmos pesos iniciais (a época pode diferir em casos de fronteira, Aprendizado 4); MLP convergindo nas arquiteturas que a demo testou (`[2]`, `[4]`, `[4,2]`, `[4,2,2]`); reinício disparando no XOR quando a rede empaca. Até lá nenhum módulo de interface é mesclado sobre ele.
-- Risco: se o gerador com semente não for equivalente, os números de referência do site não batem.
+- Pronto quando um script em Node (`testes/`, mantido pelo Herik) roda as 7 portas e mostra: Perceptron e Adaline com o mesmo desfecho do Python para a mesma porta e os mesmos pesos iniciais (a época pode diferir em casos de fronteira, Aprendizado 4); o `treino_adaline.js` **segue as convenções do Marco 2** (alvos −1/+1, `degrau` em $z \ge 0$ com tolerância, custo $\tfrac12\sum$ no fim da época e parada em $10^{-4}$), e a versão da demo, que usava alvos 0/1 e limiar 0,5, deve ser adaptada, não copiada; MLP convergindo nas arquiteturas que a demo testou (`[2]`, `[4]`, `[4,2]`, `[4,2,2]`); reinício disparando no XOR quando a rede empaca. Até lá nenhum módulo de interface é mesclado sobre ele.
+- Risco: **os números de referência do site (épocas 7, 40 e 1357) vêm do gerador `mulberry32` com semente 42, que não sorteia os mesmos pesos iniciais que o `numpy` com semente 42** (no Python, o Perceptron do AND converge em 3 épocas, não em 7). Por isso a conferência Python × JS usa **pesos iniciais manuais** idênticos nos dois lados, e os números do site valem só para o JS; se o gerador mudar, os gabaritos de época mudam.
 
 **`fase2-laboratorio`**
-- Pronto quando, com semente 42 (determinístico): **Ato 1** (Perceptron, AND, η = 0,1) converge na **época 7**, 4/4, e (Perceptron, XOR) para na **época 40** sem resolver; **Ato 2** reproduz os números do Python dos Marcos 2 e 3 (Adaline nas 5 portas com 0 erros de classificação, e no XOR o SSE estaciona por volta da época 35 com $z \approx 0{,}5$), e o contraste Perceptron × Adaline (erro em escada × curva contínua) é visível trocando o modo no mesmo laboratório; sem rolagem horizontal a 320, 390, 820 e 1440 px.
+- Pronto quando, com semente 42 (determinístico): **Ato 1** (Perceptron, AND, η = 0,1) converge na **época 7**, 4/4, e (Perceptron, XOR) para na **época 40** sem resolver; **Ato 2** reproduz os números do Python dos Marcos 2 e 3 (Adaline nas 5 portas com 0 mal classificados, por exemplo AND em 43 épocas com custo 0,5061 e η = 0,1, e no XOR o custo estaciona com $z \approx 0$ nos quatro pontos, número medido no Marco 3), e o contraste Perceptron × Adaline (erro em escada × curva contínua) é visível trocando o modo no mesmo laboratório; sem rolagem horizontal a 320, 390, 820 e 1440 px.
 - Pronto quando o **mapa das perguntas**, os **selos** e a **resposta em uma frase** de cada ato existem e as âncoras do mapa levam ao ato certo.
 - Pronto quando **iniciar um laboratório pausa os outros**, cada um preservando o seu estado e retomando de onde parou (regra do componente `Laboratorio`, que vale também para o Ato 3 e para o laboratório livre; os labs da demo já começam pausados).
 
@@ -249,8 +307,8 @@ O site da demo tem 13 módulos JS e um PR único seria grande demais para revisa
 
 Antes proposta para discussão com o Herik; agora definida para os três integrantes:
 
-- **Fase 1**: o **Herik** faz os Marcos 2 e 3 (neurônio único); o **Adriano** faz o Marco 4 (MLP/backprop, o mais pesado). As duas frentes andam em paralelo. Cada marco é implementado em Python e verificado manualmente antes de ser dado como pronto.
-- **Fase 2, em paralelo à Fase 1**: o **Heitor** monta o esqueleto, a interface e o visual. O Herik porta a lógica de treino para JS **depois** de os Marcos 2 a 4 estarem validados (começando por Perceptron e Adaline, e a MLP quando o Marco 4 fechar), e confere se os resultados batem com o Python; ele também faz a integração entre lógica e interface, os controles extras do laboratório livre (semente, reinício, máximo de épocas) e cuida do Vercel.
+- **Fase 1**: o **Marco 2** foi feito pelo **Adriano** (ele já o tinha implementado, sem commit, quando o plano foi escrito; commit `ab5ed35`). O **Herik** faz o Marco 3 (a falha do XOR com neurônio único) e o **Adriano** faz o Marco 4 (MLP/backprop, o mais pesado). As duas frentes andam em paralelo. Cada marco é implementado em Python e verificado manualmente antes de ser dado como pronto.
+- **Fase 2, em paralelo à Fase 1**: o **Heitor** monta o esqueleto, a interface e o visual. O Herik porta a lógica de treino para JS **depois** de os Marcos 3 e 4 estarem validados (o 2 já está) (começando por Perceptron e Adaline, e a MLP quando o Marco 4 fechar), e confere se os resultados batem com o Python; ele também faz a integração entre lógica e interface, os controles extras do laboratório livre (semente, reinício, máximo de épocas) e cuida do Vercel.
 - **Revisão (2026-10-11)**: criar branches, dividir tarefas e revisar PRs são **boas práticas, não obrigações**; ninguém fica bloqueado esperando outra pessoa. Quem tiver disponibilidade revisa (o Adriano, quando puder, mas qualquer integrante serve). Se não houver revisor a tempo, o **autor pode mesclar o próprio PR**, desde que antes confira o critério de pronto da sua branch, descreva o que mudou no PR e avise o grupo. Mudanças de plano (este arquivo) e de escopo entre integrantes continuam sendo combinadas entre os três. O fluxo de branches e PR do `README.md` continua valendo, para manter o histórico organizado.
 - **Registro**: cada branch atualiza o `05_aprendizados_obtidos.md`, o `06_detalhes_implementacao.md` (no formato demanda / opções / escolha / motivo) e o `02_diario.md` com o que aplicou ou descobriu. **Cada integrante registra o próprio trabalho no diário, com o nome na entrada** (ex.: "2026-10-09 — Herik: …"). Os números medidos aqui valem mais que os da demo.
 - **Documento de texto final**: escrito por **Adriano e Herik**; o **Heitor** revisa e dá suporte (figuras, parte de front-end e design). A fundamentação teórica pode ser escrita em paralelo, à medida que cada marco vai sendo validado (aproveitando o que já está registrado em `01_brainstorming.md` e nos Tópicos do curso).
@@ -262,8 +320,8 @@ Prazo interno: código congelado em **14/11**; apresentação em **25/11**.
 
 | Período | Atividades |
 |---|---|
-| 09–16/10 | PR do plano (`docs-plano-importacao`); `marco2-adaline` (Herik) e `marco4-mlp` (Adriano) começam; Heitor começa `fase2-base` |
-| 16–23/10 | `marco2-adaline` pronto, `marco3-xor-falha` começa; `marco4-mlp` em andamento; `fase2-base` mesclada |
+| 09–16/10 | PR do plano (`docs-plano-importacao`); Marco 2 concluído (Adriano, `ab5ed35`); `marco3-xor-falha` (Herik) e `marco4-mlp` (Adriano) começam; Heitor começa `fase2-base` |
+| 16–23/10 | `marco3-xor-falha` pronto; `marco4-mlp` em andamento; `fase2-base` mesclada |
 | 23–30/10 | Marcos 3 e 4 prontos (**Fase 1 validada**); `fase2-logica` (Herik), começando por Perceptron e Adaline; `fase2-laboratorio` (Heitor) começa |
 | 30/10–06/11 | `fase2-laboratorio` e `fase2-rede-mlp` (os três atos, com as perguntas); integração; conferência JS contra Python |
 | 06–14/11 | `fase2-laboratorio-livre` (bônus obrigatório), `fase2-estetica` e `fase2-acabamento`; testes no celular; primeiro deploy oficial no Vercel; **congelamento do código em 14/11** |
@@ -275,20 +333,20 @@ Pontos de controle: **30/10** (Fase 1 validada) e **06/11** (três atos funciona
 
 ```
 docs-plano-importacao
-   ├─ marco2-adaline ── marco3-xor-falha ─┐
-   ├─ marco4-mlp ─────────────────────────┴─ fase2-logica ─┐
-   └─ fase2-base ─┬────────────────────────────────────────┴─ fase2-laboratorio ─ fase2-rede-mlp ─ fase2-laboratorio-livre
+   ├─ marco2 [concluído] ─ marco3-xor-falha ┐
+   ├─ marco4-mlp ───────────────────────────┴─ fase2-logica ─┐
+   └─ fase2-base ─┬──────────────────────────────────────────┴─ fase2-laboratorio ─ fase2-rede-mlp ─ fase2-laboratorio-livre
                   ├─ fase2-estetica                              └─ fase2-acabamento
 ```
 
-- `marco3-xor-falha` depende de `marco2-adaline`; `fase2-logica` depende dos três marcos; `fase2-base` e `fase2-estetica` não dependem dos marcos e andam em paralelo; o **deploy** depende de resolver o Vercel.
+- `marco3-xor-falha` depende do Marco 2 (já na `main`); `fase2-logica` depende dos três marcos; `fase2-base` e `fase2-estetica` não dependem dos marcos e andam em paralelo; o **deploy** depende de resolver o Vercel.
 - **Se uma branch descobrir algo que contradiz a demo** (um número que não bate, um comportamento diferente): (1) não ajustar o código até "bater com a demo" — primeiro descobrir **qual dos dois está certo**, como foi feito no Aprendizado 4 com a conta à mão; (2) registrar a divergência no `05_aprendizados_obtidos.md`, dizendo o que a demo tinha e o que foi medido aqui; (3) se afetar um gabarito usado por branches seguintes (por exemplo as épocas 7, 40 e 1357), atualizar este documento no mesmo PR.
 - **Riscos gerais**: virar cópia (o PR traz arquivos inteiros da demo sem que o autor saiba explicar cada parte — quem revisa, ou o próprio autor ao se autorrevisar, pergunta o porquê de trechos não óbvios); estourar o prazo (a demo levou três dias de uma pessoa, mas boa parte foi estética e acabamento; os pontos de controle servem para isso); números de referência que dependem de semente, gerador aleatório, ordem das operações e velocidade da animação (se qualquer um mudar, os gabaritos de época mudam — não é defeito, mas tem que ser explicado).
 
 ## Sequência de marcos (visão geral)
 
 1. Marco 1 — Perceptron clássico (5 portas) — *concluído*
-2. Marco 2 — Adaline (5 portas, comparação)
+2. Marco 2 — Adaline (5 portas, comparação) — *concluído*
 3. Marco 3 — Falha do XOR/XNOR com 1 neurônio
 4. Marco 4 — MLP + backprop resolvendo XOR/XNOR
 5. Fase 2 — Website (D3 + KaTeX + layout final), em 7 branches: três atos (Q2, Q4, Q5) e laboratório livre

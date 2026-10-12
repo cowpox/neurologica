@@ -57,15 +57,33 @@ def degrau(z, tolerancia=TOLERANCIA_ZERO):
     return 1 if z >= 0 else 0
 
 
+def contar_erros(X, y, pesos, bias):
+    """Conta quantos pontos ficam mal classificados (ŷ = degrau(z) != y) com os
+    `pesos` e o `bias` dados — o veredito da reta COMO ELA ESTÁ agora.
+
+    É a medida de erro por época comum a todos os treinos de neurônio único (Marcos
+    1 a 3): cada treino a calcula no fim da época, com os pesos finais dela, e a
+    entrega em `erros_na_epoca`. Assim a contagem do Perceptron e a do Adaline
+    significam a mesma coisa e podem ser postas lado a lado. (Não confundir com as
+    correções feitas DURANTE a época, que o Perceptron guarda à parte em
+    `correcoes_na_epoca`.)
+    """
+    return int(sum(degrau(np.dot(pesos, xk) + bias) != yk for xk, yk in zip(X, y)))
+
+
 def treinar_perceptron(
     X, y, taxa_aprendizado=0.1, max_epocas=20, semente=42, verbose=True,
     pesos_iniciais=None, bias_inicial=0.0,
 ):
     """Gera o estado do treino a cada exemplo processado (regra clássica do perceptron).
 
-    Cada item gerado é um dicionário com: epoca, indice, x, y_real, y_previsto,
-    pesos (cópia), bias, houve_atualizacao e erros_na_epoca (acumulado até aqui).
-    Para de gerar assim que uma época inteira passar sem nenhum erro (convergência).
+    Cada item gerado é um dicionário com: epoca, indice, x, y_real, y_previsto, z,
+    pesos (cópia), bias, houve_atualizacao e correcoes_na_epoca (quantas correções já
+    foram feitas nesta época, até aqui). No ÚLTIMO exemplo de cada época vem também
+    erros_na_epoca: quantos pontos ficam mal classificados com os pesos FINAIS da
+    época (`contar_erros`), igual ao que o Adaline entrega.
+    Para de gerar assim que uma época inteira passar sem nenhuma correção
+    (convergência): sem correção os pesos não mudam, então a reta já acerta tudo.
 
     Se `pesos_iniciais` for None (padrão), os pesos começam aleatórios (controlados
     por `semente`); se for uma lista/array com um valor por entrada, os pesos
@@ -107,7 +125,7 @@ def treinar_perceptron(
         print("=" * 72)
 
     for epoca in range(1, max_epocas + 1):
-        erros_na_epoca = 0
+        correcoes_na_epoca = 0
         if verbose:
             print(f"\n--- Época {epoca} ---")
         for i in range(len(X)):
@@ -131,7 +149,7 @@ def treinar_perceptron(
                 bias_antigo = bias
                 pesos = pesos + taxa_aprendizado * erro * x
                 bias = bias + taxa_aprendizado * erro
-                erros_na_epoca += 1
+                correcoes_na_epoca += 1
                 if verbose:
                     for j, (w_antigo, w_novo, xj) in enumerate(zip(pesos_antigos, pesos, x), start=1):
                         print(
@@ -143,7 +161,7 @@ def treinar_perceptron(
             elif verbose:
                 print("      -> classificação correta, sem atualização")
 
-            yield {
+            passo = {
                 "epoca": epoca,
                 "indice": i,
                 "x": x,
@@ -153,13 +171,22 @@ def treinar_perceptron(
                 "pesos": pesos.copy(),
                 "bias": bias,
                 "houve_atualizacao": houve_atualizacao,
-                "erros_na_epoca": erros_na_epoca,
+                "correcoes_na_epoca": correcoes_na_epoca,
             }
+            if i == len(X) - 1:
+                # a época acabou: os pesos de agora são os pesos finais dela
+                erros_na_epoca = contar_erros(X, y, pesos, bias)
+                passo["erros_na_epoca"] = erros_na_epoca
+
+            yield passo
 
         if verbose:
-            print(f"  >> Fim da época {epoca}: {erros_na_epoca} ponto(s) mal classificado(s).")
+            print(
+                f"  >> Fim da época {epoca}: {correcoes_na_epoca} correção(ões) durante a época; "
+                f"{erros_na_epoca} ponto(s) mal classificado(s) com os pesos finais."
+            )
 
-        if erros_na_epoca == 0:
+        if correcoes_na_epoca == 0:
             if verbose:
                 print(f"\n*** CONVERGIU na época {epoca}: nenhum ponto mal classificado. ***")
                 print(f"Pesos finais: {np.round(pesos, 4)}  |  bias final: {bias:.4f}")
@@ -197,7 +224,7 @@ def animar_2d(nome_porta, X, y, passos, intervalo):
     )
 
     ax_erro.set_xlabel("Época")
-    ax_erro.set_ylabel("Pontos mal classificados")
+    ax_erro.set_ylabel("Mal classificados (pesos finais da época)")
     ax_erro.set_title("Erro por época")
     max_epocas_estimado = passos[-1]["epoca"] + 1
     ax_erro.set_xlim(0, max_epocas_estimado)
@@ -332,7 +359,7 @@ def main():
 
     if args.quiet:
         print(f"Porta {args.porta}: {len(passos)} passos gerados ao longo de {passos[-1]['epoca']} época(s).")
-        if passos[-1]["erros_na_epoca"] == 0 and passos[-1]["indice"] == len(X) - 1:
+        if passos[-1]["correcoes_na_epoca"] == 0 and passos[-1]["indice"] == len(X) - 1:
             print("Convergiu (última época sem nenhum erro).")
         else:
             print(f"Não convergiu em {args.epocas} épocas — aumente --epocas ou ajuste --taxa.")

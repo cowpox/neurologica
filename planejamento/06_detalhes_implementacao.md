@@ -33,4 +33,67 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 
 **Escolha**: Opção B.
 
-**Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), força uma revisão antes de qualquer coisa entrar na `main` (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".
+**Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), incentiva uma revisão antes de qualquer coisa entrar na `main` (recomendada, não obrigatória: se ninguém puder revisar a tempo, o autor pode mesclar o próprio PR depois de conferir o que mudou e avisar o grupo) (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".
+
+---
+
+## Decisão 3 — Alvos bipolares (−1/+1) no treino do Adaline (Marco 2)
+
+**Demanda**: o Marco 1 treina com as classes da porta em 0/1 e classifica com `degrau(z) = 1 se z ≥ 0`. Ao portar para o Adaline, que treina com o erro **contínuo** `alvo − z`, era preciso decidir com que valores de alvo treinar.
+
+**Opções consideradas**:
+
+- **A. Alvos 0/1 e degrau em z ≥ 0 (igual ao Marco 1).** Não funciona: o Adaline converge para o mínimo do erro quadrático, e com alvos 0/1 esse mínimo fica com a fronteira no lugar errado. Conferido por mínimos quadrados: AND fica com só 2 de 4 acertos (`w=(0,5; 0,5)`, `b=−0,25`, os pontos (0,1) e (1,0) dão `z=+0,25`), NOR também com 2, OR e NAND com 3.
+- **B. Alvos 0/1 e degrau em z ≥ 0,5.** Funciona, mas cria um limiar diferente do Marco 1 e do Tópico 14, o que complica comparar os dois lado a lado.
+- **C. Alvos bipolares (classe 0 → −1, classe 1 → +1) e o mesmo degrau em z ≥ 0.** É a convenção do Tópico 15 (o exemplo do AND usa alvo bipolar, mínimo em `w=(1,1)`, `b=−1,5`). As 5 portas ficam 100% corretas no mínimo.
+
+**Escolha**: Opção C. Os gráficos continuam mostrando as classes como 0/1 (a tabela-verdade da porta não muda), só o alvo usado no cálculo do erro é bipolar.
+
+**Motivo**: mantém o mesmo degrau e a mesma fronteira `z = 0` do Marco 1 (comparação justa), segue a notação do material do curso e é a única das três em que "minimizar o erro quadrático" e "classificar certo" apontam para o mesmo lugar nas 5 portas sem ajuste extra. Fica registrado como um ponto a mencionar na Fase 2: no site, mostrar o alvo bipolar explicitamente na coluna do algoritmo.
+
+---
+
+## Decisão 4 — Versão online e critério de parada do Adaline (Marco 2)
+
+**Demanda**: o Tópico 15 apresenta duas versões da regra delta (online, um ajuste por exemplo; em lote, um ajuste por época) e o Adaline nunca chega a "zero erro", então o critério de parada do Marco 1 (época sem nenhum erro) não serve.
+
+**Opções consideradas**:
+
+- **Versão**: (A) online, (B) em lote, (C) as duas com uma flag.
+- **Parada**: (1) número fixo de épocas; (2) parar quando todos os pontos forem classificados certo; (3) parar quando o SSE parar de mudar (`|ΔSSE| < tolerância` entre épocas seguidas).
+
+**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas. O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
+
+**Motivo**: a versão online é o pseudocódigo principal do Tópico 15 e tem a mesma granularidade do Marco 1 (um frame por exemplo), o que permite rodar os dois sincronizados no modo `--comparar`. Parar ao classificar tudo certo (2) esconderia justamente o que diferencia o Adaline: ele continua ajustando depois de acertar, levando a reta para o meio entre as classes. O lote fica como extensão possível (é o que converge para o mínimo exato em vez de rondá-lo).
+
+---
+
+## Decisão 5 — Contagem de erros por época homogênea entre os treinos de neurônio único (Marcos 1 a 3)
+
+**Demanda**: o Perceptron (Marco 1) acumulava `erros_na_epoca` **durante** a época (decisões tomadas com os pesos ainda mudando), enquanto o Adaline (Marco 2) calcula no **fim** da época, com os pesos finais. Ao pôr os dois lado a lado (`--comparar` e o Marco 3), os dois gráficos de "pontos mal classificados" mediam coisas diferentes.
+
+**Opções consideradas**:
+
+- **A. Manter como está e só rotular os gráficos.** Não corrige a comparação, só a explica.
+- **B. Passar o Adaline a acumular durante a época**, como o Perceptron. Faria o Adaline perder o veredito da reta como ela ficou, que é o que importa.
+- **C. Passar o Perceptron a entregar o veredito com os pesos finais**, com uma função única `contar_erros(X, y, pesos, bias)` usada pelos dois treinos, e guardar as correções feitas durante a época à parte (`correcoes_na_epoca`).
+
+**Escolha**: C. `contar_erros` fica em `01_perceptron_gates.py` (o `02` a reaproveita por `importlib`, como já faz com o `degrau`); `erros_na_epoca` só existe no último exemplo de cada época; o critério de parada do Perceptron continua sendo "época sem nenhuma correção", agora lido de `correcoes_na_epoca`.
+
+**Motivo**: dá uma medida justa e idêntica nos dois, com uma única implementação, e não muda o Perceptron (conferido: pesos, bias e épocas iguais aos de antes em 5 portas × 3 taxas × 2 inicializações). Efeito visível, e honesto: em 5 de 28 fins de época medidos (η = 0,1, semente 42) o Perceptron já acertava tudo antes da época sem correções que confirma a convergência; agora o gráfico mostra isso, em vez de esconder. Os Marcos 3 e 4 entregam `erros_na_epoca` com o mesmo significado.
+
+---
+
+## Decisão 6 — Alvo e limiar da MLP (Marco 4): sigmoide, alvos 0/1 e classe por `degrau(z_saída)`
+
+**Demanda**: o Adaline (Marco 2) treina com alvos bipolares −1/+1 (Decisão 3). A MLP do plano tem saída sigmoide, que vive em $(0, 1)$. Era preciso decidir a representação do alvo e do limiar no Marco 4 sem quebrar a padronização com os Marcos 1 e 2.
+
+**Opções consideradas**:
+
+- **A. Alvos −1/+1 com saída tanh**, classe por `degrau`. Coerente com o Adaline, mas muda a saída do plano e descarta o que a demo validou (sigmoide, 40/40 sementes).
+- **B. Alvos 0/1 com saída sigmoide e limiar 0,5** aplicado à saída $a$.
+- **C. Alvos 0/1 com saída sigmoide e classe por `degrau(z_saída)`**, com `z_saída` a soma ponderada antes da sigmoide.
+
+**Escolha**: C. B e C dão a mesma classe ($\sigma(z) \ge 0{,}5 \iff z \ge 0$); C reaproveita o `degrau` e a `TOLERANCIA_ZERO` dos Marcos 1 e 2 em vez de criar um limiar novo.
+
+**Motivo**: a padronização se mantém (a classe é decidida pela mesma função e pela mesma tolerância, `y` continua 0/1 em tudo e os alvos 0/1 só entram no erro e no gradiente). O −1/+1 fica restrito aos alvos do Adaline. Uma diferença consciente: o erro da MLP é medido **depois** da ativação da saída (como no Perceptron), porque o backpropagation precisa da derivada da sigmoide; o do Adaline é medido antes (saída linear). Seguem abertas e serão registradas quando o Marco 4 for implementado: a definição do custo (`sse` com $\tfrac12$ ou `mse`, e a conversão dos limiares da demo) e a amplitude da inicialização.

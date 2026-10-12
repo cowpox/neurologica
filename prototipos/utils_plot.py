@@ -183,7 +183,10 @@ def formatar_linhas_log(passo, n_exemplos):
     )
 
     if passo["indice"] == n_exemplos - 1:
-        linhas.append(f">> fim da época {passo['epoca']}: {passo['erros_na_epoca']} erro(s)")
+        linhas.append(
+            f">> fim da época {passo['epoca']}: {passo['correcoes_na_epoca']} correção(ões), "
+            f"{passo['erros_na_epoca']} mal classificado(s)"
+        )
 
     return linhas
 
