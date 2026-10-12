@@ -10,6 +10,7 @@ Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo 
 
 - Adriano Lúcio Uchôa Brandão
 - Herik Daurízio Ricardo
+- Heitor Oliveira Nunes
 
 ## Estrutura do repositório
 
@@ -43,7 +44,7 @@ Depois de terminar, subir a branch e abrir um **Pull Request** no GitHub para re
 git push -u origin nome-da-branch
 ```
 
-Mesclar (merge) só depois de revisar o PR — mesmo sendo só nós dois, ajuda a pegar erros e manter um histórico organizado. Apagar a branch depois de mesclada (o próprio GitHub oferece isso na tela do PR).
+Mesclar (merge) só depois de revisar o PR — mesmo sendo só nós três, ajuda a pegar erros e manter um histórico organizado. Apagar a branch depois de mesclada (o próprio GitHub oferece isso na tela do PR).
 
 ## Trabalhos relacionados
 

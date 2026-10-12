@@ -56,3 +56,8 @@ Registro cronológico do desenvolvimento do projeto, para alimentar a seção de
 - Novo modo `--comparar`: Perceptron e Adaline lado a lado, mesma porta, mesmos pesos iniciais e η, avançando um exemplo por frame. É o critério de pronto do Marco 2 em `04_planejamento.md`.
 - Achado ao implementar: com alvos 0/1 o mínimo do erro quadrático classifica errado (AND com só 2 de 4 acertos). Adotados alvos bipolares (Decisão 3 em `06_detalhes_implementacao.md`, Aprendizado 6 em `05_aprendizados_obtidos.md`). Versão online + parada por estabilização do SSE registradas como Decisão 4.
 - Validado sem janela (backend Agg) nas 5 portas, com η = 0,1: todas classificam 100% certo (AND na época 3, NAND 4, NOT 7, OR 9, NOR 12) e o SSE estabiliza perto do mínimo teórico (~0,51 contra 0,5 nas portas de 2 entradas). Frames renderizados conferidos (AND, NOT e `--comparar`). Também testado η = 0,01 (lento, 78 épocas só para acertar o AND), 0,3 e 0,7 (acima do limite online 2/3: cai num ciclo, Aprendizado 8). Pesos finais do AND, `w≈(1,06; 1,00)`, `b≈−1,48`, batem com o mínimo do Tópico 15 (`w=(1,1)`, `b=−1,5`), com o desvio esperado da versão online (Aprendizado 7).
+
+## 2026-10-12
+
+- Registrada a entrada de **Heitor Oliveira Nunes** no grupo, que agora tem 3 integrantes. Ele entrou por volta de 2026-09-28, mas isso só foi anotado hoje. O README foi atualizado com o nome dele. A proposta de divisão de tarefas em `04_planejamento.md` ainda é a original, pensada para duas pessoas.
+- O Marco 2 foi commitado (`ab5ed35`) e enviado direto para a `main`, sem PR, a pedido do usuário, para o Herik testar.
