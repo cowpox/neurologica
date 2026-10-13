@@ -48,12 +48,19 @@ degrau = perceptron.degrau
 
 PORTAS_VALIDAS = ["AND", "OR", "NOT", "NOR", "NAND"]
 
-TOLERANCIA_SSE = 1e-4
+# Critério de parada: o Adaline para quando o custo praticamente deixa de mudar entre duas
+# épocas, |ΔSSE| < tolerância. A tolerância NÃO é um número fixo: a queda do custo por
+# época é proporcional a η (passo pequeno = descida lenta), então um limite absoluto
+# confunde "descendo devagar" com "chegou" e para antes da hora com η pequeno (com 1e-4
+# fixo, η = 0,0005 para no SSE 0,658 sendo o mínimo 0,506). Por isso a tolerância é
+# proporcional a η: TOLERANCIA_SSE_POR_TAXA * taxa_aprendizado. O valor 1e-3 equivale a
+# 1e-4 com η = 0,1 (o padrão), então os resultados com η = 0,1 não mudam.
+TOLERANCIA_SSE_POR_TAXA = 1e-3
 
 
 def treinar_adaline(
     X, y, taxa_aprendizado=0.1, max_epocas=100, semente=42, verbose=True,
-    pesos_iniciais=None, bias_inicial=0.0, tolerancia_sse=TOLERANCIA_SSE,
+    pesos_iniciais=None, bias_inicial=0.0, tolerancia_sse=None,
 ):
     """Gera o estado do treino a cada exemplo processado (Regra Delta, versão online).
 
@@ -67,12 +74,15 @@ def treinar_adaline(
     Critério de parada: o Adaline nunca chega a erro zero (z contínuo raramente é
     exatamente ±1), então para quando o SSE muda menos que `tolerancia_sse` entre
     duas épocas seguidas (estabilizou), ou quando atinge `max_epocas`, ou se
-    divergir (taxa grande demais).
+    divergir (taxa grande demais). Se `tolerancia_sse` for None (padrão), a tolerância é
+    TOLERANCIA_SSE_POR_TAXA * taxa_aprendizado (proporcional ao η; ver a constante).
 
     `pesos_iniciais`/`bias_inicial`/`semente` funcionam igual ao Marco 1, então a
     mesma semente gera exatamente os mesmos pesos iniciais do Perceptron.
     """
     n_entradas = X.shape[1]
+    if tolerancia_sse is None:
+        tolerancia_sse = TOLERANCIA_SSE_POR_TAXA * taxa_aprendizado
 
     if pesos_iniciais is not None:
         pesos = np.array(pesos_iniciais, dtype=float)
@@ -95,7 +105,7 @@ def treinar_adaline(
         print("MARCO 2 — ADALINE (REGRA DELTA, VERSÃO ONLINE)")
         print("=" * 72)
         print(f"Hiperparâmetro escolhido: taxa de aprendizado (η) = {taxa_aprendizado}")
-        print(f"Máximo de épocas: {max_epocas}  |  para quando |ΔSSE| < {tolerancia_sse}")
+        print(f"Máximo de épocas: {max_epocas}  |  para quando |ΔSSE| < {tolerancia_sse:.1e} ({TOLERANCIA_SSE_POR_TAXA:g} × η)")
         print(f"Pesos iniciais {origem_pesos}: {np.round(pesos, 4)}  |  bias inicial: {bias:.4f}")
         print(f"Alvos bipolares (classe 0 -> -1, classe 1 -> +1): {alvos}")
         print("Regra delta (aplicada em TODA iteração, com o erro ANTES da ativação):")
@@ -151,7 +161,7 @@ def treinar_adaline(
             if i == len(X) - 1:
                 z_todos = X @ pesos + bias
                 sse = 0.5 * np.sum((alvos - z_todos) ** 2)
-                erros_na_epoca = int(sum(degrau(zk) != yk for zk, yk in zip(z_todos, y)))
+                erros_na_epoca = perceptron.contar_erros(X, y, pesos, bias)  # mesma contagem do Perceptron
                 passo["sse"] = sse
                 passo["erros_na_epoca"] = erros_na_epoca
 
@@ -172,14 +182,14 @@ def treinar_adaline(
             if verbose:
                 print(
                     f"\n*** ESTABILIZOU na época {epoca}: |ΔSSE| = {abs(sse_anterior - sse):.2e} "
-                    f"< {tolerancia_sse}. ***"
+                    f"< {tolerancia_sse:.1e}. ***"
                 )
                 print(f"Pesos finais: {np.round(pesos, 4)}  |  bias final: {bias:.4f}  |  SSE final: {sse:.4f}")
                 if erros_na_epoca > 0:
                     print(
-                        "ATENÇÃO: estabilizou num CICLO (os pesos voltam ao mesmo lugar a cada época), não no "
-                        "mínimo do custo — sinal de η grande demais para a versão online (Tópico 15, seção 6: "
-                        "o limite por exemplo é 2/||x̃||², que nas portas de 2 entradas dá 2/3)."
+                        "ATENÇÃO: o custo estabilizou com pontos ainda mal classificados — η grande demais: "
+                        "a versão online, com a ordem fixa dos exemplos, converge a um ponto que se afasta do "
+                        "mínimo conforme η cresce (Aprendizado 8). Diminua --taxa."
                     )
             return
         sse_anterior = sse
@@ -408,7 +418,7 @@ def animar_comparacao(nome_porta, X, y, passos_p, passos_a, intervalo):
 
     max_epocas = max(passos_p[-1]["epoca"], passos_a[-1]["epoca"])
     ax_erro_p.set_xlabel("Época")
-    ax_erro_p.set_ylabel("Mal classificados\n(durante a época)")
+    ax_erro_p.set_ylabel("Mal classificados\n(pesos finais da época)")
     ax_erro_p.set_title("Perceptron: erro em degraus", fontsize=10)
     ax_erro_p.set_xlim(0, max_epocas + 1)
     ax_erro_p.set_ylim(-0.2, len(X) + 0.5)
@@ -486,7 +496,10 @@ def resumo_adaline(nome_porta, passos, n_exemplos, max_epocas):
     elif ultimo["epoca"] == max_epocas:
         print(f"  SSE ainda não estabilizou em {max_epocas} épocas — aumente --epocas ou ajuste --taxa.")
     elif ultimo["erros_na_epoca"] > 0:
-        print("  SSE estabilizou num CICLO, não no mínimo — η grande demais para a versão online; diminua --taxa.")
+        print(
+            "  SSE estabilizou com pontos ainda mal classificados — η grande demais (ponto fixo da versão "
+            "online afastado do mínimo, Aprendizado 8); diminua --taxa."
+        )
     else:
         print("  SSE estabilizou (|ΔSSE| abaixo da tolerância).")
 
@@ -543,7 +556,7 @@ def main():
 
     if args.comparar:
         ultimo_p = passos_p[-1]
-        convergiu = ultimo_p["erros_na_epoca"] == 0 and ultimo_p["indice"] == len(X) - 1
+        convergiu = ultimo_p["correcoes_na_epoca"] == 0 and ultimo_p["indice"] == len(X) - 1
         print(
             f"Porta {args.porta} (Perceptron): {len(passos_p)} passos ao longo de {ultimo_p['epoca']} época(s) — "
             f"{'convergiu (zero erros)' if convergiu else 'não convergiu'}."

@@ -33,7 +33,7 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 
 **Escolha**: Opção B.
 
-**Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), força uma revisão antes de qualquer coisa entrar na `main` (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".
+**Motivo**: é o padrão mais usado em projetos colaborativos reais por um bom motivo — isola cada mudança (facilita revisar e reverter se algo quebrar), incentiva uma revisão antes de qualquer coisa entrar na `main` (recomendada, não obrigatória: se ninguém puder revisar a tempo, o autor pode mesclar o próprio PR depois de conferir o que mudou e avisar o grupo) (mesmo sendo só dois, ajuda a pegar erros como os de ponto flutuante que já encontramos), e documenta naturalmente o histórico de decisões pelos próprios PRs — reforçando a mesma prática de transparência de processo que já adotamos nos documentos de `planejamento/`. Registrado também em `README.md`, seção "Fluxo de trabalho em equipe".
 
 ---
 
@@ -62,6 +62,54 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 - **Versão**: (A) online, (B) em lote, (C) as duas com uma flag.
 - **Parada**: (1) número fixo de épocas; (2) parar quando todos os pontos forem classificados certo; (3) parar quando o SSE parar de mudar (`|ΔSSE| < tolerância` entre épocas seguidas).
 
-**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas. O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
+**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas (**revisto em 2026-10-12:** a tolerância passou a ser proporcional ao η, `1e-3 * η`, que vale `1e-4` com η = 0,1. A queda do custo por época é proporcional ao η, e um valor fixo confundia "descendo devagar" com "convergiu" e parava antes da hora com η pequeno. Com η = 0,1 nada mudou). O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
 
 **Motivo**: a versão online é o pseudocódigo principal do Tópico 15 e tem a mesma granularidade do Marco 1 (um frame por exemplo), o que permite rodar os dois sincronizados no modo `--comparar`. Parar ao classificar tudo certo (2) esconderia justamente o que diferencia o Adaline: ele continua ajustando depois de acertar, levando a reta para o meio entre as classes. O lote fica como extensão possível (é o que converge para o mínimo exato em vez de rondá-lo).
+
+---
+
+## Decisão 5 — Contagem de erros por época homogênea entre os treinos de neurônio único (Marcos 1 a 3)
+
+**Demanda**: o Perceptron (Marco 1) acumulava `erros_na_epoca` **durante** a época (decisões tomadas com os pesos ainda mudando), enquanto o Adaline (Marco 2) calcula no **fim** da época, com os pesos finais. Ao pôr os dois lado a lado (`--comparar` e o Marco 3), os dois gráficos de "pontos mal classificados" mediam coisas diferentes.
+
+**Opções consideradas**:
+
+- **A. Manter como está e só rotular os gráficos.** Não corrige a comparação, só a explica.
+- **B. Passar o Adaline a acumular durante a época**, como o Perceptron. Faria o Adaline perder o veredito da reta como ela ficou, que é o que importa.
+- **C. Passar o Perceptron a entregar o veredito com os pesos finais**, com uma função única `contar_erros(X, y, pesos, bias)` usada pelos dois treinos, e guardar as correções feitas durante a época à parte (`correcoes_na_epoca`).
+
+**Escolha**: C. `contar_erros` fica em `01_perceptron_gates.py` (o `02` a reaproveita por `importlib`, como já faz com o `degrau`); `erros_na_epoca` só existe no último exemplo de cada época; o critério de parada do Perceptron continua sendo "época sem nenhuma correção", agora lido de `correcoes_na_epoca`.
+
+**Motivo**: dá uma medida justa e idêntica nos dois, com uma única implementação, e não muda o Perceptron (conferido: pesos, bias e épocas iguais aos de antes em 5 portas × 3 taxas × 2 inicializações). Efeito visível, e honesto: em 5 de 28 fins de época medidos (η = 0,1, semente 42) o Perceptron já acertava tudo antes da época sem correções que confirma a convergência; agora o gráfico mostra isso, em vez de esconder. Os Marcos 3 e 4 entregam `erros_na_epoca` com o mesmo significado.
+
+---
+
+## Decisão 6 — Alvo e limiar da MLP (Marco 4): sigmoide, alvos 0/1 e classe por `degrau(z_saída)`
+
+**Demanda**: o Adaline (Marco 2) treina com alvos bipolares −1/+1 (Decisão 3). A MLP do plano tem saída sigmoide, que vive em $(0, 1)$. Era preciso decidir a representação do alvo e do limiar no Marco 4 sem quebrar a padronização com os Marcos 1 e 2.
+
+**Opções consideradas**:
+
+- **A. Alvos −1/+1 com saída tanh**, classe por `degrau`. Coerente com o Adaline, mas muda a saída do plano e descarta o que a demo validou (sigmoide, 40/40 sementes).
+- **B. Alvos 0/1 com saída sigmoide e limiar 0,5** aplicado à saída $a$.
+- **C. Alvos 0/1 com saída sigmoide e classe por `degrau(z_saída)`**, com `z_saída` a soma ponderada antes da sigmoide.
+
+**Escolha**: C. B e C dão a mesma classe ($\sigma(z) \ge 0{,}5 \iff z \ge 0$); C reaproveita o `degrau` e a `TOLERANCIA_ZERO` dos Marcos 1 e 2 em vez de criar um limiar novo.
+
+**Motivo**: a padronização se mantém (a classe é decidida pela mesma função e pela mesma tolerância, `y` continua 0/1 em tudo e os alvos 0/1 só entram no erro e no gradiente). O −1/+1 fica restrito aos alvos do Adaline. Uma diferença consciente: o erro da MLP é medido **depois** da ativação da saída (como no Perceptron), porque o backpropagation precisa da derivada da sigmoide; o do Adaline é medido antes (saída linear). Seguem abertas e serão registradas quando o Marco 4 for implementado: a definição do custo (`sse` com $\tfrac12$ ou `mse`, e a conversão dos limiares da demo) e a amplitude da inicialização.
+
+---
+
+## Decisão 7 — Ordem das perguntas orientadoras no site (Q2 → Q5 → Q4) e seletor "1 neurônio × rede" no Ato 3
+
+**Demanda**: o site passa a ter um ato por pergunta orientadora (Q2, Q4, Q5), da mais elementar à mais complexa e em ordem histórica. Era preciso fixar a ordem dos atos e onde mostrar "uma reta contra duas retas" (um neurônio contra uma camada extra).
+
+**Opções consideradas**:
+
+- **A. Q2 → Q5 → Q4.** O argumento da Q4 (a ativação precisa de derivada) pressupõe a ideia de gradiente, que a Q5 introduz com o Adaline; segue também a ordem histórica (Perceptron, Adaline, backpropagation). Problema apontado pelo grupo: o Adaline já usa, no Ato 2, uma função diferente da do Perceptron (saída linear no lugar do degrau), e essa troca ficaria sem explicação até o Ato 3.
+- **B. Q2 → Q4 → Q5.** A pergunta sobre as ativações vem junto com a primeira troca de função (degrau × linear); o gradiente atravessando camadas e o mínimo local ficam para o fim. Chegou a ser adotada por engano em 2026-10-12 (uma resposta foi lida assim) e revertida no mesmo dia.
+- **Seletor "1 neurônio × rede 2-2-1": no Ato 2 ou no Ato 3.** No Ato 2, a rede e o backpropagation entrariam antes de a ativação ser explicada e o XOR resolvido perderia o lugar de clímax. No Ato 3, o mesmo laboratório alterna "1 neurônio" (que falha no XOR) e "rede 2-2-1" (que resolve).
+
+**Escolha**: A (Q2 → Q5 → Q4), com o seletor no Ato 3 e uma **ressalva**: o texto do Ato 2 nomeia a saída linear do Adaline, explica que ela é o que diz ao neurônio o quanto errou e anuncia que o porquê da escolha (e por que a linear sozinha não basta) é a pergunta do Ato 3, sem usar derivadas nem a regra da cadeia. Modos configurados no componente `Laboratorio`, como o Ato 1 da demo já fazia com Perceptron e Adaline.
+
+**Motivo**: a dependência lógica (gradiente antes de derivada da ativação) e a ordem histórica; o aluno chega ao Ato 3 já sabendo o que é o gradiente, e a pergunta das ativações surge ao tentar ensinar uma rede de duas camadas. O Ato 3 junta a Q4 à rede e ao XOR resolvido, que é o clímax, e termina no laboratório livre. **Riscos aceitos:** a Q5 só se completa no Ato 3 (o texto dele deve retomá-la), e a troca de função no Ato 2 fica sem explicação completa até lá, o que a ressalva trata. A ordem de apresentação (Q2, Q5, Q4) difere da numeração do curso, e o mapa das perguntas deve avisar. Mudar a ordem de novo é decisão do grupo. Plano e roteiro oral em `04_planejamento.md`, seção "Narrativa: cada ato responde uma pergunta".

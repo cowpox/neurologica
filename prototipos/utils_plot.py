@@ -183,17 +183,27 @@ def formatar_linhas_log(passo, n_exemplos):
     )
 
     if passo["indice"] == n_exemplos - 1:
-        linhas.append(f">> fim da época {passo['epoca']}: {passo['erros_na_epoca']} erro(s)")
+        linhas.append(
+            f">> fim da época {passo['epoca']}: {passo['correcoes_na_epoca']} correção(ões), "
+            f"{passo['erros_na_epoca']} mal classificado(s)"
+        )
 
     return linhas
 
 
 def decision_line_points(pesos, bias, faixa_x=(-0.5, 1.5)):
-    """Calcula os pontos da reta w1*x1 + w2*x2 + b = 0, prontos para ax.plot()."""
+    """Calcula os pontos da reta w1*x1 + w2*x2 + b = 0, prontos para ax.plot().
+
+    Com w = (0, 0) a reta não existe e devolve listas vazias (nada é desenhado).
+    """
     w1, w2 = pesos
+    if abs(w1) < 1e-9 and abs(w2) < 1e-9:
+        # w = 0: a equação 0*x1 + 0*x2 + b = 0 não define reta (vale no plano inteiro se
+        # b = 0 e em nenhum ponto se b != 0). Não desenha nada, em vez de uma reta falsa.
+        return [], []
     if abs(w2) < 1e-9:
         # reta vertical: w1*x1 + b = 0  =>  x1 = -b/w1
-        x1 = -bias / w1 if abs(w1) > 1e-9 else 0.0
+        x1 = -bias / w1
         return [x1, x1], list(faixa_x)
     x1_vals = np.array(faixa_x)
     x2_vals = -(w1 * x1_vals + bias) / w2

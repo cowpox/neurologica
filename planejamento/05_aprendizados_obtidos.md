@@ -148,7 +148,7 @@ Essa observação também reencaixa perfeitamente com o Aprendizado 4: antes da 
 
 # Aprendizados obtidos — Marco 2 (Adaline)
 
-Parâmetros padrão: alvos bipolares (−1/+1), η = 0,1, pesos iniciais aleatórios (semente 42, mesmos do Marco 1), bias inicial 0, versão online, parada quando `|ΔSSE| < 1e-4`.
+Parâmetros padrão: alvos bipolares (−1/+1), η = 0,1, pesos iniciais aleatórios (semente 42, mesmos do Marco 1), bias inicial 0, versão online, parada quando `|ΔSSE| < 1e-3·η` (`1e-4` com η = 0,1; revisto em 2026-10-12, ver o fim do Aprendizado 8).
 
 ## Aprendizado 6 — com alvos 0/1, "minimizar o erro" e "classificar certo" não são a mesma coisa
 
@@ -158,9 +158,31 @@ O Adaline não procura uma reta que separe as classes: ele procura a reta que de
 
 No AND, o Adaline já classifica os 4 pontos certo no fim da época 3, mas continua treinando até a época 43, porque o erro `alvo − z` ainda não é zero. A reta vai saindo de perto do ponto (1,1) e indo para o meio entre as classes, chegando a `w≈(1,06; 1,00)`, `b≈−1,48`. No mesmo cenário, o Perceptron para na época 3 com a reta quase encostada no (1,1), porque com erro `y − ŷ = 0` ele não tem mais motivo nenhum para se mover (ver Aprendizado 5). O modo `--comparar` mostra isso lado a lado. Os valores finais ficam perto do mínimo exato (`w=(1,1)`, `b=−1,5`), mas não exatamente nele: na versão online, cada exemplo puxa os pesos para um lado e eles ficam rondando o mínimo, como descrito no Tópico 15, seção 5. O SSE final é ~0,506, contra 0,5 do mínimo exato.
 
-## Aprendizado 8 — η grande demais pode prender o treino num ciclo, não só fazê-lo explodir
+## Aprendizado 8 — o Adaline online, com a ordem fixa, não converge ao mínimo: converge a um ponto que se afasta dele quando η cresce
 
-Com η = 0,7 no AND (acima do limite online `2/||x̃||² = 2/3` do Tópico 15, seção 6), o treino não diverge para o infinito: ele cai num ciclo fixo em que cada um dos 4 exemplos erra por exatamente ±1,667 e os pesos voltam ao mesmo valor no fim de cada época. O SSE "estabiliza" em 4,58 (o mínimo é 0,5), com 1 ponto mal classificado. Por isso o script diferencia "estabilizou no mínimo" de "estabilizou num ciclo" quando o treino para com pontos ainda errados.
+*Texto revisto em 2026-10-12 (Herik). A primeira versão atribuía o "ciclo" a ultrapassar o limite $2/\lVert\tilde{x}\rVert^2 = 2/3$ do Tópico 15 (seção 6); a conferência abaixo mostrou que não é isso que governa.*
+
+**O que foi observado** (Marco 2, AND, η = 0,7): o treino não diverge; cada um dos 4 exemplos passa a errar por exatamente ±1,667, os pesos voltam ao mesmo valor no fim de cada época, o SSE "estabiliza" em 4,58 (o mínimo é 0,5) e 1 ponto fica mal classificado. Isso se confirma.
+
+**A causa.** A versão online (um ajuste por exemplo), com os exemplos sempre na mesma ordem, é um mapa afim por época. Os pesos de fim de época convergem a um **ponto fixo que depende de η** e que só coincide com o mínimo (w = (1; 1; −1,5), E = 0,5) quando η → 0. Cálculo exato do ponto fixo no AND:
+
+| η | pesos do ponto fixo (w₁; w₂; b) | E | mal classificados |
+|---|---|---|---|
+| 0,1 | (1,111; 1,056; −1,556) | 0,509 | 0 |
+| 0,3 | (1,429; 1,214; −1,714) | 0,638 | 0 |
+| 0,4 | (1,667; 1,333; −1,833) | 0,833 | 0 |
+| 0,5 | (2,0; 1,5; −2,0) | 1,250 | 1 |
+| 0,7 | (3,333; 2,167; −2,667) | 4,583 | 1 |
+
+- **Estabilidade.** A época converge a esse ponto fixo (raio espectral < 1) até η ≈ 1,0 (0,98 em η = 0,99 e 1,03 em η = 1,01) e **diverge acima de 1,0** (em η = 1, o SSE chega a 2,7·10⁵ em 300 épocas). O valor $2/\lVert\tilde{x}\rVert^2 = 2/3$ é o limite de um passo isolado, não o da época; o limite da versão em lote é $2/\lambda_{max} \approx 0{,}31$.
+- **Classificação.** O ponto fixo passa a classificar errado a partir de η = 0,5, abaixo de 2/3. Não há transição em 2/3: o custo sobe suavemente com η.
+- É o mesmo efeito do "resíduo sobe com η" que a demo registrou no seu Aprendizado 6.
+
+**Consequências.**
+- **O SSE não é monótono.** No AND com η = 0,1 ele passa por 0,5061 (época 43, quando a parada, de $10^{-4}$ com η = 0,1, dispara) e depois sobe devagar até 0,5093 (o ponto fixo, w = (1,111; 1,056; −1,556)). Os "pesos finais ≈ (1,06; 1,00; −1,48)" ficam perto do mínimo do Tópico 15 porque a parada pega o trecho em que o caminho passa perto dele, não porque o limite seja o mínimo.
+- O script avisa quando para com pontos ainda mal classificados (η grande demais).
+- **Parada proporcional ao η (2026-10-12).** Com uma tolerância fixa de $10^{-4}$, η pequeno parava antes da hora, porque a queda do custo por época é proporcional ao η: no AND, η = 0,0005 parava no SSE 0,658 e η = 0,00001, na época 2 com 1 ponto errado, sendo o mínimo 0,5. A tolerância passou a ser $10^{-3}\,\eta$ (igual a $10^{-4}$ com η = 0,1, então os resultados com o η padrão não mudam: AND 43, OR 61, NAND 44, NOR 64 e NOT 85 épocas). Com η = 0,0005 o treino agora para no SSE 0,5008, na época 11600.
+- **Mitigações possíveis (não implementadas):** η menor; a versão em lote (converge ao mínimo se η < $2/\lambda_{max}$); embaralhar a ordem dos exemplos a cada época.
 
 ## Aprendizado 9 — como interpretar o Adaline: uma regressão linear usada como classificador
 
