@@ -100,16 +100,16 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 
 ---
 
-## Decisão 7 — Ordem das perguntas orientadoras no site (Q2 → Q4 → Q5) e seletor "1 neurônio × rede" no Ato 3
+## Decisão 7 — Ordem das perguntas orientadoras no site (Q2 → Q5 → Q4) e seletor "1 neurônio × rede" no Ato 3
 
 **Demanda**: o site passa a ter um ato por pergunta orientadora (Q2, Q4, Q5), da mais elementar à mais complexa e em ordem histórica. Era preciso fixar a ordem dos atos e onde mostrar "uma reta contra duas retas" (um neurônio contra uma camada extra).
 
 **Opções consideradas**:
 
-- **A. Q2 → Q5 → Q4.** O argumento: a derivada da ativação (Q4) pressupõe o gradiente (Q5), que o Adaline introduz. Foi a escolha de 2026-10-11. Problema apontado pelo grupo: o Adaline já usa uma função diferente da do Perceptron (saída linear no lugar do degrau) no Ato 2, e esse salto ficaria sem explicação, porque a pergunta sobre as ativações só viria depois.
-- **B. Q2 → Q4 → Q5.** A pergunta sobre as funções de ativação vem junto com a primeira troca de função (degrau × linear); o gradiente atravessando camadas (backpropagation) e o mínimo local ficam para o fim.
+- **A. Q2 → Q5 → Q4.** O argumento da Q4 (a ativação precisa de derivada) pressupõe a ideia de gradiente, que a Q5 introduz com o Adaline; segue também a ordem histórica (Perceptron, Adaline, backpropagation). Problema apontado pelo grupo: o Adaline já usa, no Ato 2, uma função diferente da do Perceptron (saída linear no lugar do degrau), e essa troca ficaria sem explicação até o Ato 3.
+- **B. Q2 → Q4 → Q5.** A pergunta sobre as ativações vem junto com a primeira troca de função (degrau × linear); o gradiente atravessando camadas e o mínimo local ficam para o fim. Chegou a ser adotada por engano em 2026-10-12 (uma resposta foi lida assim) e revertida no mesmo dia.
 - **Seletor "1 neurônio × rede 2-2-1": no Ato 2 ou no Ato 3.** No Ato 2, a rede e o backpropagation entrariam antes de a ativação ser explicada e o XOR resolvido perderia o lugar de clímax. No Ato 3, o mesmo laboratório alterna "1 neurônio" (que falha no XOR) e "rede 2-2-1" (que resolve).
 
-**Escolha**: B, com o seletor no Ato 3. Modos configurados no componente `Laboratorio`, como o Ato 1 da demo já fazia com Perceptron e Adaline.
+**Escolha**: A (Q2 → Q5 → Q4), com o seletor no Ato 3 e uma **ressalva**: o texto do Ato 2 nomeia a saída linear do Adaline, explica que ela é o que diz ao neurônio o quanto errou e anuncia que o porquê da escolha (e por que a linear sozinha não basta) é a pergunta do Ato 3, sem usar derivadas nem a regra da cadeia. Modos configurados no componente `Laboratorio`, como o Ato 1 da demo já fazia com Perceptron e Adaline.
 
-**Motivo**: a pergunta sobre as ativações precisa aparecer no ato em que o aluno acaba de ver duas delas. O Ato 3 fecha a história com o caso mais complexo (a regra da cadeia atravessando camadas e o mínimo local), que é também a última peça na ordem histórica, e termina no XOR resolvido e no laboratório livre. **Risco aceito:** o argumento da derivada na Q4 antecede a ideia completa de gradiente. A mitigação é o Adaline do próprio Ato 2, que já dá a ideia informal (a inclinação diz para que lado ajustar) e que o Ato 3 formaliza; o texto do Ato 2 deve falar em "inclinação" e não depender da regra da cadeia. Mudar a ordem de novo é decisão do grupo. Plano e roteiro oral em `04_planejamento.md`, seção "Narrativa: cada ato responde uma pergunta".
+**Motivo**: a dependência lógica (gradiente antes de derivada da ativação) e a ordem histórica; o aluno chega ao Ato 3 já sabendo o que é o gradiente, e a pergunta das ativações surge ao tentar ensinar uma rede de duas camadas. O Ato 3 junta a Q4 à rede e ao XOR resolvido, que é o clímax, e termina no laboratório livre. **Riscos aceitos:** a Q5 só se completa no Ato 3 (o texto dele deve retomá-la), e a troca de função no Ato 2 fica sem explicação completa até lá, o que a ressalva trata. A ordem de apresentação (Q2, Q5, Q4) difere da numeração do curso, e o mapa das perguntas deve avisar. Mudar a ordem de novo é decisão do grupo. Plano e roteiro oral em `04_planejamento.md`, seção "Narrativa: cada ato responde uma pergunta".
