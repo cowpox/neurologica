@@ -183,3 +183,33 @@ No AND, o Adaline já classifica os 4 pontos certo no fim da época 3, mas conti
 - O script avisa quando para com pontos ainda mal classificados (η grande demais).
 - **Parada proporcional ao η (2026-10-12).** Com uma tolerância fixa de $10^{-4}$, η pequeno parava antes da hora, porque a queda do custo por época é proporcional ao η: no AND, η = 0,0005 parava no SSE 0,658 e η = 0,00001, na época 2 com 1 ponto errado, sendo o mínimo 0,5. A tolerância passou a ser $10^{-3}\,\eta$ (igual a $10^{-4}$ com η = 0,1, então os resultados com o η padrão não mudam: AND 43, OR 61, NAND 44, NOR 64 e NOT 85 épocas). Com η = 0,0005 o treino agora para no SSE 0,5008, na época 11600.
 - **Mitigações possíveis (não implementadas):** η menor; a versão em lote (converge ao mínimo se η < $2/\lambda_{max}$); embaralhar a ordem dos exemplos a cada época.
+
+## Aprendizado 9 — como interpretar o Adaline: uma regressão linear usada como classificador
+
+O Adaline tem a mesma estrutura do Perceptron: calcula `z = w₁x₁ + w₂x₂ + b` e classifica pelo degrau (`ŷ = 1` se `z ≥ 0`). A reta de decisão também é a mesma, os pontos onde `z = 0`. O que muda é o que ele tenta aprender:
+
+| | Perceptron | Adaline |
+|---|---|---|
+| Erro usado na correção | `y − ŷ` (depois do degrau) | `y − z` (antes do degrau) |
+| Valores possíveis do erro | −1, 0 ou +1 | qualquer número real |
+| Quando corrige | só quando erra a classe | sempre, inclusive quando acerta a classe |
+| Pergunta que responde | "acertei?" | "quão longe fiquei do alvo?" |
+
+**Leitura geométrica.** O Adaline ajusta um plano `z(x₁, x₂)` que tenta passar pelas alturas −1/+1 dos pontos, o que é uma regressão linear por mínimos quadrados. A reta de decisão é onde esse plano corta a altura zero. A regra delta, `Δw = η · (y − z) · x`, é um passo de gradiente descendente sobre o custo `SSE = ½ · Σ (y − z)²` (calculado assim no script). A curva de SSE no gráfico mostra essa descida.
+
+**Exemplo do AND.** O melhor plano possível é `z = x₁ + x₂ − 1,5`:
+
+| Entrada | Alvo | z | Resíduo `y − z` |
+|---|---|---|---|
+| (0,0) | −1 | −1,5 | +0,5 |
+| (0,1) | −1 | −0,5 | −0,5 |
+| (1,0) | −1 | −0,5 | −0,5 |
+| (1,1) | +1 | +0,5 | +0,5 |
+
+Daí saem duas consequências observadas na animação:
+
+- **O SSE não chega a zero.** Um plano não passa exatamente pelas 4 alturas, e cada ponto fica a 0,5 do alvo. Isso dá `SSE = ½ · 4 · 0,25 = 0,5`, o piso que o gráfico mostra. Por isso o critério de parada é o SSE parar de cair, e não zerar os erros de classificação (Decisão 4).
+- **A reta termina centrada entre as classes.** O mínimo leva todos os pontos em conta ao mesmo tempo, então a reta não fica encostada num ponto como no Perceptron convergido (Aprendizado 5). É por isso que ela continua andando depois de 100% de acerto (Aprendizado 7).
+
+**O limite do modelo (gancho para o Marco 3).** No XOR, com alvos bipolares, o mesmo cálculo de mínimos quadrados dá `w = (0, 0)` e `b = 0`: um plano plano em `z = 0` para todas as entradas. Pela convenção do degrau, os 4 pontos viram classe 1 e só 2 de 4 ficam certos. O gradiente descendente funciona e converge, mas para um modelo que não decide nada. A limitação não está no algoritmo de otimização: está em o modelo ser linear. É isso que motiva a camada escondida do Marco 4. (Previsão teórica, a ser conferida quando o Marco 3 rodar o XOR com o Adaline.)
+
