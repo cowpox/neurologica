@@ -61,3 +61,4 @@ Registro cronológico do desenvolvimento do projeto, para alimentar a seção de
 
 - Registrada a entrada de **Heitor Oliveira Nunes** no grupo, que agora tem 3 integrantes. Ele entrou por volta de 2026-09-28, mas isso só foi anotado hoje. O README foi atualizado com o nome dele. A proposta de divisão de tarefas em `04_planejamento.md` ainda é a original, pensada para duas pessoas.
 - O Marco 2 foi commitado (`ab5ed35`) e enviado direto para a `main`, sem PR, a pedido do usuário, para o Herik testar.
+- Usuário perguntou como interpretar o Adaline. A explicação virou o Aprendizado 9 em `05_aprendizados_obtidos.md`: o Adaline é uma regressão linear usada como classificador (gradiente descendente sobre o SSE), por que o SSE do AND tem piso de 0,5, por que a reta termina centrada e a previsão de que no XOR o mínimo é `w = 0`, `b = 0` (gancho para o Marco 3).
