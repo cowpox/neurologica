@@ -62,7 +62,7 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 - **Versão**: (A) online, (B) em lote, (C) as duas com uma flag.
 - **Parada**: (1) número fixo de épocas; (2) parar quando todos os pontos forem classificados certo; (3) parar quando o SSE parar de mudar (`|ΔSSE| < tolerância` entre épocas seguidas).
 
-**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas. O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
+**Escolha**: online (A) + parada por estabilização do SSE (3), com tolerância `1e-4` e máximo padrão de 100 épocas (**revisto em 2026-10-12:** a tolerância passou a ser proporcional ao η, `1e-3 * η`, que vale `1e-4` com η = 0,1. A queda do custo por época é proporcional ao η, e um valor fixo confundia "descendo devagar" com "convergiu" e parava antes da hora com η pequeno. Com η = 0,1 nada mudou). O SSE é recalculado no fim de cada época sobre os 4 pontos com os pesos atuais (é o `E(w,b)` do Tópico 15, seção 3), e o gráfico mostra também, num eixo à direita, quantos pontos estão mal classificados com esses pesos.
 
 **Motivo**: a versão online é o pseudocódigo principal do Tópico 15 e tem a mesma granularidade do Marco 1 (um frame por exemplo), o que permite rodar os dois sincronizados no modo `--comparar`. Parar ao classificar tudo certo (2) esconderia justamente o que diferencia o Adaline: ele continua ajustando depois de acertar, levando a reta para o meio entre as classes. O lote fica como extensão possível (é o que converge para o mínimo exato em vez de rondá-lo).
 
@@ -97,3 +97,19 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 **Escolha**: C. B e C dão a mesma classe ($\sigma(z) \ge 0{,}5 \iff z \ge 0$); C reaproveita o `degrau` e a `TOLERANCIA_ZERO` dos Marcos 1 e 2 em vez de criar um limiar novo.
 
 **Motivo**: a padronização se mantém (a classe é decidida pela mesma função e pela mesma tolerância, `y` continua 0/1 em tudo e os alvos 0/1 só entram no erro e no gradiente). O −1/+1 fica restrito aos alvos do Adaline. Uma diferença consciente: o erro da MLP é medido **depois** da ativação da saída (como no Perceptron), porque o backpropagation precisa da derivada da sigmoide; o do Adaline é medido antes (saída linear). Seguem abertas e serão registradas quando o Marco 4 for implementado: a definição do custo (`sse` com $\tfrac12$ ou `mse`, e a conversão dos limiares da demo) e a amplitude da inicialização.
+
+---
+
+## Decisão 7 — Ordem das perguntas orientadoras no site (Q2 → Q4 → Q5) e seletor "1 neurônio × rede" no Ato 3
+
+**Demanda**: o site passa a ter um ato por pergunta orientadora (Q2, Q4, Q5), da mais elementar à mais complexa e em ordem histórica. Era preciso fixar a ordem dos atos e onde mostrar "uma reta contra duas retas" (um neurônio contra uma camada extra).
+
+**Opções consideradas**:
+
+- **A. Q2 → Q5 → Q4.** O argumento: a derivada da ativação (Q4) pressupõe o gradiente (Q5), que o Adaline introduz. Foi a escolha de 2026-10-11. Problema apontado pelo grupo: o Adaline já usa uma função diferente da do Perceptron (saída linear no lugar do degrau) no Ato 2, e esse salto ficaria sem explicação, porque a pergunta sobre as ativações só viria depois.
+- **B. Q2 → Q4 → Q5.** A pergunta sobre as funções de ativação vem junto com a primeira troca de função (degrau × linear); o gradiente atravessando camadas (backpropagation) e o mínimo local ficam para o fim.
+- **Seletor "1 neurônio × rede 2-2-1": no Ato 2 ou no Ato 3.** No Ato 2, a rede e o backpropagation entrariam antes de a ativação ser explicada e o XOR resolvido perderia o lugar de clímax. No Ato 3, o mesmo laboratório alterna "1 neurônio" (que falha no XOR) e "rede 2-2-1" (que resolve).
+
+**Escolha**: B, com o seletor no Ato 3. Modos configurados no componente `Laboratorio`, como o Ato 1 da demo já fazia com Perceptron e Adaline.
+
+**Motivo**: a pergunta sobre as ativações precisa aparecer no ato em que o aluno acaba de ver duas delas. O Ato 3 fecha a história com o caso mais complexo (a regra da cadeia atravessando camadas e o mínimo local), que é também a última peça na ordem histórica, e termina no XOR resolvido e no laboratório livre. **Risco aceito:** o argumento da derivada na Q4 antecede a ideia completa de gradiente. A mitigação é o Adaline do próprio Ato 2, que já dá a ideia informal (a inclinação diz para que lado ajustar) e que o Ato 3 formaliza; o texto do Ato 2 deve falar em "inclinação" e não depender da regra da cadeia. Mudar a ordem de novo é decisão do grupo. Plano e roteiro oral em `04_planejamento.md`, seção "Narrativa: cada ato responde uma pergunta".

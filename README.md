@@ -9,7 +9,7 @@ Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo 
 ## Autores
 
 - Adriano Lúcio Uchôa Brandão
-- Herik Daurízio Ricardo
+- Herik Daurizio Ricardo
 - Heitor Oliveira Nunes
 
 ## Estrutura do repositório
