@@ -21,12 +21,22 @@ Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo 
 
 ## Rodando os protótipos (Fase 1)
 
-```bash
+Python 3.11 é o alvo do projeto. Crie e ative um ambiente virtual (as pastas `.venv/` e `venv/` não vão para o git):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1      # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+```bash
 python prototipos/01_perceptron_gates.py --porta AND
 python prototipos/02_adaline_gates.py --porta AND
 python prototipos/02_adaline_gates.py --porta AND --comparar   # Perceptron x Adaline lado a lado
+python prototipos/03_perceptron_xor_falha.py --porta XOR        # Marco 3 — a falha do neurônio único
 ```
+
+Cada script aceita `--help`. Parâmetros úteis: `--taxa` (η), `--epocas`, `--pesos-iniciais`, `--bias-inicial` e `--semente`.
 
 ## Fluxo de trabalho em equipe
 
