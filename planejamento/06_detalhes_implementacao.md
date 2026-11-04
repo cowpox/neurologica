@@ -113,3 +113,19 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 **Escolha**: A (Q2 → Q5 → Q4), com o seletor no Ato 3 e uma **ressalva**: o texto do Ato 2 nomeia a saída linear do Adaline, explica que ela é o que diz ao neurônio o quanto errou e anuncia que o porquê da escolha (e por que a linear sozinha não basta) é a pergunta do Ato 3, sem usar derivadas nem a regra da cadeia. Modos configurados no componente `Laboratorio`, como o Ato 1 da demo já fazia com Perceptron e Adaline.
 
 **Motivo**: a dependência lógica (gradiente antes de derivada da ativação) e a ordem histórica; o aluno chega ao Ato 3 já sabendo o que é o gradiente, e a pergunta das ativações surge ao tentar ensinar uma rede de duas camadas. O Ato 3 junta a Q4 à rede e ao XOR resolvido, que é o clímax, e termina no laboratório livre. **Riscos aceitos:** a Q5 só se completa no Ato 3 (o texto dele deve retomá-la), e a troca de função no Ato 2 fica sem explicação completa até lá, o que a ressalva trata. A ordem de apresentação (Q2, Q5, Q4) difere da numeração do curso, e o mapa das perguntas deve avisar. Mudar a ordem de novo é decisão do grupo. Plano e roteiro oral em `04_planejamento.md`, seção "Narrativa: cada ato responde uma pergunta".
+
+---
+
+## Decisão 8 — Como o Marco 3 reaproveita os treinos e o que o seu relatório afirma
+
+**Demanda**: o Marco 3 deve mostrar o Perceptron e o Adaline falhando no XOR/XNOR sem mudar a arquitetura nem a regra de treino. Era preciso decidir como reaproveitar o código dos Marcos 1 e 2, o que o relatório do console afirma e como medir o "melhor possível" do Adaline sem depender do próprio treino.
+
+**Opções consideradas**:
+
+- **Reaproveitamento**: (A) copiar os treinos para o `03`; (B) alterar o `02` para aceitar XOR/XNOR e reaproveitar o `--comparar`; (C) chamar `treinar_perceptron` e `treinar_adaline` por `importlib`, sem tocar nos Marcos 1 e 2.
+- **Relatório**: (A) reaproveitar o `resumo_adaline` do Marco 2; (B) um relatório próprio.
+- **Régua do ótimo**: (A) usar o custo final do próprio Adaline; (B) calcular o mínimo teórico por mínimos quadrados (`lstsq`), independente do treino.
+
+**Escolha**: C, B e B. O `03` importa os dois treinos (como o `02` já importa o `01`), com a mesma semente, taxa e pesos iniciais. O relatório é próprio e só afirma "convergiu" quando houve convergência de fato. Conta os erros com os pesos finais (`perceptron.contar_erros`, a mesma medida dos dois treinos, Decisão 5), detecta o ciclo dos pesos de fim de época do Perceptron e compara o custo do Adaline com o mínimo teórico. Defaults: `--epocas 50` (o Perceptron mostra a falha em ~10 épocas; mais só alonga a animação) e sem `--quiet` (os dois logs vão para os painéis da animação, como no `--comparar` do Marco 2).
+
+**Motivo**: não duplica nem altera código já validado. O `resumo_adaline` termina com "η grande demais" quando o Adaline para com pontos errados, mensagem verdadeira para o Aprendizado 8, mas falsa no XOR, onde a causa é a arquitetura. E usar o próprio custo do Adaline como "o melhor" não provaria nada; o mínimo por `lstsq` mostra que o custo estaciona no ótimo (E = 2), e que o ótimo é a constante 0. Verificado: a conta à mão em aritmética exata (XOR, pesos 0 0, η = 0,1) bate com os dois treinos. **Revisão manual (2026-10-12):** o relatório passou a (1) decidir "estabilizou", "limite de épocas" ou "divergiu" pelo mesmo critério do gerador (`estado_adaline`), e não por "parou antes de `--epocas`", que errava quando o custo estabiliza exatamente na última época permitida; (2) mostrar também o **ponto de chegada** do Adaline online (`ponto_fixo_online`), porque o veredito na época de parada é um estado transitório; e (3) usar textos e títulos da animação conforme o estado (antes o quadro final dizia "ESTABILIZOU" mesmo quando o Adaline divergia ou atingia o limite de épocas).
