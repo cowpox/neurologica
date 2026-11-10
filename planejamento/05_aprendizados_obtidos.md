@@ -213,3 +213,31 @@ Daí saem duas consequências observadas na animação:
 
 **O limite do modelo (gancho para o Marco 3).** No XOR, com alvos bipolares, o mesmo cálculo de mínimos quadrados dá `w = (0, 0)` e `b = 0`: um plano plano em `z = 0` para todas as entradas. Pela convenção do degrau, os 4 pontos viram classe 1 e só 2 de 4 ficam certos. O gradiente descendente funciona e converge, mas para um modelo que não decide nada. A limitação não está no algoritmo de otimização: está em o modelo ser linear. É isso que motiva a camada escondida do Marco 4. (Previsão teórica, a ser conferida quando o Marco 3 rodar o XOR com o Adaline.)
 
+
+## Aprendizado 10 — no XOR/XNOR, o Perceptron entra em ciclo e o Adaline converge para "não sei"
+
+*Marco 3, medido em 2026-10-12 e revisto na revisão manual do mesmo dia (validado na demo, `demo/main` `87f0795`, que usava alvos 0/1; aqui, com os alvos −1/+1 do Marco 2).*
+
+Rodando os treinos dos Marcos 1 e 2, sem mudar nada, nas portas que um único neurônio não separa, as duas regras falham, por motivos diferentes.
+
+**Perceptron: nunca converge e os pesos entram em ciclo.** Em 20 sementes × 3 taxas (η = 0,05, 0,1 e 0,2) × XOR e XNOR, o Perceptron não convergiu **nenhuma** vez em 200 épocas, e os pesos de fim de época entraram em ciclo em **todas** (voltam a um estado já visto). Como o treino é determinístico e os exemplos entram sempre na mesma ordem, um estado repetido implica um ciclo para sempre. Com η = 0,1 e semente 42, o ciclo começa na época 4 (XOR) e na 3 (XNOR), com período de uma época: a reta continua se mexendo dentro de cada época (4 correções por época), mas a época termina sempre no mesmo lugar. O número de pontos mal classificados com os pesos finais fica entre 2 e 3 no XOR e em 2 no XNOR. O **menor valor visto em qualquer época, em qualquer semente, foi 1**: a melhor reta possível acerta 3 dos 4 pontos, nunca os 4.
+
+**Adaline: o ótimo linear é uma constante, e o treino fica perto dela.** O melhor ajuste linear (mínimos quadrados) dos alvos −1/+1 do XOR e do XNOR é $w = (0, 0)$ e $b = 0$, isto é, $z = 0$ em todos os pontos, com custo mínimo $E = 2{,}0$ (conferido por duas vias independentes: `lstsq` e pseudoinversa). Isso fecha o argumento pelo outro lado: não faltou treino (o gradiente descendente fez o que promete), o ótimo é que é inútil. O limite é da **arquitetura** (uma reta), não da regra de treino. O custo estaciona perto de 2,0:
+
+| (η = 0,1, semente 42), na época de parada | época | custo | $z$ nos 4 pontos | classes | mal classificados |
+|---|---|---|---|---|---|
+| XOR | 12 | 2,0218 | −0,005; −0,090; −0,084; −0,169 | 0, 0, 0, 0 | 2 de 4 |
+| XNOR | 14 | 2,0342 | −0,076; −0,016; 0,144; 0,204 | 0, 0, 1, 1 | 2 de 4 |
+
+**O ponto de chegada real não é exatamente a constante (correção da revisão manual).** Essa tabela é o estado na época em que a parada dispara (variação do custo abaixo da tolerância), **um estado transitório**: os pesos ainda estão se acomodando. O Adaline online com η finito e os exemplos sempre na mesma ordem converge a um **ponto fixo** (Aprendizado 8) que não depende da inicialização, mas depende de η e da ordem. Calculado exatamente pelo mapa de uma época e confirmado por treino longo em 10 sementes (diferença nos pesos abaixo de $10^{-11}$):
+
+| ponto fixo (η = 0,1) | $z$ nos 4 pontos | custo | classes | mal classificados |
+|---|---|---|---|---|
+| XOR | 0,111; 0; −0,111; −0,222 | 2,037 | 1, 1, 0, 0 | **2** de 4 |
+| XNOR | −0,111; 0; 0,111; 0,222 | 2,037 | 0, 1, 1, 1 | **3** de 4 |
+
+Com η = 0,05 e 0,2 o resultado é o mesmo (XOR 2 errados, XNOR 3), com $z$ proporcional a η (em volta de $\eta\,[1;\,0;\,-1;\,-2]$). Ou seja: o Adaline termina numa **pequena inclinação em volta da constante $z = 0$**, e o lado de cada ponto é decidido por essa inclinação (que vem da ordem dos exemplos), não por uma separação de verdade. Na época de parada o veredito varia (nas 120 combinações de semente, η e porta, de 1 a 3 pontos errados, **nunca 0**, com parada entre as épocas 3 e 82), porque é um estado transitório; no limite ele é fixo. A demo registrava "3 dos 4 errados", que é um caso particular.
+
+**A tolerância do `degrau` decide uma classe (Aprendizado 4 outra vez).** No ponto fixo, $z$ vale exatamente 0 no ponto $(0,1)$. No treino longo o valor calculado é $-1{,}7\cdot10^{-13}$: com a comparação simples $z \ge 0$, o ruído de ponto flutuante daria classe 0 e um erro a mais; com a tolerância do `degrau` ($10^{-9}$) a classe é 1, como na aritmética exata.
+
+**Cuidado ao relatar.** O resumo do Marco 2 (`resumo_adaline`) diria "η grande demais" para um Adaline que para com pontos errados, o que seria falso aqui, e "estabilizou" não significa que os pesos pararam de se mexer. O Marco 3 tem relatório próprio (Decisão 8 do `06`), que mostra o veredito na parada **e** o ponto de chegada.

@@ -6,6 +6,8 @@ planejamento/material-fonte/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.venv/
+venv/
 
 # SO
 .DS_Store
