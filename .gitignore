@@ -12,3 +12,10 @@ venv/
 # SO
 .DS_Store
 Thumbs.db
+
+# Node: usado só para BAIXAR as bibliotecas do site; o que vai para o repositório
+# são os arquivos já copiados em docs/vendor/, que o site consome direto.
+node_modules/
+
+# Vercel (liga a pasta local ao projeto da hospedagem)
+.vercel

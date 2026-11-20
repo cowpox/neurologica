@@ -1,0 +1,22 @@
+# O que NÃO precisa ser enviado ao Vercel.
+# Só o conteúdo de docs/ é servido (ver outputDirectory em vercel.json); o resto do
+# repositório é material de desenvolvimento e não tem por que subir.
+
+# Bibliotecas baixadas do npm: o site consome os arquivos já copiados em docs/vendor/,
+# que ESSES sim vão para o deploy.
+node_modules/
+docs/package.json
+docs/package-lock.json
+
+# Fase 1 (protótipos em Python), conferência Python -> JS e ambiente local
+prototipos/
+testes/
+.venv/
+venv/
+__pycache__/
+*.pyc
+requirements.txt
+
+# Notas de processo e entrega
+planejamento/
+entrega/
