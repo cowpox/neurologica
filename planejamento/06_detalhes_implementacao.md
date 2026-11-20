@@ -129,3 +129,88 @@ Registro das decisões técnicas tomadas ao longo do desenvolvimento do projeto 
 **Escolha**: C, B e B. O `03` importa os dois treinos (como o `02` já importa o `01`), com a mesma semente, taxa e pesos iniciais. O relatório é próprio e só afirma "convergiu" quando houve convergência de fato. Conta os erros com os pesos finais (`perceptron.contar_erros`, a mesma medida dos dois treinos, Decisão 5), detecta o ciclo dos pesos de fim de época do Perceptron e compara o custo do Adaline com o mínimo teórico. Defaults: `--epocas 50` (o Perceptron mostra a falha em ~10 épocas; mais só alonga a animação) e sem `--quiet` (os dois logs vão para os painéis da animação, como no `--comparar` do Marco 2).
 
 **Motivo**: não duplica nem altera código já validado. O `resumo_adaline` termina com "η grande demais" quando o Adaline para com pontos errados, mensagem verdadeira para o Aprendizado 8, mas falsa no XOR, onde a causa é a arquitetura. E usar o próprio custo do Adaline como "o melhor" não provaria nada; o mínimo por `lstsq` mostra que o custo estaciona no ótimo (E = 2), e que o ótimo é a constante 0. Verificado: a conta à mão em aritmética exata (XOR, pesos 0 0, η = 0,1) bate com os dois treinos. **Revisão manual (2026-10-12):** o relatório passou a (1) decidir "estabilizou", "limite de épocas" ou "divergiu" pelo mesmo critério do gerador (`estado_adaline`), e não por "parou antes de `--epocas`", que errava quando o custo estabiliza exatamente na última época permitida; (2) mostrar também o **ponto de chegada** do Adaline online (`ponto_fixo_online`), porque o veredito na época de parada é um estado transitório; e (3) usar textos e títulos da animação conforme o estado (antes o quadro final dizia "ESTABILIZOU" mesmo quando o Adaline divergia ou atingia o limite de épocas).
+
+---
+
+## Decisão 9 — Conquistas locais e pistas progressivas, em vez de um mural compartilhado (site em sala)
+
+**Demanda**: o site será apresentado em sala, com o link divulgado por QR code para a turma e para o professor. A ideia inicial era pedir o nome do aluno na entrada e mostrar "João resolveu o XOR!" na tela dos demais. Queríamos também aumentar a interatividade de cada ato: mostrar o problema (uma configuração que não resolve) e só depois dar pistas, para a turma mexer nos parâmetros (ativação, η, camadas, neurônios) até resolver.
+
+**Opções consideradas**:
+
+- **A. Mural compartilhado com banco em tempo real** (Firebase ou Supabase, direto do navegador). É o mais simples dos que compartilham estado, mas depende de um serviço externo, de regras de segurança bem escritas e de moderação de nomes.
+- **B. Mural com funções da Vercel e Redis.** A Vercel não mantém conexão aberta (sem WebSocket), então seria consulta periódica. Permitiria verificar a conquista no servidor, reexecutando o treino determinístico, ao custo de uma pasta `api/` e de mexer no `vercel.json`.
+- **C. Tudo local**: uma notificação parabenizando o aluno pela conquista, guardada no `localStorage`, mais uma gaveta de pistas que libera por tentativas. Sem nome, sem conta e sem rede.
+
+**Escolha**: C. A conquista só dispara quando o treino **resolve de verdade**: `convergiu`, `errosAtuais() === 0` (recontagem independente), configuração do desafio do ato, uma vez por navegador. As pistas liberam depois de tentativas sem resolver (`TENTATIVAS_POR_PISTA = 2`, valor inicial). Detalhes em `04_planejamento.md`, seções "Roteiro de texto dos atos" e "Pistas progressivas e conquistas".
+
+**Motivo**: o site é estático, sem build, e precisa funcionar mesmo com a conexão ruim da sala; um mural online o tornaria dependente de um serviço externo justamente no dia da apresentação, e traria dados de alunos para um site público. A interatividade que importa (mexer nos parâmetros até resolver) não precisa de rede. O texto da conquista mostra os valores reais que funcionaram (ativação, η, épocas), o que reforça o aprendizado. Um achado de projeto: **"convergiu" não basta como critério**. O Adaline "converge" com 1 ponto errado quando o η é grande (Aprendizado 8, η = 0,7 no AND), e isso não é resolver; por isso a regra exige a recontagem dos erros, e a configuração inicial do Ato 2 usa exatamente esse η para que o problema seja real. A regra fica numa função pura (`desafios.js`) com testes em Node (camada 6 da conferência), para a conquista não disparar por engano na apresentação. Fica fora do escopo o mural online (registrado em "Ideias fora do escopo").
+
+---
+
+## Decisão 10 — Conferir a MLP sem deixar o arredondamento se acumular (Fase 2)
+
+**Demanda**: o JS da MLP precisa reproduzir o Python, mas o numpy usa FMA nas multiplicações de matriz e uma tanh própria (Aprendizado 11), e num treino de milhares de épocas uma diferença de 1 ulp pode crescer. O plano previa comparar só as primeiras 300 épocas e depois os marcos discretos, o que deixaria a maior parte do treino sem conferência fina e não diria, se um marco divergisse, se a causa era arredondamento ou defeito.
+
+**Opções consideradas**:
+
+- **A. A do plano**: trajetória completa só nas 300 primeiras épocas (≤ 10⁻⁹) e marcos depois.
+- **B. Reproduzir o numpy bit a bit no JS**: emular FMA em software e reimplementar a tanh do numpy. Frágil: o uso de FMA depende do BLAS e do processador da máquina que gerou as referências.
+- **C. Conferência sincronizada**: em cada época gravada (todas as primeiras 300 e depois uma a cada 25), o JS parte do estado **exato** do Python e dá um passo; as decisões de parada e de reinício do JS são reexecutadas sobre o SSE de **todas** as épocas do Python; e o treino livre do JS precisa bater nos marcos discretos.
+
+**Escolha**: C. Para isso, o `treino_mlp.js` separa a parte numérica (funções puras `propagar`, `gradientes`, `aplicarGradiente`, `epocaDeGradiente`) da lógica de parada (`JanelaDeReinicio`), e o `TreinoMLP` só as compõe. A mesma ordem de operações do Python foi mantida onde o JS consegue (produto escalar antes do bias, somas sequenciais, `(saída − alvo) · (a · (1 − a))`, gradiente dividido por n antes de multiplicar por η).
+
+**Motivo**: como cada passo começa do estado do Python, o erro não tem como se acumular, e a tolerância pode ser apertada (10⁻¹³ relativo; medido 2,2·10⁻¹⁶). As decisões reexecutadas sobre o SSE do Python testam a lógica de parada sem nenhum arredondamento envolvido. O treino livre continua conferido, e se um dia um marco divergir, as outras duas partes dizem se é arredondamento ou defeito. Verificado que a conferência não é de enfeite: reintroduzidos numa cópia os dois defeitos da demo (alvos 0/1 no Adaline; gradiente aplicado depois do reinício), ela reprova os dois. Não foi preciso mudar o Python para injetar pesos: o gerador grava os pesos de cada tentativa chamando a mesma `inicializar_pesos` com a mesma semente.
+
+---
+
+## Decisão 11 — O que muda na interface dos treinos em relação à demo (contrato para o front-end)
+
+**Demanda**: o front-end (`laboratorio.js`, `grafico.js`, `algoritmo.js`, `rede_visual.js`) será adaptado da demo, e os treinos agora seguem as convenções dos Marcos 1 a 4, não as da demo. Quem integra precisa saber exatamente o que mudou de nome ou de significado.
+
+**Escolha**: manter tudo o que a interface da demo lê (`passo()`, `terminou`, `convergiu`, `esgotou`, `historicoErro` com `{ epoca, valor }`, `tipoErro`, `pesos`, `bias`, `limiar`, `prever`, `valorContinuo`, `errosAtuais`, `pseudocodigo`, `formato`, `camadas`, `ativacao`, `reinicios`, `tentativa`, `mapaDeAtivacoes`, `retaDoNeuronio`, `ATIVACOES`) e mudar só o que carrega um significado novo:
+
+- **Perceptron**: `errosNaEpoca` passa a ser o veredito com os pesos **finais** da época, e só existe no último exemplo (nos outros vem `null`); as correções feitas durante a época vão para o novo `correcoesNaEpoca`. O gráfico mostra `errosNaEpoca`. Padrão `maxEpocas = 20` (o laboratório da demo passava 40).
+- **Adaline**: alvos −1/+1 (o registro traz `alvo`), fronteira em z = 0 (`limiar = 0`; `LIMIAR_ADALINE` não existe mais), e `sse` (½ Σ, com os pesos finais) e `errosNaEpoca` só no fim da época, no lugar de `sseNaEpoca` e `errosClassificacaoNaEpoca` (acumulados). Estado novo `divergiu` (incluído em `terminou`), parada em 1e-3 · η e `custoAtual()`. "Convergiu" quer dizer que o custo estabilizou, **não** que acertou tudo (com η = 0,7 no AND ele estabiliza com 1 erro): a mensagem de desfecho e a conquista precisam olhar `errosAtuais()`.
+- **MLP**: `mse` virou `sse` (½ Σ), `erros` virou `errosNaEpoca` (classe por `degrau(z_saída)`), e o registro traz `zSaida` e `yPrevisto`; `estado` diz como terminou (`convergiu`, `limite` ou `esgotou`, os dois últimos com `esgotou = true`); `reinicios` é `[{ epoca, sse }]`; `fontePesos` opcional; `MAX_TENTATIVAS = 10`. Padrões do Python (`ativacao = 'sigmoide'`, `taxa = 2`); o Ato 3 passa tanh. Depois de um reinício não há passo de gradiente (Aprendizado 12).
+
+**Motivo**: preservar o contrato reduz o trabalho de adaptar o front-end da demo, e mudar os nomes que mudaram de significado evita que um campo antigo seja lido com o sentido errado sem ninguém perceber (por exemplo, `errosNaEpoca` acumulado do Perceptron, ou um Adaline "convergido" com pontos errados).
+
+---
+
+## Decisão 12 — Como as conquistas e as pistas aparecem na página
+
+**Demanda**: implementar a notificação de conquista e a gaveta de pistas da Decisão 9 sem atrapalhar o laboratório: o plano pedia uma faixa que não cobrisse o plano de decisão nem a rede, que funcionasse no telefone e que só disparasse quando o aluno resolvesse de verdade.
+
+**Opções consideradas**:
+
+- **A. Aviso flutuante (toast) preso à tela**, como sugeria o plano. Chama atenção, mas, fixo na tela, fatalmente cobre alguma coisa (no telefone, a parte de baixo do laboratório, onde ficam a curva de erro e a barra de estado), e some sozinho sem o aluno ler.
+- **B. Aviso no fluxo, logo abaixo do laboratório**, com um selo desenhado à mão e um botão de fechar. Não cobre nada, aparece exatamente onde o aluno está olhando (a barra de estado com "resolveu" fica na base do laboratório) e fica até ele fechar.
+
+**Escolha**: B. As pistas também ficam no fluxo, numa gaveta logo abaixo do aviso.
+
+**Detalhes**:
+- A regra fica em `desafios.js` (funções puras, conferidas na camada 6 de `testes/conferir_js.mjs`): conta só `convergiu` + 0 erros na recontagem + configuração do desafio; o Ato 1 acumula as 5 portas separáveis; uma tentativa é um treino do problema do ato que terminou sem resolver ou foi abandonado depois de 3 épocas (300 na rede).
+- O laboratório avisa por eventos (`laboratorio:terminou`, `laboratorio:abandonou`) com a configuração DO TREINO (e não a dos controles, que pode já ter mudado); `progresso.js` liga os eventos à regra e guarda o estado no `localStorage` (com `try/catch`).
+- "Estou travado" libera a próxima pista depois de 20 s, e o texto da espera convida a tentar mais uma vez enquanto isso.
+- Quando uma pista libera, só o contador reage (e o `aria-live` anuncia): a gaveta não abre sozinha.
+- O aviso de conquista mostra os valores reais que funcionaram (η, ativação, épocas).
+
+**Motivo**: a visualização vence a estética (regra herdada da demo): um aviso que cobre o plano de decisão no momento em que a rede acaba de resolver esconde justamente o que se quer mostrar. No fluxo, o aviso continua comemorando, sem competir com o gráfico.
+
+---
+
+## Decisão 13 — Modo "Classificação" no laboratório livre e matemática determinística
+
+**Demanda**: implementar os conjuntos de classificação do laboratório livre (ideia registrada no `04`): círculo, XOR em quadrantes, duas gaussianas e espiral, no estilo do TensorFlow Playground, sem atrasar o resto.
+
+**Escolhas**:
+
+- **Dados gerados por nós** (`docs/js/datasets.js`), com o gerador com semente do site, 200 pontos por conjunto, 100 de cada classe, em [−6, 6]² na tela e divididos por 6 na entrada da rede (para Xavier e η continuarem fazendo sentido). Gerados **sem sobreposição** entre as classes, para que "acertar todos os pontos" seja possível.
+- **Critério de parada próprio**: o `TreinoMLP` ganhou a opção `pararQuando: 'acertos'` (todos os pontos certos). O padrão continua `'erro'` (SSE abaixo do limiar, o do Python), então a conferência e os gabaritos não mudam. Com 200 pontos, o SSE pode levar muito mais tempo para cair abaixo do limiar do que a rede leva para acertar tudo.
+- **Reinício automático desligado** ao entrar na classificação: ali o erro cai devagar por muito tempo, e a janela de 300 épocas confundiria isso com estar preso. O aluno pode ligá-lo.
+- **Interface**: seletor "Problema" (portas lógicas × classificação) e "Conjunto de dados"; o plano de decisão recebe a faixa e a escala do conjunto (eixos de −4 a 4, pontos pequenos sem rótulo, contorno escuro em quem está errado); nos modos de neurônio único a velocidade cresce com o número de pontos e o log mostra só o resumo de cada época.
+- **Desafios com solução medida**, em gavetas abaixo do laboratório: gaussianas (o Perceptron resolve na época 3), círculo (2 ocultos não bastam, 177/200; com 3, tanh, η = 2: época 1418), XOR em quadrantes (2 não bastam, 177/200, embora bastem na porta de 4 pontos; com 3: época 662) e espiral (três camadas de 6, tanh, η = 3: época 4113). Os números estão na camada 7 da conferência.
+- **Matemática determinística** (Aprendizado 15): exponencial e tanh próprias em `dados.js`, e coordenadas dos conjuntos arredondadas para milésimos, para que todo navegador produza os mesmos números.
+
+**Motivo**: a classificação mostra a mesma ideia do Ato 3 em escala maior — cada neurônio oculto é uma reta, e formas mais complicadas pedem mais retas e mais camadas —, com resultados que a turma pode comparar entre si. A matemática determinística é o que permite citar épocas exatas no texto (1358, 4113…) sabendo que o celular de cada aluno vai mostrar o mesmo número.

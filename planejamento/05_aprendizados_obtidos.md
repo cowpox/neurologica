@@ -241,3 +241,49 @@ Com η = 0,05 e 0,2 o resultado é o mesmo (XOR 2 errados, XNOR 3), com $z$ prop
 **A tolerância do `degrau` decide uma classe (Aprendizado 4 outra vez).** No ponto fixo, $z$ vale exatamente 0 no ponto $(0,1)$. No treino longo o valor calculado é $-1{,}7\cdot10^{-13}$: com a comparação simples $z \ge 0$, o ruído de ponto flutuante daria classe 0 e um erro a mais; com a tolerância do `degrau` ($10^{-9}$) a classe é 1, como na aritmética exata.
 
 **Cuidado ao relatar.** O resumo do Marco 2 (`resumo_adaline`) diria "η grande demais" para um Adaline que para com pontos errados, o que seria falso aqui, e "estabilizou" não significa que os pesos pararam de se mexer. O Marco 3 tem relatório próprio (Decisão 8 do `06`), que mostra o veredito na parada **e** o ponto de chegada.
+
+## Aprendizado 11 — o numpy não faz "a mesma conta" que o JavaScript, e onde isso importa
+
+*2026-11-10 (Herik), na conferência Python → JavaScript da `fase2-logica`.*
+
+Para o JS reproduzir o Python, a pergunta é em que ordem o numpy faz cada operação. Medido com 20 000 casos aleatórios por operação:
+
+- `np.sum` e `.sum(axis=0)` em vetores pequenos somam **em sequência**, da primeira à última posição, como um laço em JS.
+- A multiplicação de matrizes (`@`) vai para o BLAS, que usa **FMA** (multiplicação e soma com um arredondamento só): `a @ W2` com 2 termos é exatamente `fma(a₀, w₀, a₁·w₁)`. O JavaScript não tem FMA.
+- `np.exp` coincide com `math.exp`, mas `np.tanh` tem implementação própria e difere de `math.tanh` em 22% dos casos (1 ulp).
+
+**Consequência.** Perceptron e Adaline reproduzem o Python **bit a bit** (63 e 65 trajetórias): com entradas 0/1 cada produto é exato, as somas são sequenciais e não há exp nem tanh. A MLP não tem como ser idêntica, e a primeira ideia do plano era comparar só as 300 primeiras épocas e depois os marcos. A solução adotada (Decisão 10 do `06`) é comparar **um passo a partir do estado exato do Python**, o que impede o erro de se acumular. Resultado medido: diferença de no máximo 2,2·10⁻¹⁶ (1 ulp) por passo; no treino livre, as curvas de SSE do JS e do Python ficam a no máximo 5·10⁻¹⁵ uma da outra durante o treino inteiro, e todos os marcos (reinícios, época final, estado) coincidem nos 9 casos de referência. Nestes treinos a diferença de arredondamento não cresceu a ponto de mudar uma decisão; a conferência sincronizada garante que, se um dia mudar, dá para distinguir arredondamento de defeito.
+
+## Aprendizado 12 — o gabarito do Ato 3 é 1358, e não 1357, por causa da correção do reinício
+
+*2026-11-10 (Herik).*
+
+Com a semente 42 do site (XOR, rede `[2]`, tanh, η = 2), a demo convergia na época **1357** e o JS novo converge na **1358**, ambos com um reinício na época 899. Para descobrir qual estava certo, a demo foi rodada com uma única mudança, sem aplicar o passo de gradiente depois do reinício: deu **1358**. A diferença vem inteira do defeito da demo, que, ao reiniciar, aplicava aos pesos novos o gradiente calculado com as ativações da rede antiga (divergência conhecida (c) do plano). O comportamento correto é o do Python, que não aplica esse passo. O gabarito travado em `testes/gabaritos_site.json` é 1358. Os gabaritos do Ato 1 (7 e 40) não mudaram.
+
+## Aprendizado 13 — com 6 tentativas, o reinício automático não é 100% confiável
+
+*2026-11-10 (Herik).*
+
+Com o gerador do site, 39 das 40 sementes do XNOR com sigmoide convergiam: na semente 2, as 6 tentativas ficaram presas em mínimos locais e o treino desistiu (a demo falha na mesma semente). Medido em 200 sementes: cada tentativa fica presa com probabilidade de ~35% (sigmoide) a ~47% (tanh), e com 6 tentativas 2 sementes do XNOR com sigmoide (2 e 176) esgotavam todas. Com **10 tentativas**, as 200 sementes convergem nas quatro combinações (XOR e XNOR, sigmoide e tanh). `MAX_TENTATIVAS` passou a 10 no `04` e no `treino_mlp.js` ao mesmo tempo (regra de paridade). No Python, `--testar-sementes 40` continua em 40/40 nas mesmas quatro combinações. Isso não muda a arquitetura (continua 2-2-1) nem esconde o mínimo local: só dá ao reinício mais chances antes de desistir.
+
+## Aprendizado 14 — dois números de "conta à mão" do plano estavam errados
+
+*2026-11-10 (Herik).*
+
+A camada 1 da conferência dizia "Adaline, AND, pesos 0 0: SSE 1,0 na época 1 e 0,6872 na 2". Refeita à mão, com os alvos −1/+1 do Marco 2 e η = 0,1, a época 1 termina em w = (0,0632; 0,0542), b = −0,1268 e E = ½ · 3,51828232 = **1,75914116**, que é exatamente o que o Python e o JS dão. Os valores do plano não são desta convenção. O "E = 2,005796" do XOR é o arredondamento do valor exato **2,00579556**. Os testes usam agora os valores exatos (com tolerância de 10⁻¹²). Moral: um teste de "conta à mão" também precisa ser conferido; quando o JS bate bit a bit com o Python e os dois discordam do número escrito, vale refazer a conta antes de mexer no código.
+
+## Aprendizado 15 — Math.exp e Math.tanh mudam de navegador para navegador
+
+*2026-11-10 (Herik), ao implementar a classificação no laboratório livre.*
+
+A espiral com três camadas de 6 resolvia na época 8151 no Node e na 7969 no Chrome, com exatamente a mesma configuração (dados, arquitetura, semente, critério). A causa: o padrão do JavaScript não exige arredondamento correto em `Math.exp`, `Math.tanh`, `Math.sin` etc., e cada motor usa a sua implementação. Medido em 200 000 valores: entre o Chrome 157 e o Node 24 (V8 13.6), `Math.tanh` difere por 1 ulp em 6% dos casos e `Math.exp` em 10%. Num treino longo e sensível, essa diferença mínima muda a época de convergência. Nos treinos das portas ela não tinha aparecido (1358 dava igual), mas era sorte: nada garantia que o Safari de um aluno daria o mesmo número que o texto cita.
+
+**Correção (Decisão 13 do `06`):** o site usa uma exponencial própria (port do `exp` do fdlibm) e uma tanh construída sobre ela, só com as quatro operações — que o IEEE-754 garante idênticas em todo motor, e que o JavaScript nunca funde em FMA —, mais uma escala exata por potência de 2. Os conjuntos de classificação, que usam seno, cosseno e logaritmo para gerar os pontos, arredondam cada coordenada para milésimos. Conferido: o mesmo conjunto de treinos longos (Ato 3, 80 treinos do XNOR, os quatro conjuntos, a espiral) dá números **idênticos** no Chrome e no Node. A paridade com o Python não mudou (1 ulp por passo), nem os gabaritos das portas.
+
+**Um tropeço no caminho que vale registrar:** o Chrome do teste guardava em cache uma versão antiga dos módulos (o perfil persistia entre as execuções), e algumas conferências de navegador podiam ter rodado código desatualizado. O controlador passou a desligar o cache e todas foram refeitas; isso revelou uma rolagem horizontal de 69 px a 820 px, causada por um balão de ajuda fechado (invisível, mas ainda ocupando espaço) perto da borda — corrigido.
+
+## Aprendizado 16 — o Perceptron clássico para encostado num ponto (folga tentada e descartada)
+
+Observação (feedback de uso): nas portas OR, NOT, NAND e NOR a reta final fica quase exatamente em cima de um ponto, e o leitor não vê de que lado ele está. Medido com a semente 42 e η = 0,1: NOT e NOR terminam com distância **0** (z exatamente 0, decidido pela convenção do `degrau`: z ≥ 0 → classe 1), OR e NAND a menos de 0,01. Não é erro de classificação nem do limiar (|z| ≫ 10⁻⁹ em OR e NAND): é a regra clássica, que só corrige quando erra e **para na primeira reta que zera os erros** (como no Aprendizado 2). Mudar o η não resolve (os pesos crescem em múltiplos de η e a reta sai no mesmo lugar); pesos iniciais aleatórios também não (em 2000 inícios por porta, de 12% a 35% terminavam a menos de 0,05 do ponto).
+
+**Tentativa:** Perceptron com folga de um passo (corrige também quando s·z < η), em Python e JS, com paridade exata e as cinco portas terminando a 0,19–0,36 da reta (AND na época 14, XOR com 2 erros, gaussianas na época 7). **Descartada** a pedido: a folga confundia mais (muda os números do site e a regra "só mexe nos pesos quando erra"). Tudo foi revertido ao Perceptron clássico, e os gabaritos antigos (AND na 7, XOR na 40 com 3 erros) voltaram. Pendente: como explicar a reta encostada sem mudar o algoritmo.
