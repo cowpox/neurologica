@@ -193,6 +193,36 @@ function montarLaboratorios() {
   return criados;
 }
 
+/* ------------------------------------- "Aplicar parâmetros" dos desafios */
+
+/**
+ * Cada gaveta de desafio de classificação tem um botão com a configuração da solução em
+ * `data-parametros` (JSON). Clicar leva o laboratório livre a ela e rola até ele; o treino
+ * só começa quando o leitor aperta ▶.
+ */
+function configurarBotoesDeParametros(livre) {
+  const botoes = document.querySelectorAll('[data-parametros]');
+  if (!livre) {
+    botoes.forEach((botao) => { botao.hidden = true; });
+    return;
+  }
+  botoes.forEach((botao) => {
+    botao.addEventListener('click', () => {
+      let parametros;
+      try {
+        parametros = JSON.parse(botao.dataset.parametros);
+      } catch {
+        return;
+      }
+      if (!livre.aplicarConfiguracao(parametros)) return;
+      const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      livre.container.closest('.lab-embrulho')?.scrollIntoView({
+        behavior: reduzido ? 'auto' : 'smooth', block: 'start',
+      });
+    });
+  });
+}
+
 /* ------------------------------------------------------------- navegação */
 
 function configurarNavegacao() {
@@ -226,7 +256,9 @@ function iniciar() {
   montarGavetasDeAtivacao(document.getElementById('gavetas-ativacao'));
   desenharSuperficieDeErro(document.getElementById('superficie-ato2'));
   configurarProgresso();
-  configurarPlayFlutuante(Object.values(montarLaboratorios()));
+  const laboratorios = montarLaboratorios();
+  configurarPlayFlutuante(Object.values(laboratorios));
+  configurarBotoesDeParametros(laboratorios.livre);
   configurarTermos();
   manterBaloesNaTela();
   configurarAtalhos();

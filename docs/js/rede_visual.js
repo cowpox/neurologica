@@ -10,7 +10,7 @@
  *    ativação, porque mostra a geometria.
  *
  * 2. CONEXÕES QUE CARREGAM INFORMAÇÃO. A espessura da linha é a magnitude do peso,
- *    a cor é o sinal (terracota positivo, azul negativo) e o brilho acompanha a
+ *    a cor é o sinal (verde positivo, azul negativo) e o brilho acompanha a
  *    ativação real do neurônio de origem. O brilho não é enfeite: é calculado a
  *    partir da ativação média nos dados de treino, então uma linha apagada
  *    significa mesmo um neurônio calado.
@@ -155,10 +155,14 @@ export class RedeVisual {
   definirDefs() {
     const defs = this.svg.append('defs');
 
+    // Em unidades do usuário (e não na caixa do elemento, o padrão): uma ligação perfeitamente
+    // horizontal (dois neurônios na mesma altura, como o último oculto → saída) tem a caixa
+    // com altura ZERO, e um filtro em % dessa caixa a deixava invisível.
     const filtro = defs.append('filter')
       .attr('id', 'brilho-conexao')
-      .attr('x', '-40%').attr('y', '-40%')
-      .attr('width', '180%').attr('height', '180%');
+      .attr('filterUnits', 'userSpaceOnUse')
+      .attr('x', -200).attr('y', -200)
+      .attr('width', 3000).attr('height', 3000);
     filtro.append('feGaussianBlur').attr('stdDeviation', 1.8).attr('result', 'borrado');
     const junta = filtro.append('feMerge');
     junta.append('feMergeNode').attr('in', 'borrado');

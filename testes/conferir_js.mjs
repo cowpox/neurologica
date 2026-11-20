@@ -672,6 +672,20 @@ secao('7. Conjuntos de classificação do laboratório livre (os números citado
     ['quadrantes', [6], 'tanh', 2, 'convergiu', 103],
     ['espiral', [6, 6, 6], 'tanh', 3, 'convergiu', 4113],
     ['espiral', [6, 6, 6], 'relu', 5, 'convergiu', 3721],
+    // as menores redes que resolvem cada conjunto (busca em ordem de parâmetros, η em
+    // {0,5; 1; 2; 3; 5}, as 7 ativações, semente 42, até 20 000 épocas)
+    ['circulo', [2], 'gelu', 5, 'convergiu', 2679],
+    ['quadrantes', [2], 'swish', 5, 'convergiu', 812],
+    ['luas', [2, 1], 'tanh', 3, 'convergiu', 2192],
+    ['luas', [2], 'tanh', 2, 'limite', null],
+    // conjuntos difíceis: soluções medidas (não são as menores possíveis)
+    ['xadrez', [6, 6, 6], 'gelu', 3, 'convergiu', 1223],
+    ['yinyang', [4, 4], 'elu', 5, 'convergiu', 3958],
+    ['yinyang', [4, 4, 4], 'tanh', 5, 'convergiu', 2065],
+    ['yinyang', [6, 6, 6], 'tanh', 5, 'convergiu', 1053],
+    ['luas', [3], 'tanh', 2, 'convergiu', 2644],
+    ['luas', [6, 6], 'tanh', 2, 'convergiu', 484],
+    ['luas', [6, 6], 'relu', 2, 'convergiu', 320],
   ];
   for (const [chave, camadas, ativacao, taxa, estado, epoca] of casos) {
     const t = treinarRede(chave, camadas, ativacao, taxa);

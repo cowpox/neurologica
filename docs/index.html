@@ -691,7 +691,7 @@
           Todas as peças da página num lugar só: os três modelos, de uma a quatro camadas
           ocultas com até seis neurônios cada, a função de ativação, a taxa de aprendizado,
           a semente e o reinício automático. E dois tipos de problema: as sete
-          <strong>portas lógicas</strong> ou quatro conjuntos de <strong>classificação</strong>
+          <strong>portas lógicas</strong> ou sete conjuntos de <strong>classificação</strong>
           com 200 pontos cada. Tente quebrar a rede e depois consertá-la.
         </p>
       </div>
@@ -719,6 +719,9 @@
               resolve, na época 3 (η = 0,1). Uma rede também resolve, mas aqui ela é
               exagero.
             </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"gaussianas","modo":"perceptron","taxa":0.1,"velocidade":1}'>Aplicar parâmetros</button>
+            </div>
           </details>
           <details class="gaveta desafio">
             <summary class="gaveta-resumo">
@@ -727,11 +730,15 @@
               <span class="desafio-nivel">médio</span>
             </summary>
             <p class="desafio-corpo">
-              Com <strong>2</strong> neurônios ocultos não dá: duas retas não cercam um disco
-              (o melhor que medimos foi 177 de 200). Com <strong>3</strong>, as três retas
-              formam um triângulo em volta do centro: tanh com η = 2 resolve na época 1418.
-              Com duas camadas de 6 e ReLU (η = 2), na época 65.
+              A menor rede que resolve tem <strong>2</strong> neurônios ocultos, mas só com a
+              ativação certa: com <strong>GELU</strong> e η = 5, na época 2679. Com tanh,
+              duas retas não cercam um disco (177 de 200); com <strong>3</strong> ocultos e
+              tanh (η = 2), as três retas formam um triângulo em volta do centro, na época
+              1418. Com duas camadas de 6 e ReLU (η = 2), na época 65.
             </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"circulo","modo":"mlp","camadas":[2],"ativacao":"gelu","taxa":5,"velocidade":3}'>Aplicar parâmetros</button>
+            </div>
           </details>
           <details class="gaveta desafio">
             <summary class="gaveta-resumo">
@@ -740,11 +747,64 @@
               <span class="desafio-nivel">médio</span>
             </summary>
             <p class="desafio-corpo">
-              Surpresa: a porta XOR, de 4 pontos, se resolve com 2 neurônios ocultos (uma
-              faixa entre duas retas paralelas), mas com os quadrantes cheios de pontos a
-              faixa não serve, e <strong>2</strong> não bastam (177 de 200).
-              Com <strong>3</strong>, tanh e η = 2, resolve na época 662; com 6, na 103.
+              A menor rede que resolve tem <strong>2</strong> neurônios ocultos, com a
+              ativação <strong>Swish</strong> e η = 5: época 812. Com tanh, 2 não bastam
+              (177 de 200), porque com os quadrantes cheios de pontos a faixa entre duas retas
+              não serve. Com <strong>3</strong>, tanh e η = 2, resolve na época 662; com 6, na 103.
             </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"quadrantes","modo":"mlp","camadas":[2],"ativacao":"swish","taxa":5,"velocidade":3}'>Aplicar parâmetros</button>
+            </div>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Duas meias-luas</span>
+              <span class="desafio-nivel">médio</span>
+            </summary>
+            <p class="desafio-corpo">
+              Os arcos se encaixam, e a melhor reta para em 172 de 200. Uma camada de
+              <strong>2</strong> ocultos chega perto (199 de 200), mas falta um ponto. A menor
+              rede que resolve tem <strong>2 neurônios e mais 1 na camada seguinte</strong>
+              (2 → 1), com tanh e η = 3: época 2192. Com 3 ocultos em uma camada, tanh e η = 2,
+              na época 2644. Com duas camadas de 6 é bem mais rápido: tanh na época 484,
+              ReLU na 320.
+            </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"luas","modo":"mlp","camadas":[2,1],"ativacao":"tanh","taxa":3,"velocidade":3}'>Aplicar parâmetros</button>
+            </div>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Xadrez 4×4</span>
+              <span class="desafio-nivel">difícil</span>
+            </summary>
+            <p class="desafio-corpo">
+              Dezesseis quadrados de cor alternada. Uma reta acerta só 100 de 200; uma camada
+              de 6 neurônios, 154; duas camadas de 4, 191. Com <strong>três camadas de 6</strong>,
+              <strong>GELU</strong> e η = 3, a rede acerta os 200 pontos na época 1223. Com tanh
+              (η = 5), na época 5888; com ReLU (η = 2), na 4556.
+            </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"xadrez","modo":"mlp","camadas":[6,6,6],"ativacao":"gelu","taxa":3,"velocidade":8}'>Aplicar parâmetros</button>
+            </div>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Yin-yang</span>
+              <span class="desafio-nivel">difícil</span>
+            </summary>
+            <p class="desafio-corpo">
+              Dois peixes entrelaçados, cada um com um olho da cor do outro. Uma camada de 2
+              neurônios chega a 186 de 200. Com <strong>duas camadas de 4</strong>,
+              <strong>ELU</strong> e η = 5, a rede acerta os 200 pontos na época 3958. Com três
+              camadas de 4 e tanh (η = 5), na época 2065; com três camadas de 6, na 1053.
+            </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"yinyang","modo":"mlp","camadas":[4,4],"ativacao":"elu","taxa":5,"velocidade":8}'>Aplicar parâmetros</button>
+            </div>
           </details>
           <details class="gaveta desafio">
             <summary class="gaveta-resumo">
@@ -759,10 +819,15 @@
               também chegam lá, mas devagar (η = 3: época 14 270); com ReLU, só três camadas
               resolveram (η = 5: época 3721).
             </p>
+            <div class="desafio-acoes">
+              <button type="button" class="botao-secundario botao-aplicar" data-parametros='{"problema":"classificacao","dataset":"espiral","modo":"mlp","camadas":[6,6,6],"ativacao":"tanh","taxa":3,"velocidade":8}'>Aplicar parâmetros</button>
+            </div>
           </details>
         </div>
         <p class="desafios-nota">
-          Medido com a semente 42 e o reinício automático desligado.
+          Medido com a semente 42 e o reinício automático desligado. As redes menores vêm de
+          uma busca em ordem de tamanho (de 1 a 6 neurônios por camada), com as 7 ativações e
+          η de 0,5 a 5, até 20 000 épocas.
         </p>
       </div>
     </div>

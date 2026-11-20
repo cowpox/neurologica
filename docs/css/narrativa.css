@@ -1720,3 +1720,18 @@ html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-bo
 .plano-balao > strong:first-child { display: block; margin-bottom: 4px; font-family: var(--fonte-sans); font-size: 12.5px; color: var(--cor-tinta); }
 .plano-balao p { margin: 0 0 6px; }
 .plano-balao p:last-child { margin-bottom: 0; color: var(--cor-suave); }
+
+/* botão "Aplicar parâmetros" no fim de cada gaveta de desafio */
+.desafio-acoes {
+  padding: 0 var(--esp-base) var(--esp-base);
+}
+.botao-aplicar {
+  width: auto;
+  height: auto;
+  min-height: 44px;
+  padding: 8px 18px;
+  font-family: var(--fonte-sans);
+  font-size: 15px;
+  color: var(--cor-primaria-forte);
+  border-color: var(--cor-primaria);
+}

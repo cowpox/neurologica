@@ -58,7 +58,7 @@ Organização de `docs/js/`:
 |---|---|
 | `dados.js`, `treino_perceptron.js`, `treino_adaline.js`, `treino_mlp.js` | lógica de treino, traduzida dos protótipos e conferida em `testes/` |
 | `desafios.js` | regra pura de conquista e de liberação de pistas (conferida em `testes/`) |
-| `datasets.js` | os conjuntos de classificação do laboratório livre: círculo, XOR em quadrantes, duas gaussianas e espiral (conferidos em `testes/`) |
+| `datasets.js` | os conjuntos de classificação do laboratório livre: círculo, XOR em quadrantes, duas gaussianas, espiral, duas meias-luas, xadrez 4×4 e yin-yang (conferidos em `testes/`) |
 | `laboratorio.js`, `grafico.js`, `algoritmo.js`, `rede_visual.js` | o laboratório: controles, plano de decisão, curva de erro, equação, log e a rede |
 | `ativacoes_visual.js`, `superficie_erro.js` | gavetas das funções de ativação (Ato 3) e ilustração da superfície de erro (Ato 2) |
 | `pistas.js`, `notificacao.js`, `progresso.js` | pistas progressivas, aviso de conquista e progresso guardado no navegador |

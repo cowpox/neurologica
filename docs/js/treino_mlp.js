@@ -511,6 +511,12 @@ export class TreinoMLP {
     return (ativacoes[ativacoes.length - 1][0][0] - 0.5) * 4;
   }
 
+  /** O mesmo `valorContinuo`, para muitos pontos numa propagação só (pintura do plano). */
+  valoresContinuos(pontos) {
+    const { ativacoes } = propagar(this.rede, pontos, this.ativacao);
+    return ativacoes[ativacoes.length - 1].map((linha) => (linha[0] - 0.5) * 4);
+  }
+
   /** A fronteira da saída fica em z = 0 (σ = 0,5). */
   get limiar() {
     return 0;
@@ -562,13 +568,29 @@ export class TreinoMLP {
     return faixa.map((x) => ({ x, y: -(w1 * x + b) / w2 }));
   }
 
+  // A ordem é a do código: mede e testa a parada ANTES de calcular o gradiente.
   static pseudocodigo = [
+    { chave: 'inicio', texto: 'W, b ← sorteio de Xavier' },
     { chave: 'cabecalho', texto: 'para cada época:' },
-    { chave: 'frente', texto: '  passo para a frente: a ← ativação(a · W + b), camada a camada', indent: 1 },
+    { chave: 'frente', texto: '  para a frente: a ← f(a · W + b), camada a camada (na saída, f = σ)', indent: 1 },
     { chave: 'erro', texto: '  SSE ← ½ Σ (y − ŷ)²', indent: 1 },
+    { chave: 'meta', texto: '  se atingiu a meta: parar   (erro pequeno, ou todos os pontos certos)', indent: 1 },
+    { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
+    { chave: 'reinicio', texto: '  se o SSE quase não caiu em 300 épocas: sortear pesos novos (até 10 vezes)', indent: 1 },
     { chave: 'delta_saida', texto: '  culpa da saída ← (ŷ − y) · σ′(ŷ)', indent: 1 },
-    { chave: 'delta_oculta', texto: '  para trás: culpa ← (culpa · Wᵀ) · ativação′(a)', indent: 1 },
-    { chave: 'atualiza', texto: '  W ← W − η · (entradaᵀ · culpa) / n', indent: 1 },
-    { chave: 'parada', texto: '  se SSE < 0,04: parar;  se empacou por 300 épocas: sortear de novo', indent: 1 },
+    { chave: 'delta_oculta', texto: '  para trás: culpa ← (culpa · Wᵀ) · f′(a), camada a camada', indent: 1 },
+    { chave: 'atualiza', texto: '  W ← W − η · (aᵀ · culpa) / n   e   b ← b − η · média(culpa)', indent: 1 },
   ];
+
+  /** As linhas que a época mais recente percorreu, em ordem (ver TreinoPerceptron). */
+  static sequenciaDoPasso(passo, treino) {
+    const linhas = ['cabecalho', 'frente', 'erro', 'meta'];
+    if (passo.estado === 'convergiu') return linhas;
+    linhas.push('limite');
+    if (passo.estado === 'limite') return linhas;
+    if (treino.reiniciarAoEmpacar) linhas.push('reinicio');
+    if (passo.estado === 'esgotou' || passo.reiniciou) return linhas;
+    linhas.push('delta_saida', 'delta_oculta', 'atualiza');
+    return linhas;
+  }
 }

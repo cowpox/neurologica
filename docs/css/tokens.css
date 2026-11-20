@@ -47,22 +47,21 @@
   --cor-acerto: #006b3b;
   --cor-erro: #b3323f;
 
-  /* ---- Gráficos: paleta ANTIGA, preservada ----
-     A dupla laranja/azul carrega o significado nos gráficos: laranja = classe 1 /
-     peso positivo / ativado; azul = classe 0 / peso negativo / desativado.
-     --cor-classe-* NÃO mudaram de valor; as --grafico-* guardam o resto da paleta
-     antiga que o código dos gráficos lê. */
-  --cor-classe-1: #d97757;
-  --cor-classe-0: #6a9bcc;
-  --grafico-destaque: #d97757;      /* ponto em avaliação e curva de erro */
+  /* ---- Gráficos: dupla verde/azul-royal ----
+     A dupla carrega o significado nos gráficos: verde (o da interface) = classe 1 /
+     peso positivo / ativado; azul-royal = classe 0 / peso negativo / desativado. As
+     --grafico-* guardam o resto da paleta que o código dos gráficos lê. */
+  --cor-classe-1: #00864a;
+  --cor-classe-0: #3b5bdb;
+  --grafico-destaque: #00864a;      /* ponto em avaliação e curva de erro */
   --grafico-tinta: #141413;
   --grafico-suave: #73726c;
   --grafico-superficie: #faf9f5;
   --grafico-borda: #d1cfc5;
   --grafico-borda-forte: #bdbab0;
   --grafico-reta-1: #141413;        /* retas de decisão (lidas por retasAtuais) */
-  --grafico-reta-2: #788c5d;
-  --grafico-reta-3: #c25f3f;
+  --grafico-reta-2: #b8860b;        /* âmbar e magenta: distintas do verde e do azul dos dados */
+  --grafico-reta-3: #a8408c;
   --grafico-reta-4: #73726c;
 
   /* ---- Aliases dos neutros do tema ----
@@ -166,18 +165,18 @@
     --cor-acerto: #63d99f;
     --cor-erro: #e8737d;
 
-    /* gráficos: paleta antiga do tema escuro */
-    --cor-classe-1: #e08a68;
-    --cor-classe-0: #7fb0dd;
-    --grafico-destaque: #e08a68;
+    /* gráficos: verde e azul-royal do tema escuro */
+    --cor-classe-1: #2ec27e;
+    --cor-classe-0: #7c9cff;
+    --grafico-destaque: #2ec27e;
     --grafico-tinta: #f5f3ee;
     --grafico-suave: #a09d93;
     --grafico-superficie: #16161a;
     --grafico-borda: #33333a;
     --grafico-borda-forte: #45454e;
     --grafico-reta-1: #f5f3ee;
-    --grafico-reta-2: #9ab17a;
-    --grafico-reta-3: #ec9b7a;
+    --grafico-reta-2: #e0b84a;
+    --grafico-reta-3: #d77bc0;
     --grafico-reta-4: #a09d93;
 
     --grao-opacidade: 0.035;
@@ -217,18 +216,18 @@
   --cor-acerto: #63d99f;
   --cor-erro: #e8737d;
 
-  /* gráficos: paleta antiga do tema escuro */
-  --cor-classe-1: #e08a68;
-  --cor-classe-0: #7fb0dd;
-  --grafico-destaque: #e08a68;
+  /* gráficos: verde e azul-royal do tema escuro */
+  --cor-classe-1: #2ec27e;
+  --cor-classe-0: #7c9cff;
+  --grafico-destaque: #2ec27e;
   --grafico-tinta: #f5f3ee;
   --grafico-suave: #a09d93;
   --grafico-superficie: #16161a;
   --grafico-borda: #33333a;
   --grafico-borda-forte: #45454e;
   --grafico-reta-1: #f5f3ee;
-  --grafico-reta-2: #9ab17a;
-  --grafico-reta-3: #ec9b7a;
+  --grafico-reta-2: #e0b84a;
+  --grafico-reta-3: #d77bc0;
   --grafico-reta-4: #a09d93;
 
   --grao-opacidade: 0.035;

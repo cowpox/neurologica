@@ -9,6 +9,9 @@
  *   XOR em quadrantes — a porta XOR "com ruído": quadrantes opostos, mesma classe
  *   duas gaussianas  — duas nuvens separáveis por uma reta (o controle: um neurônio resolve)
  *   espiral dupla    — dois braços entrelaçados; o caso difícil
+ *   duas meias-luas  — dois arcos encaixados (o make_moons do sklearn)
+ *   xadrez 4×4       — tabuleiro de 16 células alternadas
+ *   yin-yang         — dois peixes entrelaçados, com um olho de cada cor
  *
  * Os pontos vivem em [−6, 6]² (como no Playground), mas a rede recebe as coordenadas
  * divididas por 6, isto é, em [−1, 1]: assim a inicialização de Xavier e as taxas de
@@ -16,7 +19,7 @@
  * original. Os conjuntos são gerados SEM sobreposição entre as classes, para que "acertar
  * todos os pontos" seja possível e sirva de critério de parada.
  *
- * Classes 0/1, como nas portas: 1 = laranja, 0 = azul (as cores dos dados).
+ * Classes 0/1, como nas portas: 1 = verde, 0 = azul-royal (as cores dos dados).
  */
 
 import { criarAleatorio } from './dados.js';
@@ -88,6 +91,81 @@ const GERADORES = {
     }
     return pontos;
   },
+  // as duas meias-luas do sklearn (make_moons), centradas e esticadas para [−4,8; 4,8]
+  luas(n, aleatorio) {
+    const pontos = [];
+    const escala = 3.2;
+    const tremor = 0.07; // na escala das luas: o vão entre elas continua vazio
+    for (let i = 0; i < n; i += 1) {
+      const classe = i < n / 2 ? 0 : 1;
+      const t = aleatorio() * Math.PI;
+      const x = classe === 0 ? Math.cos(t) : 1 - Math.cos(t);
+      const y = classe === 0 ? Math.sin(t) : 0.5 - Math.sin(t);
+      pontos.push({
+        x: (x - 0.5 + tremor * normal(aleatorio)) * escala,
+        y: (y - 0.25 + tremor * normal(aleatorio)) * escala,
+        classe,
+      });
+    }
+    return pontos;
+  },
+  // tabuleiro 4×4 sobre [−5,6; 5,6]²: células de 2,8, cor alternada, com uma faixa vazia de
+  // 0,3 de cada lado das linhas, para as classes não se tocarem
+  xadrez(n, aleatorio) {
+    const pontos = [];
+    const meio = 5.6;
+    const celula = 2.8;
+    const folga = 0.3;
+    const contagem = [0, 0];
+    while (pontos.length < n) {
+      const x = (aleatorio() * 2 - 1) * meio;
+      const y = (aleatorio() * 2 - 1) * meio;
+      // distância até a linha de divisão mais próxima (em x e em y)
+      const aresta = (v) => ((v + meio) % celula + celula) % celula; // posição dentro da célula
+      const dx = Math.min(aresta(x), celula - aresta(x));
+      const dy = Math.min(aresta(y), celula - aresta(y));
+      if (dx < folga || dy < folga) continue;
+      const classe = (Math.floor((x + meio) / celula) + Math.floor((y + meio) / celula)) % 2;
+      if (contagem[classe] >= n / 2) continue; // 100 pontos de cada classe
+      contagem[classe] += 1;
+      pontos.push({ x, y, classe });
+    }
+    return pontos;
+  },
+  // yin-yang: disco de raio 5,5 dividido por uma curva em S (dois semicírculos), cada "cabeça"
+  // com um olho da cor oposta. Pontos a menos de 0,3 de qualquer fronteira são descartados.
+  yinyang(n, aleatorio) {
+    const R = 5.5;
+    const r = R / 2;
+    const olho = R / 6;
+    // 1 = lado esquerdo e cabeça de baixo; 0 = lado direito e cabeça de cima; olhos invertidos
+    const classeDe = (x, y) => {
+      if (Math.hypot(x, y) > R) return -1;
+      if (Math.hypot(x, y - r) < olho) return 1;
+      if (Math.hypot(x, y + r) < olho) return 0;
+      if (Math.hypot(x, y - r) < r) return 0;
+      if (Math.hypot(x, y + r) < r) return 1;
+      return x < 0 ? 1 : 0;
+    };
+    const folga = 0.3;
+    const pontos = [];
+    const contagem = [0, 0];
+    while (pontos.length < n) {
+      const x = (aleatorio() * 2 - 1) * R;
+      const y = (aleatorio() * 2 - 1) * R;
+      const classe = classeDe(x, y);
+      if (classe < 0 || contagem[classe] >= n / 2) continue;
+      let liso = true;
+      for (let k = 0; k < 12 && liso; k += 1) {
+        const outra = classeDe(x + folga * Math.cos(k * Math.PI / 6), y + folga * Math.sin(k * Math.PI / 6));
+        if (outra >= 0 && outra !== classe) liso = false;
+      }
+      if (!liso) continue;
+      contagem[classe] += 1;
+      pontos.push({ x, y, classe });
+    }
+    return pontos;
+  },
 };
 
 export const DATASETS = {
@@ -106,6 +184,20 @@ export const DATASETS = {
   espiral: {
     nome: 'Espiral dupla',
     resumo: 'Dois braços entrelaçados. O desafio mais difícil: pede mais camadas e mais neurônios.',
+  },
+  // vem DEPOIS dos quatro originais: a semente de cada conjunto depende da posição na lista,
+  // e assim os pontos (e os números medidos) dos antigos não mudam
+  luas: {
+    nome: 'Duas meias-luas',
+    resumo: 'Dois arcos que se encaixam um no outro. Nenhuma reta separa, mas a curva certa sim.',
+  },
+  xadrez: {
+    nome: 'Xadrez 4×4',
+    resumo: 'Dezesseis quadrados de cor alternada: o XOR em quadrantes levado ao extremo. Pede muitas fronteiras que se cruzam.',
+  },
+  yinyang: {
+    nome: 'Yin-yang',
+    resumo: 'Dois "peixes" entrelaçados, cada um com um olho da cor do outro: uma fronteira em S com bolsões.',
   },
 };
 

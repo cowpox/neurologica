@@ -74,6 +74,15 @@ const formatarTaxa = (valor) => String(valor).replace('.', ',');
 
 let contadorDeListas = 0;
 const TAXA_MAXIMA = 100;
+
+/**
+ * Animação das linhas do algoritmo. No "próximo passo", cada linha fica acesa
+ * MS_POR_LINHA_PASSO_MANUAL. Com o treino rodando, o tempo de um passo é dividido entre as
+ * linhas dele; se cada uma ficaria acesa menos que MS_MINIMO_POR_LINHA (pisca sem dar para
+ * ler), a linha vai direto ao fim do passo. Valores para ajustar no teste.
+ */
+const MS_POR_LINHA_PASSO_MANUAL = 220;
+const MS_MINIMO_POR_LINHA = 25;
 const EPOCAS_MAXIMAS = 1000000;
 
 /**
@@ -167,6 +176,35 @@ export class Laboratorio {
 
   taxaInicial(modo) {
     return this.config.taxasIniciais[modo] ?? MODOS[modo].taxaPadrao;
+  }
+
+  /**
+   * Põe o laboratório numa configuração pronta (usada pelo botão "Aplicar parâmetros" das
+   * gavetas de desafio): problema, conjunto de dados ou porta, modelo, arquitetura,
+   * ativação, taxa e velocidade. Reinício automático desligado, semente 42 e limite de épocas
+   * padrão, que são as condições em que os números das gavetas foram medidos. Não inicia o
+   * treino: quem aperta o ▶ é o leitor.
+   */
+  aplicarConfiguracao({
+    problema = 'portas', dataset = this.dataset, porta = this.porta, modo = this.modo,
+    camadas = this.camadas, ativacao = this.ativacao, taxa = null, velocidade = 1,
+  } = {}) {
+    if (!this.config.modos.includes(modo) || !this.config.problemas.includes(problema)) return false;
+    this.pausar();
+    this.problema = problema;
+    this.dataset = dataset;
+    this.porta = porta;
+    this.modo = modo;
+    this.camadas = [...camadas];
+    this.ativacao = ativacao;
+    this.taxa = taxa ?? this.taxaInicial(modo);
+    this.velocidade = velocidade;
+    this.semente = 42;
+    this.reinicio = false;
+    this.maxEpocasPorModo = {};
+    this.montarCampos();
+    this.construirTreino();
+    return true;
   }
 
   rotuloDoModo(chave) {
@@ -266,7 +304,13 @@ export class Laboratorio {
     });
 
     this.painel = new PainelAlgoritmo(this.container.querySelector('.lab-coluna--algoritmo'));
-    this.plano = new PlanoDeDecisao(this.container.querySelector('.lab-plano'));
+    // Laboratório livre num PC (mouse e tela larga): região de decisão com 3× a resolução
+    // (180 em vez de 60 células por lado), para a fronteira não ficar serrilhada. No celular
+    // e nos atos continua 60, que é leve.
+    const pcComTelaLarga = window.matchMedia?.('(pointer: fine) and (min-width: 900px)').matches;
+    this.plano = new PlanoDeDecisao(this.container.querySelector('.lab-plano'), {
+      resolucao: this.config.controlesExtras && pcComTelaLarga ? 180 : undefined,
+    });
     this.grafico = new GraficoDeErro(this.container.querySelector('.lab-erro'));
 
     this.montarCampos();
@@ -278,7 +322,7 @@ export class Laboratorio {
    * Os dois botões (?) que explicam o mini-gráfico de cada neurônio e as linhas entre
    * eles (pedidos desde a Decisão 7). Tinham sumido quando a rede foi reescrita como um
    * SVG único, sem que os testes percebessem. Os textos descrevem as cores dos gráficos,
-   * que continuam laranja e azul mesmo com a interface verde.
+   * que são verde e azul-royal (a paleta dos dados).
    */
   montarAjudaDaRede() {
     const titulo = this.container.querySelector('.lab-rede-embrulho .lab-secao-titulo');
@@ -289,7 +333,7 @@ export class Laboratorio {
     const ajudaMiniatura = criarAjuda(
       'O mini-gráfico',
       'Cada quadradinho mostra a saída daquele neurônio em todo o plano de entrada: ' +
-      'laranja onde ele responde alto, azul onde responde baixo. É o recorte que aquele ' +
+      'verde onde ele responde alto, azul onde responde baixo. É o recorte que aquele ' +
       'neurônio sozinho aprendeu. O da saída é a resposta final da rede. Toque para ' +
       'ampliar e toque de novo para voltar.',
     );
@@ -299,7 +343,7 @@ export class Laboratorio {
 
     const ajudaLinhas = criarAjuda(
       'As linhas entre neurônios',
-      'A espessura é o tamanho do peso. Laranja é peso positivo e azul é peso negativo. ' +
+      'A espessura é o tamanho do peso. Verde é peso positivo e azul é peso negativo. ' +
       'O brilho é a ativação real do neurônio de origem: linha apagada, neurônio calado.',
     );
     // fica junto à borda direita: o balão abre alinhado à direita para não ser cortado
@@ -365,8 +409,8 @@ export class Laboratorio {
       campoProblema.querySelector('.campo-rotulo').appendChild(criarAjuda(
         'Portas lógicas ou classificação',
         'As portas são tabelas-verdade de 4 pontos. Na classificação, são 200 pontos em ' +
-        'formatos clássicos (círculo, XOR em quadrantes, duas nuvens, espiral): a mesma ' +
-        'rede, problemas maiores. Lá o treino para quando acerta todos os pontos.',
+        'formatos clássicos (círculo, XOR em quadrantes, duas nuvens, espiral, meias-luas, xadrez e yin-yang): a ' +
+        'mesma rede, problemas maiores. Lá o treino para quando acerta todos os pontos.',
       ));
       this.elCampos.appendChild(campoProblema);
     }
@@ -694,6 +738,8 @@ export class Laboratorio {
 
     this.atualizarAviso();
     this.renderizar(null);
+    // treino novo: os pesos acabaram de ser sorteados, a execução está na primeira linha
+    this.painel.destacarLinha('inicio');
     this.atualizarEstado();
   }
 
@@ -733,10 +779,15 @@ export class Laboratorio {
   }
 
   pausar() {
+    const estavaRodando = this.rodando;
     this.rodando = false;
     this.container.classList.remove('laboratorio--rodando');
     this.botaoTocar?.setAttribute('aria-label', 'Iniciar treino');
     if (this.quadro) cancelAnimationFrame(this.quadro);
+    // o último quadro do treino saiu na grade leve: redesenha parado, com a resolução cheia
+    if (estavaRodando && this.plano.resolucao > 60) {
+      requestAnimationFrame(() => { if (!this.rodando && this.treino) this.renderizar(null); });
+    }
   }
 
   laco(agora) {
@@ -757,12 +808,16 @@ export class Laboratorio {
     this.acumulador -= Math.floor(this.acumulador);
 
     let ultimo = null;
+    let dados = 0;
     while (passos > 0 && !this.treino.terminou) {
       ultimo = this.avancarUmPasso(false);
       passos -= 1;
+      dados += 1;
     }
 
-    if (ultimo) this.renderizar(ultimo);
+    // A animação das linhas do algoritmo cabe no intervalo até o próximo passo; com mais de
+    // um passo no mesmo quadro não há intervalo nenhum, e a linha vai direto ao fim.
+    if (ultimo) this.renderizar(ultimo, { msDoPasso: dados === 1 ? 1000 / porSegundo : 0 });
     this.atualizarEstado();
 
     if (this.treino.terminou) {
@@ -778,7 +833,8 @@ export class Laboratorio {
     const passo = this.treino.passo();
     this.registrarLog(passo);
     if (renderizar) {
-      this.renderizar(passo);
+      // "próximo passo": sem pressa, cada linha fica acesa o bastante para ser lida
+      this.renderizar(passo, { msPorLinha: MS_POR_LINHA_PASSO_MANUAL });
       this.atualizarEstado();
       if (this.treino.terminou) this.registrarDesfecho();
     }
@@ -961,11 +1017,18 @@ export class Laboratorio {
     };
   }
 
-  renderizar(passo) {
+  /**
+   * Desenha o estado atual. Com um `passo`, também anima as linhas do algoritmo que ele
+   * percorreu: `msPorLinha` fixo (próximo passo) ou `msDoPasso`, o tempo até o próximo passo
+   * do treino rodando, dividido entre as linhas. Sem `passo` (troca de tema, redesenho), a
+   * linha acesa não muda.
+   */
+  renderizar(passo, { msPorLinha = null, msDoPasso = 0 } = {}) {
     this.plano.desenhar(this.treino, {
       retas: this.retasAtuais(),
       destaque: passo && this.modo !== 'mlp' && !this.emNuvem ? passo.indice : -1,
       realce: this.realceDoPontoRente(),
+      rapido: this.rodando,
     });
 
     // sempre desenha, até com o histórico vazio: o gráfico em branco mostra os eixos e uma
@@ -976,7 +1039,6 @@ export class Laboratorio {
       this.painel.renderizarEquacaoRede(this.treino);
       this.painel.renderizarPesosRede(this.treino);
       this.redeVisual?.atualizar();
-      this.painel.destacarLinha(passo?.reiniciou ? 'parada' : 'atualiza');
     } else {
       this.painel.renderizarEquacaoNeuronio(
         this.treino.pesos, this.treino.bias, this.treino.limiar,
@@ -984,9 +1046,15 @@ export class Laboratorio {
       this.painel.renderizarPesosNeuronio(
         this.treino.pesos, this.treino.bias, passo?.houveAtualizacao,
       );
-      if (passo) {
-        this.painel.destacarLinha(passo.houveAtualizacao ? 'atualiza' : 'erro');
-      }
+    }
+
+    // As linhas do algoritmo que este passo percorreu, na ordem. A última é onde a execução
+    // está agora: ao terminar, é a condição de parada que disparou.
+    if (passo) {
+      const linhas = MODOS[this.modo].classe.sequenciaDoPasso(passo, this.treino);
+      let ms = msPorLinha ?? msDoPasso / linhas.length;
+      if (ms < MS_MINIMO_POR_LINHA) ms = 0; // rápido demais para ler: acende direto a última
+      this.painel.animarLinhas(linhas, ms);
     }
   }
 

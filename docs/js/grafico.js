@@ -34,9 +34,10 @@ function coresDoTema(elemento) {
 }
 
 export class PlanoDeDecisao {
-  constructor(container, { entradas = 2 } = {}) {
+  constructor(container, { entradas = 2, resolucao = RESOLUCAO_REGIAO } = {}) {
     this.container = container;
     this.entradas = entradas;
+    this.resolucao = resolucao;
     this.faixa = FAIXA_PORTAS;
     this.escalaRotulo = null; // conjuntos de classificação: rótulos dos eixos na escala original
     this.nuvem = false;       // muitos pontos: desenho compacto, sem rótulo por ponto
@@ -49,10 +50,10 @@ export class PlanoDeDecisao {
 
     // canvas auxiliar, em baixa resolução, onde a região é calculada célula a célula
     this.canvasRegiao = document.createElement('canvas');
-    this.canvasRegiao.width = RESOLUCAO_REGIAO;
-    this.canvasRegiao.height = RESOLUCAO_REGIAO;
+    this.canvasRegiao.width = resolucao;
+    this.canvasRegiao.height = resolucao;
     this.ctxRegiao = this.canvasRegiao.getContext('2d');
-    this.imagemRegiao = this.ctxRegiao.createImageData(RESOLUCAO_REGIAO, RESOLUCAO_REGIAO);
+    this.imagemRegiao = this.ctxRegiao.createImageData(resolucao, resolucao);
 
     this.svg = d3.select(container).append('svg').attr('class', 'plano-svg');
     this.gEixos = this.svg.append('g').attr('class', 'plano-eixos');
@@ -115,34 +116,52 @@ export class PlanoDeDecisao {
    * negativo puxa para a classe 0, positivo para a classe 1, e o módulo indica a
    * confiança — é o que produz a faixa clara de "indecisão" junto à fronteira.
    */
-  desenharRegiao(treino, cores) {
+  desenharRegiao(treino, cores, rapido = false) {
+    // A resolução alta (laboratório livre no PC) custa até ~90 ms numa rede grande: com o
+    // treino rodando, a grade volta para a leve; parado, a fronteira sai nítida.
+    const resolucao = rapido ? Math.min(RESOLUCAO_REGIAO, this.resolucao) : this.resolucao;
+    if (this.canvasRegiao.width !== resolucao) {
+      this.canvasRegiao.width = resolucao;
+      this.canvasRegiao.height = resolucao;
+      this.imagemRegiao = this.ctxRegiao.createImageData(resolucao, resolucao);
+    }
     const dados = this.imagemRegiao.data;
     const faixa = this.faixa;
-    const passo = (faixa[1] - faixa[0]) / (RESOLUCAO_REGIAO - 1);
+    const passo = (faixa[1] - faixa[0]) / (resolucao - 1);
 
-    for (let linha = 0; linha < RESOLUCAO_REGIAO; linha += 1) {
+    // todos os pontos da grade de uma vez: a rede calcula em lote (bem mais rápido com a
+    // resolução maior); os neurônios únicos usam o valorContinuo ponto a ponto
+    const pontos = new Array(resolucao * resolucao);
+    for (let linha = 0; linha < resolucao; linha += 1) {
       // a imagem cresce para baixo, o eixo x2 cresce para cima: daí a inversão
       const x2 = faixa[1] - linha * passo;
-      for (let coluna = 0; coluna < RESOLUCAO_REGIAO; coluna += 1) {
+      for (let coluna = 0; coluna < resolucao; coluna += 1) {
         const x1 = faixa[0] + coluna * passo;
-        const ponto = this.entradas === 1 ? [x1] : [x1, x2];
-        const valor = treino.valorContinuo(ponto);
-
-        // achata o valor em [-1,1] de forma suave: perto da fronteira a cor fica
-        // quase neutra, longe dela satura na cor da classe
-        const intensidade = Math.tanh(valor * 2.2);
-        const mistura = (intensidade + 1) / 2;
-        const cor = d3.interpolateRgb(cores.classe0, cores.classe1)(mistura);
-        const rgb = d3.color(cor);
-
-        const posicao = (linha * RESOLUCAO_REGIAO + coluna) * 4;
-        dados[posicao] = rgb.r;
-        dados[posicao + 1] = rgb.g;
-        dados[posicao + 2] = rgb.b;
-        // opacidade menor perto da fronteira: deixa o papel aparecer e evita que o
-        // fundo compita com os pontos de dados
-        dados[posicao + 3] = 40 + Math.abs(intensidade) * 120;
+        pontos[linha * resolucao + coluna] = this.entradas === 1 ? [x1] : [x1, x2];
       }
+    }
+    const valores = typeof treino.valoresContinuos === 'function'
+      ? treino.valoresContinuos(pontos)
+      : pontos.map((ponto) => treino.valorContinuo(ponto));
+
+    // mistura das duas cores feita à mão, em números (antes, um d3.interpolateRgb e um
+    // d3.color por célula, que leem texto: caro demais para a grade maior)
+    const c0 = d3.rgb(cores.classe0);
+    const c1 = d3.rgb(cores.classe1);
+
+    for (let k = 0; k < valores.length; k += 1) {
+      // achata o valor em [-1,1] de forma suave: perto da fronteira a cor fica
+      // quase neutra, longe dela satura na cor da classe
+      const intensidade = Math.tanh(valores[k] * 2.2) || 0;
+      const mistura = (intensidade + 1) / 2;
+
+      const posicao = k * 4;
+      dados[posicao] = c0.r + (c1.r - c0.r) * mistura;
+      dados[posicao + 1] = c0.g + (c1.g - c0.g) * mistura;
+      dados[posicao + 2] = c0.b + (c1.b - c0.b) * mistura;
+      // opacidade menor perto da fronteira: deixa o papel aparecer e evita que o
+      // fundo compita com os pontos de dados
+      dados[posicao + 3] = 40 + Math.abs(intensidade) * 120;
     }
 
     this.ctxRegiao.putImageData(this.imagemRegiao, 0, 0);
@@ -319,7 +338,7 @@ export class PlanoDeDecisao {
     this.ultimasOpcoes = opcoes;
     const cores = coresDoTema(this.container);
 
-    this.desenharRegiao(treino, cores);
+    this.desenharRegiao(treino, cores, opcoes.rapido);
     this.desenharEixos(cores);
     this.desenharRetas(opcoes.retas || [], cores);
 

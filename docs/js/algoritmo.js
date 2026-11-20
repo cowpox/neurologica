@@ -23,10 +23,19 @@ function formatar(numero, casas = 2) {
   return valor.toFixed(casas);
 }
 
+/** Número com 3 casas e o sinal sempre presente (+0.250 / −0.250), para o log ter colunas fixas. */
+function comSinal(numero) {
+  const valor = Number(numero);
+  if (!Number.isFinite(valor)) return ' ∞';
+  return `${valor < 0 ? '−' : '+'}${Math.abs(valor).toFixed(3)}`;
+}
+
 /** Nome curto de cada passo, para aparecer ao lado das abas quando o log está aberto. */
 const NOMES_DE_PASSO = {
+  inicio: 'sorteando os pesos',
   cabecalho: 'início da época',
   amostra: 'lendo a amostra',
+  alvo: 'definindo o alvo',
   soma: 'somando',
   frente: 'passo para a frente',
   ativacao: 'ativação',
@@ -34,7 +43,12 @@ const NOMES_DE_PASSO = {
   delta_saida: 'culpa da saída',
   delta_oculta: 'propagando para trás',
   atualiza: 'corrigindo os pesos',
-  parada: 'testando a parada',
+  custo: 'medindo o custo',
+  convergiu: 'testando a parada',
+  divergiu: 'testando a parada',
+  meta: 'testando a parada',
+  limite: 'testando o limite',
+  reinicio: 'testando se empacou',
 };
 
 export class PainelAlgoritmo {
@@ -43,7 +57,7 @@ export class PainelAlgoritmo {
     this.container.classList.add('painel-algoritmo');
     this.container.innerHTML = `
       <div class="painel-bloco">
-        <div class="painel-rotulo">Fronteira de decisão</div>
+        <div class="painel-rotulo painel-rotulo--reta">Fronteira de decisão</div>
         <!-- a equação e os pesos que a formam, numa caixa só -->
         <div class="painel-reta">
           <div class="painel-equacao" aria-live="polite"></div>
@@ -67,6 +81,7 @@ export class PainelAlgoritmo {
 
     this.elEquacao = this.container.querySelector('.painel-equacao');
     this.elPesos = this.container.querySelector('.painel-pesos');
+    this.elRotuloReta = this.container.querySelector('.painel-rotulo--reta');
     this.elPseudo = this.container.querySelector('.painel-pseudocodigo');
     this.elPista = this.container.querySelector('.aba-pista');
     this.abas = [...this.container.querySelectorAll('.aba')];
@@ -134,11 +149,43 @@ export class PainelAlgoritmo {
     });
   }
 
+  /** Acende uma linha (e interrompe uma animação em curso). */
   destacarLinha(chave) {
+    this.pararAnimacao();
+    this.acenderLinha(chave);
+  }
+
+  acenderLinha(chave) {
     this.elPseudo.querySelectorAll('.pseudo-linha').forEach((item) => {
       item.classList.toggle('pseudo-linha--ativa', item.dataset.chave === chave);
     });
     if (this.elPista) this.elPista.textContent = NOMES_DE_PASSO[chave] ?? '';
+  }
+
+  /**
+   * Percorre as linhas `chaves` na ordem em que o algoritmo as executou, `msPorLinha` em cada
+   * uma, e termina acesa na última. Com `msPorLinha` <= 0 (ou uma linha só) acende direto a
+   * última: é o caso do treino rápido, em que não haveria tempo de ler nada.
+   */
+  animarLinhas(chaves, msPorLinha) {
+    this.pararAnimacao();
+    if (!chaves.length) return;
+    if (msPorLinha <= 0 || chaves.length === 1) {
+      this.acenderLinha(chaves[chaves.length - 1]);
+      return;
+    }
+    let i = 0;
+    const proxima = () => {
+      this.acenderLinha(chaves[i]);
+      i += 1;
+      this.temporizador = i < chaves.length ? setTimeout(proxima, msPorLinha) : null;
+    };
+    proxima();
+  }
+
+  pararAnimacao() {
+    if (this.temporizador) clearTimeout(this.temporizador);
+    this.temporizador = null;
   }
 
   limparLog() {
@@ -170,14 +217,17 @@ export class PainelAlgoritmo {
     }).join('');
 
     const sinalBias = bias < 0 ? '-' : '+';
+    this.elRotuloReta.textContent = 'Fronteira de decisão';
     const latex = `${termos} ${sinalBias} ${formatar(Math.abs(bias), CASAS_DOS_PESOS)} = ${formatar(limiar, CASAS_DOS_PESOS)}`;
     katex.render(latex, this.elEquacao, { throwOnError: false, displayMode: true });
   }
 
   renderizarEquacaoRede(treino) {
+    // Na rede a fronteira não é uma equação só (é uma curva, composta de várias retas), então
+    // o bloco mostra só a arquitetura; a conta de cada camada está no pseudocódigo.
+    this.elRotuloReta.textContent = 'Arquitetura da rede';
     const formato = treino.formato.join(' \\rightarrow ');
-    const latex = `\\underbrace{${formato}}_{\\text{arquitetura}}
-      \\qquad a^{(l)} = f\\!\\left(a^{(l-1)}W^{(l)} + b^{(l)}\\right)`;
+    const latex = `\\Large ${formato}`;
     katex.render(latex, this.elEquacao, { throwOnError: false, displayMode: true });
   }
 
@@ -217,7 +267,7 @@ export function linhaLogDiscreto(passo) {
   const sinal = passo.erro > 0 ? '+' : '';
   return (
     `ép ${String(passo.epoca).padStart(2)} · it ${passo.indice + 1} · ` +
-    `x=${x} y=${passo.yReal} · z=${formatar(passo.z, 3)} · ŷ=${passo.yPrevisto} · ` +
+    `x=${x} y=${passo.yReal} · z=${comSinal(passo.z)} · ŷ=${passo.yPrevisto} · ` +
     `erro=${sinal}${passo.erro}` +
     (passo.houveAtualizacao ? '  → corrigiu' : '  → sem correção')
   );
@@ -230,10 +280,12 @@ export function linhaLogDiscreto(passo) {
 export function linhaLogContinuo(passo) {
   const x = `(${passo.x.map((v) => v.toFixed(0)).join(',')})`;
   const alvo = passo.alvo > 0 ? '+1' : '−1';
+  // números com largura fixa (o sinal ocupa sempre uma casa): as colunas ficam alinhadas e
+  // a linha tem sempre o mesmo comprimento, em vez de crescer quando z fica negativo
   return (
     `ép ${String(passo.epoca).padStart(2)} · it ${passo.indice + 1} · ` +
-    `x=${x} alvo=${alvo} · z=${formatar(passo.z, 3)} · ` +
-    `erro=(alvo−z)=${formatar(passo.erro, 3)} · ŷ=${passo.yPrevisto}`
+    `x=${x} alvo=${alvo} · z=${comSinal(passo.z)} · ` +
+    `erro=${comSinal(passo.erro)} · ŷ=${passo.yPrevisto}`
   );
 }
 

@@ -166,12 +166,30 @@ export class TreinoPerceptron {
 
   /** Linhas do pseudocódigo, com a chave usada para destacar o passo atual. */
   static pseudocodigo = [
+    { chave: 'inicio', texto: 'w ← valores aleatórios pequenos;  b ← 0' },
     { chave: 'cabecalho', texto: 'para cada época:' },
     { chave: 'amostra', texto: '  para cada exemplo (x, y):', indent: 1 },
     { chave: 'soma', texto: '    z ← w · x + b', indent: 2 },
     { chave: 'ativacao', texto: '    ŷ ← degrau(z)', indent: 2 },
     { chave: 'erro', texto: '    erro ← y − ŷ', indent: 2 },
     { chave: 'atualiza', texto: '    se erro ≠ 0:  w ← w + η·erro·x   e   b ← b + η·erro', indent: 2 },
-    { chave: 'parada', texto: '  se nenhuma correção na época inteira: parar', indent: 1 },
+    { chave: 'convergiu', texto: '  se nenhuma correção na época: parar (convergiu)', indent: 1 },
+    { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
   ];
+
+  /**
+   * As linhas do pseudocódigo que o passo `passo` (o último dado) percorreu, em ordem. Lê o
+   * estado do treino DEPOIS do passo, então só vale para o passo mais recente.
+   */
+  static sequenciaDoPasso(passo, treino) {
+    const linhas = passo.indice === 0 ? ['cabecalho'] : [];
+    linhas.push('amostra', 'soma', 'ativacao', 'erro', 'atualiza');
+    if (passo.fimDeEpoca) {
+      linhas.push('convergiu');
+      if (!treino.convergiu) linhas.push('limite');
+      // nenhuma parada disparou: a execução volta ao início do laço, e é aí que fica
+      if (!treino.terminou) linhas.push('cabecalho');
+    }
+    return linhas;
+  }
 }

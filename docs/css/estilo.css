@@ -856,11 +856,15 @@ a:hover { text-decoration: underline; }
   color: var(--cor-texto);
   scrollbar-width: thin;
   scrollbar-color: var(--cor-borda) transparent;
+  /* cada iteração é UMA linha: o que não couber rola na horizontal, sem quebrar */
+  overflow-x: auto;
+  /* chegando ao topo ou ao fim do log, a rolagem para ali e não passa para a página */
+  overscroll-behavior: contain;
 }
-.painel-log::-webkit-scrollbar { width: 7px; }
+.painel-log::-webkit-scrollbar { width: 7px; height: 7px; }
 .painel-log::-webkit-scrollbar-track { background: transparent; }
 .painel-log::-webkit-scrollbar-thumb { background-color: var(--cor-borda); border-radius: var(--raio-pilula); }
-.log-linha { white-space: pre-wrap; }
+.log-linha { white-space: pre; width: max-content; min-width: 100%; }
 .log-linha--mudou { color: var(--cor-tinta); }
 .log-linha--epoca { color: var(--cor-suave); font-style: italic; }
 .log-linha--sucesso { color: var(--cor-acerto); font-weight: 700; }
