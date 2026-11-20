@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="NeuroLógica">
+  <title>NeuroLógica</title>
+  <!-- Marca original do projeto: um neurônio estilizado lido da esquerda para a
+       direita — dendritos recebem, a soma integra, o axônio dispara e se ramifica.
+       É a própria estrutura que o site ensina, reduzida a um símbolo. Desenhada do
+       zero para o trabalho (Decisão 4 em planejamento/06_detalhes_implementacao.md):
+       deliberadamente NÃO deriva de nenhuma marca existente. -->
+  <g fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <!-- dendritos (entradas) -->
+    <path d="M15 24 L7 15.5" />
+    <path d="M15 24 L4.5 24" />
+    <path d="M15 24 L7 32.5" />
+    <!-- axônio e ramificação terminal (saída) -->
+    <path d="M27 24 L37 24" />
+    <path d="M37 24 L43.5 18.5" />
+    <path d="M37 24 L43.5 29.5" />
+  </g>
+  <!-- terminais das entradas -->
+  <g fill="currentColor" opacity="0.55">
+    <circle cx="6.4" cy="14.9" r="2.5" />
+    <circle cx="4" cy="24" r="2.5" />
+    <circle cx="6.4" cy="33.1" r="2.5" />
+  </g>
+  <!-- terminais da saída -->
+  <g fill="currentColor" opacity="0.55">
+    <circle cx="44" cy="18" r="2.2" />
+    <circle cx="44" cy="30" r="2.2" />
+  </g>
+  <!-- soma: o corpo do neurônio, onde a soma ponderada acontece -->
+  <circle cx="21" cy="24" r="6.4" fill="var(--cor-primaria, #00864a)" />
+</svg>

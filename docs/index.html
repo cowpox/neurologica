@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <!-- Sem zoom de pinça: nos testes em celular qualquer zoom travava a página, e o site já é
+       feito para caber na tela. (Trade-off de acessibilidade: ver o diário.) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeuroLógica</title>
+  <meta name="description" content="Três perguntas, três atos: o Perceptron, o gradiente descendente e a rede multicamada treinando ao vivo nas 7 portas lógicas. Trabalho final de Redes Neurais I (UEL).">
+  <meta name="theme-color" content="#00864a">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+
+  <!-- Tema aplicado ANTES da primeira pintura (Decisão 11 da demo): se isto virasse um
+       módulo carregado no fim da página, o navegador pintaria a tela clara primeiro e só
+       depois trocaria para a escura. Script bloqueante de propósito, sem dependências. -->
+  <script>
+    (function () {
+      try {
+        var salvo = localStorage.getItem('neurologica:tema');
+        var escuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.tema = salvo || (escuro ? 'escuro' : 'claro');
+      } catch (erro) {
+        document.documentElement.dataset.tema =
+          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+      }
+    })();
+  </script>
+
+  <link rel="preload" href="vendor/fonts/files/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/files/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/fonts/fontes.css">
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/narrativa.css">
+</head>
+<body class="carregando">
+
+<!-- Filtros compartilhados. O "rascunho" desloca levemente os contornos com ruído,
+     dando aos traços geométricos a irregularidade de um desenho a lápis. -->
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rascunho" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="3" seed="7" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rascunho-fino" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Duas variações do "rascunho" com outra semente. Alternar entre as três a ~8
+         quadros por segundo dá o tremido de animação desenhada à mão (só em decoração). -->
+    <filter id="rascunho-b" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="3" seed="19" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rascunho-c" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="3" seed="31" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- O logotipo da abertura vive num espaço de 48 unidades: o filtro comum, nessa
+         escala, deformaria demais. Esta versão treme na mesma proporção visual. -->
+    <filter id="rascunho-logo" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="2" seed="5" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="0.55" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ============================ tela de carregamento ============================ -->
+<!-- "O caderno abre": órbita riscada à mão, mira e o neurônio desenhado traço a
+     traço. A animação está em js/carregamento.js. -->
+<div id="carregamento" class="carregamento">
+  <!-- brilho de fundo: duas manchas de luz verde, fracas, que respiram devagar -->
+  <div class="carregamento-brilho" aria-hidden="true"><span></span><span></span></div>
+  <div class="carregamento-conteudo">
+    <div class="carregamento-marca">
+      <svg class="carregamento-anel" viewBox="0 0 240 240" aria-hidden="true">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle class="anel-traco anel-externo" cx="120" cy="120" r="100" stroke-width="1.8" filter="url(#rascunho)"/>
+          <circle class="anel-traco anel-traco--duplo anel-externo" cx="121.6" cy="118.7" r="101.6" stroke-width="1" filter="url(#rascunho)"/>
+          <circle class="anel-traco anel-traco--interno" cx="120" cy="120" r="88" stroke-width="1" stroke-dasharray="3 8" filter="url(#rascunho-fino)"/>
+          <!-- o "cometa": um trecho de luz que percorre a órbita uma vez -->
+          <circle class="anel-cometa" cx="120" cy="120" r="100" stroke-width="2.6" pathLength="100" stroke-dasharray="9 91"/>
+          <g class="anel-mira" stroke-width="1.6" filter="url(#rascunho-fino)">
+            <path d="M56 95 V81 H70"/>
+            <path d="M184 81 H198 V95"/>
+            <path d="M198 145 V159 H184"/>
+            <path d="M70 159 H56 V145"/>
+          </g>
+        </g>
+      </svg>
+      <svg class="carregamento-logo" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <pattern id="hachura-soma" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line class="logo-soma-hachura" x1="0.8" y1="0" x2="0.8" y2="1.6" stroke-width="0.7"/>
+          </pattern>
+          <radialGradient id="brilho-soma">
+            <stop class="brilho-soma-centro" offset="0"/>
+            <stop class="brilho-soma-meio" offset="0.45"/>
+            <stop class="brilho-soma-borda" offset="1"/>
+          </radialGradient>
+        </defs>
+        <!-- clarão atrás da soma e a onda de choque quando ela "dispara" -->
+        <circle class="logo-halo" cx="21" cy="24" r="15" fill="url(#brilho-soma)" />
+        <circle class="logo-onda" cx="21" cy="24" r="7.4" fill="none" stroke-width="0.8" />
+        <g class="logo-tracos" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#rascunho-logo)">
+          <path d="M15 24 L7 15.5" />
+          <path d="M15 24 L4.5 24" />
+          <path d="M15 24 L7 32.5" />
+          <path d="M27 24 L37 24" />
+          <path d="M37 24 L43.5 18.5" />
+          <path d="M37 24 L43.5 29.5" />
+        </g>
+        <g class="logo-pontas" fill="currentColor" opacity="0.55">
+          <circle cx="6.4" cy="14.9" r="2.5" />
+          <circle cx="4" cy="24" r="2.5" />
+          <circle cx="6.4" cy="33.1" r="2.5" />
+          <circle cx="44" cy="18" r="2.2" />
+          <circle cx="44" cy="30" r="2.2" />
+        </g>
+        <circle class="logo-soma-hachurada" cx="21" cy="24" r="6.4" fill="url(#hachura-soma)" />
+        <circle class="logo-soma" cx="21" cy="24" r="6.4" />
+        <circle class="logo-soma-contorno" cx="21" cy="24" r="7.4" fill="none" stroke-width="0.7" stroke-linecap="round" filter="url(#rascunho-logo)" />
+        <!-- pulsos de sinal: entram pelos dendritos e saem pelo axônio -->
+        <g class="logo-sinais">
+          <circle class="logo-sinal logo-sinal--entrada" cx="7" cy="15.5" r="1.25" />
+          <circle class="logo-sinal logo-sinal--entrada" cx="4.5" cy="24" r="1.25" />
+          <circle class="logo-sinal logo-sinal--entrada" cx="7" cy="32.5" r="1.25" />
+          <circle class="logo-sinal logo-sinal--saida" cx="27" cy="24" r="1.15" />
+          <circle class="logo-sinal logo-sinal--saida" cx="27" cy="24" r="1.15" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="carregamento-nome marca-nome marca-nome--grande">
+      <span class="marca-neuro">Neuro</span><span class="marca-logica">Lógica</span>
+    </div>
+    <svg class="carregamento-progresso" viewBox="0 0 190 12" aria-hidden="true">
+      <path d="M3 7 C 22 3.6, 40 4, 60 6.8 S 100 10, 124 7.6 S 166 3.8, 187 6.4" fill="none" stroke-width="2" stroke-linecap="round" filter="url(#rascunho-fino)"/>
+    </svg>
+    <div class="carregamento-status">Afinando o lápis...</div>
+  </div>
+</div>
+
+<!-- Atalho de teclado: aparece só quando recebe foco (Tab), e pula o cabeçalho. -->
+<a class="pular-conteudo" href="#ato1">Pular para o conteúdo</a>
+
+<!-- ================================== cabeçalho ================================= -->
+<header class="cabecalho">
+  <div class="cabecalho-interno">
+    <a class="marca" href="#topo">
+      <svg class="marca-logo" viewBox="0 0 48 48" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 24 L7 15.5" /><path d="M15 24 L4.5 24" /><path d="M15 24 L7 32.5" />
+          <path d="M27 24 L37 24" /><path d="M37 24 L43.5 18.5" /><path d="M37 24 L43.5 29.5" />
+        </g>
+        <g fill="currentColor" opacity="0.55">
+          <circle cx="6.4" cy="14.9" r="2.5" /><circle cx="4" cy="24" r="2.5" /><circle cx="6.4" cy="33.1" r="2.5" />
+          <circle cx="44" cy="18" r="2.2" /><circle cx="44" cy="30" r="2.2" />
+        </g>
+        <circle class="logo-soma" cx="21" cy="24" r="6.4" />
+      </svg>
+      <span class="marca-nome"><span class="marca-neuro">Neuro</span><span class="marca-logica">Lógica</span></span>
+    </a>
+
+    <nav class="navegacao" id="navegacao" aria-label="Seções">
+      <a href="#ato1"><span class="navegacao-numero" aria-hidden="true">1</span>O Perceptron</a>
+      <a href="#ato2"><span class="navegacao-numero" aria-hidden="true">2</span>O gradiente</a>
+      <a href="#ato3"><span class="navegacao-numero" aria-hidden="true">3</span>A rede</a>
+      <a href="#laboratorio"><span class="navegacao-numero" aria-hidden="true">✦</span>Laboratório</a>
+    </nav>
+
+    <!-- Menu do telefone: abaixo de 900px a navegação sai do cabeçalho e vira um painel
+         que este botão abre e fecha (js/navegacao.js). -->
+    <button type="button" id="botao-menu" class="botao-icone botao-menu" aria-label="Abrir menu"
+            aria-expanded="false" aria-controls="navegacao">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <path class="menu-traco menu-traco--1" d="M4.5 7.2 C 9 6.4, 15 7.8, 19.5 6.9"/>
+          <path class="menu-traco menu-traco--2" d="M4.5 12.1 C 9.5 11.4, 14.5 12.8, 19.5 11.9"/>
+          <path class="menu-traco menu-traco--3" d="M4.5 17 C 9 16.3, 15 17.6, 19.5 16.8"/>
+        </g>
+      </svg>
+    </button>
+
+    <button type="button" id="botao-tema" class="botao-icone" aria-label="Usar tema escuro" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="icone-claro" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/>
+        </g>
+      </svg>
+      <svg viewBox="0 0 24 24" class="icone-escuro" aria-hidden="true">
+        <path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main id="topo">
+
+  <!-- =================================== hero =================================== -->
+  <section class="hero">
+    <!-- Arte do topo, na faixa livre à direita do texto: o quadrado do XOR dentro de uma
+         órbita, uma reta tentando separá-lo (e falhando), e o neurônio que a traçou.
+         Pontos cheios e vazados, nunca laranja e azul (essas são as cores dos dados). -->
+    <svg class="hero-arte" viewBox="0 0 300 560" aria-hidden="true">
+      <defs>
+        <pattern id="hachura-hero" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line class="arte-hachura-verde" x1="2" y1="0" x2="2" y2="4"/>
+        </pattern>
+      </defs>
+      <g class="arte-ferve-fina">
+        <circle class="arte-suave aparece" cx="150" cy="170" r="96" stroke-dasharray="4 9" style="--i:1"/>
+        <path class="arte-suave aparece" d="M144 52 H156 M150 46 V58 M262 170 H274 M268 164 V176 M144 288 H156 M150 282 V294 M26 170 H38 M32 164 V176" style="--i:2"/>
+      </g>
+      <g class="arte-ferve">
+        <circle class="arte-verde traco" pathLength="1" cx="150" cy="170" r="118" style="--i:0"/>
+        <circle class="arte-profunda traco" pathLength="1" cx="151.6" cy="168.4" r="120" style="--i:1"/>
+        <rect class="arte-suave traco" pathLength="1" x="104" y="124" width="92" height="92" style="--i:2"/>
+        <path class="arte-fina traco" pathLength="1" d="M90 124 V110 H104 M196 110 H210 V124 M210 216 V230 H196 M104 230 H90 V216" style="--i:3"/>
+        <path class="arte-tinta traco" pathLength="1" d="M72 196 L232 148" style="--i:5"/>
+        <path class="arte-profunda traco" pathLength="1" d="M74 199.5 L234 151.5" style="--i:6"/>
+        <path class="arte-fina traco" pathLength="1" d="M104 246 H196 M104 240 V252 M196 240 V252" style="--i:4"/>
+        <path class="arte-tinta traco" pathLength="1" d="M130.2 440 L112.6 421.3 M130.2 440 L107.1 440 M130.2 440 L112.6 458.7" style="--i:6"/>
+        <path class="arte-tinta traco" pathLength="1" d="M158 440 L178.6 440 M178.6 440 L192.9 427.9 M178.6 440 L192.9 452.1" style="--i:8"/>
+        <circle class="arte-verde traco" pathLength="1" cx="143.4" cy="440" r="15.4" style="--i:7"/>
+        <path class="arte-fina traco" pathLength="1" d="M200 414 C 238 360, 244 250, 224 184 M214 194 L224 182 L231 196" style="--i:9"/>
+      </g>
+      <g class="arte-ferve-fina">
+        <circle class="arte-cheio aparece" cx="104" cy="124" r="6.5" style="--i:4"/>
+        <circle class="arte-cheio aparece" cx="196" cy="216" r="6.5" style="--i:4"/>
+        <circle class="arte-vazado aparece" cx="196" cy="124" r="6" style="--i:4"/>
+        <circle class="arte-vazado aparece" cx="104" cy="216" r="6" style="--i:4"/>
+        <circle class="arte-cheio-verde aparece" cx="240.4" cy="94.2" r="4.5" style="--i:2"/>
+        <circle class="aparece" cx="143.4" cy="440" r="14" fill="url(#hachura-hero)" style="--i:7"/>
+        <g class="arte-cheio aparece" opacity="0.55" style="--i:7">
+          <circle cx="111.3" cy="420" r="5.2"/><circle cx="106" cy="440" r="5.2"/><circle cx="111.3" cy="460" r="5.2"/>
+          <circle cx="194" cy="426.8" r="4.6"/><circle cx="194" cy="453.2" r="4.6"/>
+        </g>
+      </g>
+      <text class="arte-nota aparece" x="240" y="146" style="--i:6; font-size: 24px">?</text>
+      <text class="arte-mono aparece" x="150" y="266" text-anchor="middle" style="--i:5">1,0</text>
+      <text class="arte-nota aparece" x="150" y="532" text-anchor="middle" style="--i:10">uma reta só…</text>
+    </svg>
+
+    <div class="envelope hero-interno">
+      <p class="hero-etiqueta" data-revelar>Trabalho final · Redes Neurais I · UEL</p>
+      <h1 class="hero-titulo" data-revelar>
+        Um neurônio aprende traçando <span class="marca-texto">uma reta</span>.<br>
+        <span class="hero-enfase">O problema é quando uma reta não basta.</span>
+      </h1>
+      <p class="hero-texto" data-revelar>
+        Esta página treina neurônios no navegador, nas sete portas lógicas. Durante o
+        treino, mostra a <span class="termo" data-termo="fronteira">fronteira de decisão</span>,
+        a equação atualizada a cada correção e a curva de erro. São três atos, do
+        Perceptron de 1958 à rede multicamada cada um respondendo a uma pergunta.
+      </p>
+      <div class="hero-acoes" data-revelar>
+        <a class="botao-primario" href="#perguntas">Começar pelas perguntas</a>
+        <a class="botao-vazado" href="#laboratorio">Ir para o laboratório livre</a>
+      </div>
+
+      <!-- Versão horizontal da arte do topo, para telas onde não há faixa livre ao lado
+           do texto (telefone e tablet). Fica no fluxo, abaixo dos botões. -->
+      <svg class="hero-arte-movel" viewBox="0 0 340 190" aria-hidden="true" data-revelar>
+        <defs>
+          <pattern id="hachura-hero-movel" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line class="arte-hachura-verde" x1="2" y1="0" x2="2" y2="4"/>
+          </pattern>
+        </defs>
+        <g class="arte-ferve-fina">
+          <circle class="arte-suave aparece" cx="100" cy="95" r="64" stroke-dasharray="4 8" style="--i:1"/>
+        </g>
+        <g class="arte-ferve">
+          <circle class="arte-verde traco" pathLength="1" cx="100" cy="95" r="80" style="--i:0"/>
+          <circle class="arte-profunda traco" pathLength="1" cx="101.5" cy="93.5" r="81.5" style="--i:1"/>
+          <rect class="arte-suave traco" pathLength="1" x="70" y="65" width="60" height="60" style="--i:2"/>
+          <path class="arte-fina traco" pathLength="1" d="M60 65 V55 H70 M130 55 H140 V65 M140 125 V135 H130 M70 135 H60 V125" style="--i:3"/>
+          <path class="arte-tinta traco" pathLength="1" d="M46 120 L156 86" style="--i:4"/>
+          <path class="arte-profunda traco" pathLength="1" d="M47.5 123 L157.5 89" style="--i:5"/>
+          <path class="arte-tinta traco" pathLength="1" d="M255.6 120 L242.8 106.4 M255.6 120 L238.8 120 M255.6 120 L242.8 133.6" style="--i:5"/>
+          <circle class="arte-verde traco" pathLength="1" cx="265.2" cy="120" r="10.6" style="--i:6"/>
+          <path class="arte-tinta traco" pathLength="1" d="M276 120 L290.8 120 M290.8 120 L301.2 111.2 M290.8 120 L301.2 128.8" style="--i:7"/>
+          <path class="arte-fina traco" pathLength="1" d="M252 100 C 238 70, 200 58, 172 79 M181 82 L171 80 L176 71" style="--i:8"/>
+        </g>
+        <g class="arte-ferve-fina">
+          <circle class="arte-cheio aparece" cx="70" cy="65" r="5.5" style="--i:3"/>
+          <circle class="arte-cheio aparece" cx="130" cy="125" r="5.5" style="--i:3"/>
+          <circle class="arte-vazado aparece" cx="130" cy="65" r="5" style="--i:3"/>
+          <circle class="arte-vazado aparece" cx="70" cy="125" r="5" style="--i:3"/>
+          <circle class="arte-cheio-verde aparece" cx="161.3" cy="43.6" r="4" style="--i:2"/>
+          <circle class="aparece" cx="265.2" cy="120" r="9.6" fill="url(#hachura-hero-movel)" style="--i:6"/>
+          <g class="arte-cheio aparece" opacity="0.55" style="--i:6">
+            <circle cx="241.8" cy="105.4" r="3.6"/><circle cx="238" cy="120" r="3.6"/><circle cx="241.8" cy="134.6" r="3.6"/>
+            <circle cx="302" cy="110.4" r="3.2"/><circle cx="302" cy="129.6" r="3.2"/>
+          </g>
+        </g>
+        <text class="arte-nota aparece" x="162" y="80" style="--i:5; font-size: 20px">?</text>
+        <text class="arte-nota aparece" x="270" y="170" text-anchor="middle" style="--i:9">uma reta só…</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================ mapa das perguntas ============================= -->
+  <section class="secao secao--tom secao--decorada mapa" id="perguntas" aria-labelledby="titulo-perguntas">
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <span class="etiqueta">O roteiro</span>
+        <h2 id="titulo-perguntas">Três perguntas, <span class="marca-texto">três atos</span></h2>
+        <p class="secao-resumo">
+          Cada ato responde a uma das perguntas orientadoras, da mais simples à
+          mais complexa, na ordem em que as ideias apareceram na história.
+        </p>
+      </div>
+
+      <ol class="mapa-lista" data-revelar>
+        <li class="mapa-item">
+          <a class="mapa-cartao" href="#ato1">
+            <span class="mapa-numero" aria-hidden="true">1</span>
+            <span class="mapa-selo">Q2 · 1958</span>
+            <span class="mapa-pergunta">Por que o Perceptron não resolve todo tipo de problema preditivo?</span>
+            <span class="mapa-gancho">Um neurônio, uma reta, sete portas. E duas que não se deixam separar.</span>
+            <span class="mapa-ir">Ato 1: o Perceptron <span aria-hidden="true"></span></span>
+          </a>
+        </li>
+        <li class="mapa-item">
+          <a class="mapa-cartao" href="#ato2">
+            <span class="mapa-numero" aria-hidden="true">2</span>
+            <span class="mapa-selo">Q5 · 1960</span>
+            <span class="mapa-pergunta">Como o gradiente descendente encontra uma solução?</span>
+            <span class="mapa-gancho">E se, em vez de só “errou”, o neurônio soubesse o quanto errou?</span>
+            <span class="mapa-ir">Ato 2: o gradiente <span aria-hidden="true"></span></span>
+          </a>
+        </li>
+        <li class="mapa-item">
+          <a class="mapa-cartao" href="#ato3">
+            <span class="mapa-numero" aria-hidden="true">3</span>
+            <span class="mapa-selo">Q4 · 1986</span>
+            <span class="mapa-pergunta">Por que existem diferentes funções de ativação?</span>
+            <span class="mapa-gancho">Duas retas resolvem o XOR. Mas como o erro chega a um neurônio escondido?</span>
+            <span class="mapa-ir">Ato 3: a rede <span aria-hidden="true"></span></span>
+          </a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================================== ato 1 =================================== -->
+  <section class="secao secao--decorada" id="ato1" aria-labelledby="titulo-ato1">
+    <!-- Margem: o quadrado do XOR e uma reta que bate num muro. -->
+    <svg class="arte-margem" viewBox="0 0 280 280" aria-hidden="true" data-revelar>
+      <g class="arte-ferve">
+        <rect class="arte-tinta traco" pathLength="1" x="176" y="36" width="68" height="208" style="--i:0"/>
+        <rect class="arte-profunda traco" pathLength="1" x="178.5" y="33.5" width="68" height="208" style="--i:1"/>
+        <path class="arte-fina traco" pathLength="1" d="M176 62 H244 M176 88 H244 M176 114 H244 M176 140 H244 M176 166 H244 M176 192 H244 M176 218 H244" style="--i:2"/>
+        <path class="arte-fina traco" pathLength="1" d="M210 36 V62 M193 62 V88 M227 62 V88 M210 88 V114 M193 114 V140 M227 114 V140 M210 140 V166 M193 166 V192 M227 166 V192 M210 192 V218 M193 218 V244 M227 218 V244" style="--i:3"/>
+        <rect class="arte-suave traco" pathLength="1" x="44" y="60" width="56" height="56" style="--i:1"/>
+        <path class="arte-tinta traco" pathLength="1" d="M36 206 L170 135" style="--i:4"/>
+        <path class="arte-profunda traco" pathLength="1" d="M38 209.5 L172 138.5" style="--i:5"/>
+        <path class="arte-verde traco" pathLength="1" d="M160 118 L151 109 M158 135 L145 136 M161 152 L153 161" style="--i:6"/>
+      </g>
+      <g class="arte-ferve-fina">
+        <circle class="arte-cheio aparece" cx="44" cy="60" r="5.5" style="--i:2"/>
+        <circle class="arte-vazado aparece" cx="100" cy="60" r="5" style="--i:2"/>
+        <circle class="arte-vazado aparece" cx="44" cy="116" r="5" style="--i:2"/>
+        <circle class="arte-cheio aparece" cx="100" cy="116" r="5.5" style="--i:2"/>
+      </g>
+      <text class="arte-nota aparece" x="36" y="262" style="--i:6">e agora?</text>
+    </svg>
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <div class="selos">
+          <span class="etiqueta">Ato 1</span>
+          <span class="selo-pergunta">Respondendo à <strong>Q2</strong></span>
+        </div>
+        <h2 id="titulo-ato1">Um neurônio, uma reta, e <span class="marca-texto">duas portas</span> que não se deixam separar</h2>
+        <p class="pergunta-ato">Por que o Perceptron não resolve todo tipo de problema preditivo?</p>
+      </div>
+
+      <div class="texto-coluna" data-revelar>
+        <p class="contexto-historico">
+          <span class="contexto-ano">1958</span>
+          Frank Rosenblatt apresenta o <strong>Perceptron</strong>: um neurônio artificial
+          que, ao contrário do modelo de McCulloch e Pitts (1943), <em>aprende</em> os
+          próprios pesos a partir de exemplos. A promessa era grande: uma máquina que
+          aprende sozinha a separar duas classes.
+        </p>
+        <p>
+          O neurônio recebe as entradas, multiplica cada uma por um peso, soma tudo com um
+          <span class="termo" data-termo="vies">viés</span> e decide: liga (1) ou não liga
+          (0). Geometricamente, isso é traçar uma reta e perguntar de que lado cada ponto
+          caiu. Treinar é mover essa reta até que ela separe as classes. A regra do
+          Perceptron é quase grosseira na sua simplicidade: só mexe nos pesos quando erra.
+          Por isso a reta anda aos trancos: fica parada enquanto tudo vai bem e dá um salto
+          a cada tropeço.
+        </p>
+        <p>
+          Poder aprender os pesos muda mais do que parece. No neurônio de McCulloch e Pitts
+          os pesos eram fixos e escolhidos à mão, então cada função exigia um projeto
+          próprio, e as mais elaboradas pediam vários neurônios encadeados. Já o
+          Perceptron ajusta os pesos sozinho, a partir dos exemplos, e um único neurônio
+          resolve qualquer problema
+          <span class="termo" data-termo="separavel">linearmente separável</span>, isto é,
+          em que uma reta separa as classes. Esse foi o salto do Perceptron sobre o MCP.
+        </p>
+        <p class="convite">
+          <span class="convite-rotulo">O desafio</span>
+          Treine o Perceptron em cada uma das <strong>sete portas</strong> (aperte ▶ e
+          troque a porta) e descubra quais ele consegue resolver. Comece pelo AND e termine no
+          <strong>XOR</strong>: o que muda?
+        </p>
+      </div>
+
+      <div class="progresso-portas" id="progresso-ato1" data-revelar></div>
+
+      <div class="lab-embrulho" data-revelar>
+        <div id="lab-ato1"></div>
+      </div>
+      <div id="pistas-ato1" data-revelar></div>
+
+      <aside class="resposta-ato" data-revelar aria-label="Resposta à Q2">
+        <p class="resposta-rotulo">Resposta à Q2</p>
+        <p class="resposta-texto">
+          Um neurônio só traça <strong>uma reta</strong>, e o XOR e o XNOR não têm reta que
+          os separe. O Perceptron corrige um ponto, estraga outro, e nunca para.
+        </p>
+        <p class="ponte">
+          Ele só sabe se errou ou acertou, e só muda quando erra. E se soubesse o
+          <em>quanto</em> errou?
+          <a href="#ato2">Ato 2 <span aria-hidden="true">→</span></a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================================== ato 2 =================================== -->
+  <section class="secao secao--tom secao--decorada" id="ato2" aria-labelledby="titulo-ato2">
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <div class="selos">
+          <span class="etiqueta">Ato 2</span>
+          <span class="selo-pergunta">Respondendo à <strong>Q5</strong></span>
+        </div>
+        <h2 id="titulo-ato2">Saber <span class="marca-texto">o quanto errou</span> muda o jeito de aprender</h2>
+        <p class="pergunta-ato">Como o gradiente descendente encontra uma solução?</p>
+      </div>
+
+      <!-- Texto e ilustração lado a lado no computador (no telefone, um embaixo do outro). -->
+      <div class="texto-com-figura" data-revelar>
+      <div class="texto-coluna">
+        <p class="contexto-historico">
+          <span class="contexto-ano">1960</span>
+          Bernard Widrow e Ted Hoff propõem o <strong>Adaline</strong>. É o mesmo neurônio,
+          com os mesmos pesos e a mesma reta. A diferença está num único detalhe: onde o
+          erro é medido.
+        </p>
+        <p>
+          Repare no que mudou. O Perceptron aprende olhando a saída <em>depois</em> do
+          degrau, que só diz “certo” ou “errado”. O Adaline olha <em>antes</em> dele, na
+          saída linear <span class="formula-inline">z = w·x + b</span>, e por isso sabe o
+          quanto errou e para que lado. Por que essa troca funciona, e por que ela sozinha
+          não basta, é a pergunta do Ato 3.
+        </p>
+        <p>
+          Com o “quanto errou” em mãos, dá para imaginar o erro como um terreno: cada
+          combinação de pesos é um lugar, e a altura é o tamanho do erro. O
+          <span class="termo" data-termo="gradiente">gradiente</span> aponta a subida mais
+          íngreme; andar no sentido contrário é descer. A cada exemplo, o Adaline dá um
+          passo ladeira abaixo, e a <strong>taxa de aprendizado η</strong> é o tamanho desse
+          passo. A reta passa a deslizar, e o gráfico de erro troca a escada por uma curva.
+        </p>
+      </div>
+        <figure class="superficie-erro" id="superficie-ato2">
+          <canvas role="img" aria-label="Ilustração animada de um terreno de erro com vários vales e montanhas, desenhado com curvas de nível, com uma bolinha seguindo os passos do gradiente descendente de uma encosta até o fundo de um vale"></canvas>
+        </figure>
+      </div>
+
+      <div class="texto-coluna" data-revelar>
+        <p class="convite">
+          <span class="convite-rotulo">O problema</span>
+          O laboratório abre no AND com <strong>η = 0,7</strong>. Rode: o custo para de
+          cair, mas um ponto continua do lado errado da reta. Mude o η até os quatro pontos
+          ficarem certos.
+        </p>
+      </div>
+
+      <div class="lab-embrulho" data-revelar>
+        <div id="lab-ato2"></div>
+      </div>
+      <div id="pistas-ato2" data-revelar></div>
+
+      <div class="cartao-destaque cartao-destaque--alerta" data-revelar>
+        <h3>E no XOR? O gradiente acha o melhor ajuste, e ele é inútil</h3>
+        <p>
+          Troque a porta para XOR. Dessa vez o custo cai e estaciona, sem explodir. O
+          gradiente fez tudo certo. Medimos a saída linear nos quatro pontos depois que ele
+          parou:
+        </p>
+        <p class="medicao">z ≈ [0,10 &nbsp; 0,00 &nbsp; −0,11 &nbsp; −0,22]</p>
+        <p>
+          Todos perto de <strong>0</strong>, que é o meio exato entre os alvos −1 e +1. Não
+          é coincidência: a melhor aproximação linear do XOR é uma constante, porque nenhuma
+          inclinação ajuda. O neurônio passa a responder “não sei” para qualquer entrada, e
+          três dos quatro pontos caem do lado errado.
+        </p>
+        <p>
+          <strong>A conclusão que interessa:</strong> as duas regras de treino funcionaram
+          como deveriam. O que falta é arquitetura.
+        </p>
+      </div>
+
+      <aside class="resposta-ato" data-revelar aria-label="Resposta à Q5">
+        <p class="resposta-rotulo">Resposta à Q5</p>
+        <p class="resposta-texto">
+          O gradiente aponta para onde o erro cai mais depressa. O Adaline mede o erro
+          antes da decisão e dá, a cada exemplo, <strong>um passo nessa direção</strong>,
+          com o η controlando o tamanho do passo. Ele encontra o melhor ajuste possível,
+          mesmo quando o melhor possível não resolve.
+        </p>
+        <p class="ponte">
+          Duas retas resolveriam o XOR. Mas como o erro chega a um neurônio escondido? Só
+          se a função de ativação deixar.
+          <a href="#ato3">Ato 3 <span aria-hidden="true">→</span></a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================================== ato 3 =================================== -->
+  <section class="secao secao--decorada" id="ato3" aria-labelledby="titulo-ato3">
+    <!-- Faixa de borda a borda: duas retas paralelas que atravessam a tela inteira e recortam
+         a faixa que contém os pontos cheios (o XOR). Duas versões do mesmo desenho: mais
+         inclinada no telefone, mais comprida e rasa nas telas largas (ver "arte-margem--total"). -->
+    <svg class="arte-margem arte-margem--total arte-margem--estreita" viewBox="0 0 400 280" aria-hidden="true" data-revelar>
+      <defs>
+        <pattern id="hachura-ato3-e" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <line class="arte-hachura-traco" x1="3" y1="0" x2="3" y2="6"/>
+        </pattern>
+      </defs>
+      <path class="aparece" d="M-60 -3 L460 215 L460 283 L-60 65 Z" fill="url(#hachura-ato3-e)" opacity="0.9" style="--i:2"/>
+      <g class="arte-ferve">
+        <path class="arte-tinta traco" pathLength="1" d="M-60 -3 L460 215" style="--i:0"/>
+        <path class="arte-tinta traco" pathLength="1" d="M-60 65 L460 283" style="--i:1"/>
+        <path class="arte-verde traco" pathLength="1" d="M-57.5 0 L462.5 218" style="--i:2"/>
+        <path class="arte-verde traco" pathLength="1" d="M-57.5 68 L462.5 286" style="--i:3"/>
+      </g>
+      <g class="arte-ferve-fina">
+        <circle class="arte-cheio aparece" cx="115" cy="104" r="7" style="--i:3"/>
+        <circle class="arte-cheio aparece" cx="285" cy="176" r="7" style="--i:3"/>
+        <circle class="arte-vazado aparece" cx="230" cy="68" r="6.5" style="--i:3"/>
+        <circle class="arte-vazado aparece" cx="170" cy="212" r="6.5" style="--i:3"/>
+      </g>
+      <text class="arte-nota aparece" x="252" y="36" style="--i:5">duas retas!</text>
+    </svg>
+    <svg class="arte-margem arte-margem--total arte-margem--larga" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true" data-revelar>
+      <defs>
+        <pattern id="hachura-ato3-l" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <line class="arte-hachura-traco" x1="3" y1="0" x2="3" y2="6"/>
+        </pattern>
+      </defs>
+      <path class="aparece" d="M-60 16 L1260 148 L1260 224 L-60 92 Z" fill="url(#hachura-ato3-l)" opacity="0.9" style="--i:2"/>
+      <g class="arte-ferve">
+        <path class="arte-tinta traco" pathLength="1" d="M-60 16 L1260 148" style="--i:0"/>
+        <path class="arte-tinta traco" pathLength="1" d="M-60 92 L1260 224" style="--i:1"/>
+        <path class="arte-verde traco" pathLength="1" d="M-57.5 19 L1262.5 151" style="--i:2"/>
+        <path class="arte-verde traco" pathLength="1" d="M-57.5 95 L1262.5 227" style="--i:3"/>
+      </g>
+      <g class="arte-ferve-fina">
+        <circle class="arte-cheio aparece" cx="450" cy="105" r="7" style="--i:3"/>
+        <circle class="arte-cheio aparece" cx="750" cy="135" r="7" style="--i:3"/>
+        <circle class="arte-vazado aparece" cx="608" cy="54" r="6.5" style="--i:3"/>
+        <circle class="arte-vazado aparece" cx="592" cy="186" r="6.5" style="--i:3"/>
+      </g>
+      <text class="arte-nota aparece" x="640" y="59" style="--i:5">duas retas!</text>
+    </svg>
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <div class="selos">
+          <span class="etiqueta etiqueta--sucesso">Ato 3</span>
+          <span class="selo-pergunta">Respondendo à <strong>Q4</strong></span>
+        </div>
+        <h2 id="titulo-ato3"><span class="marca-texto">Duas retas</span>, e a função que deixa o erro passar</h2>
+        <p class="pergunta-ato">Por que existem diferentes funções de ativação?</p>
+      </div>
+
+      <div class="texto-coluna" data-revelar>
+        <p class="contexto-historico">
+          <span class="contexto-ano">1969 → 1986</span>
+          Minsky e Papert mostraram que um neurônio só não resolve problemas como o
+          XOR, e o entusiasmo pela área esfria. A saída (empilhar neurônios) já era
+          palpite; o que faltava era um jeito de treinar a camada escondida. Ele se
+          populariza em 1986, com Rumelhart, Hinton e Williams: o
+          <span class="termo" data-termo="backprop">backpropagation</span>.
+        </p>
+        <p>
+          Com uma camada oculta, cada neurônio traça a sua própria reta, e o neurônio de
+          saída aprende a combinar os pedaços. Mas para treinar quem está escondido, o erro
+          da saída precisa voltar camada a camada, e ele só volta se a função de ativação
+          tiver uma <span class="termo" data-termo="derivada">derivada</span> útil. Três
+          passos curtos mostram por quê:
+        </p>
+      </div>
+
+      <div class="cartao-matematico" data-revelar>
+        <ol class="passos-matematicos">
+          <li>
+            <p class="passo-titulo">Linear em cima de linear continua linear</p>
+            <div class="passo-formula" data-tex="\begin{aligned} &amp;W_2(W_1x+b_1)+b_2 \\ &amp;= (W_2W_1)\,x + (W_2b_1+b_2) \end{aligned}" data-tex-bloco></div>
+            <p>Sem uma função <strong>não linear</strong> no meio, duas camadas viram uma reta só, e o XOR continua impossível.</p>
+          </li>
+          <li>
+            <p class="passo-titulo">O degrau corta o caminho do erro</p>
+            <div class="passo-formula" data-tex="\frac{d}{dz}\,\mathrm{degrau}(z) = 0 \quad (z \neq 0)" data-tex-bloco></div>
+            <p>A derivada é zero onde existe (e indefinida no salto). Pela regra da cadeia, esse zero multiplica tudo que viria de trás: o neurônio escondido não recebe nada.</p>
+          </li>
+          <li>
+            <p class="passo-titulo">Por isso, funções suaves</p>
+            <div class="passo-formula" data-tex="\begin{gathered} \sigma' = \sigma(1-\sigma) \\ \tanh' = 1-\tanh^2 \\ \mathrm{ReLU}' = \begin{cases}1 &amp; z>0\\ 0 &amp; z<0\end{cases} \end{gathered}" data-tex-bloco></div>
+            <p>Sigmoide, tanh, ReLU e as outras funções da lista abaixo são <strong>não lineares e diferenciáveis</strong>. Diferem na faixa de saída, em quanto saturam e na velocidade com que a rede aprende.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="ativacoes-bloco" data-revelar>
+        <div class="ativacoes-cabecalho">
+          <h3>Nove funções de ativação, lado a lado</h3>
+          <p>
+            Abra cada gaveta para ver a fórmula, a derivada e o gráfico das duas. Os
+            gráficos usam as mesmas funções que treinam a rede no laboratório abaixo.
+          </p>
+        </div>
+        <div id="gavetas-ativacao"></div>
+      </div>
+
+      <div class="texto-coluna" data-revelar>
+        <p class="convite">
+          <span class="convite-rotulo">O problema</span>
+          O laboratório abre no XOR com <strong>1 neurônio</strong>: ele falha de novo.
+          Troque para a <strong>rede 2-2-1</strong>. Ela começa com a sigmoide e
+          <strong>η = 0,1</strong>, e também não resolve: o erro empaca, a rede
+          sorteia pesos novos, empaca de novo e desiste. Mude a ativação e o η até as
+          duas retas recortarem o XOR.
+        </p>
+      </div>
+
+      <div class="lab-embrulho lab-embrulho--largo" data-revelar>
+        <div id="lab-ato3"></div>
+      </div>
+      <div id="pistas-ato3" data-revelar></div>
+
+      <div class="cartao-destaque" data-revelar>
+        <h3>Quando o treino trava, e por que isso também responde à Q5</h3>
+        <p>
+          Com apenas dois neurônios ocultos, cerca de uma em cada cinco inicializações com a
+          sigmoide não sai do lugar: é um
+          <strong>mínimo local</strong>.
+        </p>
+        <p>
+          O gradiente descendente desce a encosta que está sob os
+          pés, e nada garante que essa encosta leva ao fundo do vale. Quando isso acontece, a rede detecta a estagnação e sorteia pesos novos; você vê o reinício na
+          curva de erro e no log. Com um terceiro neurônio oculto, quase toda inicialização
+          converge.
+        </p>
+      </div>
+
+      <aside class="resposta-ato" data-revelar aria-label="Resposta à Q4">
+        <p class="resposta-rotulo">Resposta à Q4</p>
+        <p class="resposta-texto">
+          Para o erro atravessar camadas, a ativação precisa ser <strong>não linear</strong>
+          (senão as camadas colapsam numa reta) e <strong>diferenciável</strong> (senão a
+          regra da cadeia zera o gradiente). Sigmoide, tanh e ReLU atendem às duas
+          exigências, e diferem em faixa de saída, saturação e velocidade.
+        </p>
+        <p class="ponte">
+          Agora é com você: monte a sua própria rede.
+          <a href="#laboratorio">Laboratório livre <span aria-hidden="true">→</span></a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================= laboratório livre ============================ -->
+  <section class="secao secao--tom secao--decorada" id="laboratorio" aria-labelledby="titulo-laboratorio">
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <span class="etiqueta">Laboratório livre</span>
+        <h2 id="titulo-laboratorio">Monte a <span class="marca-texto">sua</span> rede</h2>
+        <p class="secao-resumo">
+          Todas as peças da página num lugar só: os três modelos, de uma a quatro camadas
+          ocultas com até seis neurônios cada, a função de ativação, a taxa de aprendizado,
+          a semente e o reinício automático. E dois tipos de problema: as sete
+          <strong>portas lógicas</strong> ou quatro conjuntos de <strong>classificação</strong>
+          com 200 pontos cada. Tente quebrar a rede e depois consertá-la.
+        </p>
+      </div>
+
+      <div class="lab-embrulho lab-embrulho--largo" data-revelar>
+        <div id="lab-livre"></div>
+      </div>
+
+      <div class="desafios-classificacao" data-revelar>
+        <h3>Desafios de classificação</h3>
+        <p>
+          Escolha <strong>Problema: Classificação</strong> e tente cada conjunto. Na
+          classificação o treino para quando acerta os 200 pontos. Cada gaveta guarda uma
+          solução que medimos. Tente sozinho antes de abrir.
+        </p>
+        <div class="desafios-lista">
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Duas gaussianas</span>
+              <span class="desafio-nivel">aquecimento</span>
+            </summary>
+            <p class="desafio-corpo">
+              Duas nuvens bem separadas: uma reta basta. Até o <strong>Perceptron</strong>
+              resolve, na época 3 (η = 0,1). Uma rede também resolve, mas aqui ela é
+              exagero.
+            </p>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Círculo</span>
+              <span class="desafio-nivel">médio</span>
+            </summary>
+            <p class="desafio-corpo">
+              Com <strong>2</strong> neurônios ocultos não dá: duas retas não cercam um disco
+              (o melhor que medimos foi 177 de 200). Com <strong>3</strong>, as três retas
+              formam um triângulo em volta do centro: tanh com η = 2 resolve na época 1418.
+              Com duas camadas de 6 e ReLU (η = 2), na época 65.
+            </p>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">XOR em quadrantes</span>
+              <span class="desafio-nivel">médio</span>
+            </summary>
+            <p class="desafio-corpo">
+              Surpresa: a porta XOR, de 4 pontos, se resolve com 2 neurônios ocultos (uma
+              faixa entre duas retas paralelas), mas com os quadrantes cheios de pontos a
+              faixa não serve, e <strong>2</strong> não bastam (177 de 200).
+              Com <strong>3</strong>, tanh e η = 2, resolve na época 662; com 6, na 103.
+            </p>
+          </details>
+          <details class="gaveta desafio">
+            <summary class="gaveta-resumo">
+              <span class="gaveta-seta" aria-hidden="true"></span>
+              <span class="desafio-titulo">Espiral dupla</span>
+              <span class="desafio-nivel">difícil</span>
+            </summary>
+            <p class="desafio-corpo">
+              Os dois braços se enroscam, e redes de uma camada param entre 115 e 140
+              acertos. Com <strong>três camadas de 6</strong>, tanh e η = 3, a rede acerta os
+              200 pontos na época 4113 (use a velocidade "turbo"). Duas camadas de 6 com tanh
+              também chegam lá, mas devagar (η = 3: época 14 270); com ReLU, só três camadas
+              resolveram (η = 5: época 3721).
+            </p>
+          </details>
+        </div>
+        <p class="desafios-nota">
+          Medido com a semente 42 e o reinício automático desligado.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== resumo final =============================== -->
+  <section class="secao secao--decorada" id="resumo" aria-labelledby="titulo-resumo">
+    <div class="envelope">
+      <div class="secao-cabecalho" data-revelar>
+        <span class="etiqueta">Em resumo</span>
+        <h2 id="titulo-resumo">As três respostas, <span class="marca-texto">numa frase cada</span></h2>
+      </div>
+      <ol class="resumo-lista" data-revelar>
+        <li class="resumo-item">
+          <p class="resumo-pergunta"><span>Q2</span> Por que o Perceptron não resolve todo tipo de problema?</p>
+          <p class="resumo-resposta">Porque um neurônio só traça uma reta, e há problemas, como o XOR, que nenhuma reta separa.</p>
+        </li>
+        <li class="resumo-item">
+          <p class="resumo-pergunta"><span>Q5</span> Como o gradiente descendente encontra uma solução?</p>
+          <p class="resumo-resposta">Medindo o quanto errou e dando passos na direção em que o erro cai mais depressa, com o η controlando o tamanho do passo.</p>
+        </li>
+        <li class="resumo-item">
+          <p class="resumo-pergunta"><span>Q4</span> Por que existem diferentes funções de ativação?</p>
+          <p class="resumo-resposta">Porque, para o erro atravessar camadas, a ativação precisa ser não linear e diferenciável. Cada escolha muda a faixa de saída, a saturação e a velocidade.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="envelope rodape-interno">
+    <div class="rodape-marca">
+      <span class="marca-nome marca-nome--rodape">
+        <span class="marca-neuro">Neuro</span><span class="marca-logica">Lógica</span>
+      </span>
+      <p>
+        Trabalho final de Redes Neurais I, Universidade Estadual de Londrina.
+        Perceptron, Adaline e backpropagation.
+      </p>
+      <p class="rodape-progresso">
+        <button type="button" id="zerar-progresso" class="botao-rodape">Zerar conquistas e pistas</button>
+        <span id="zerar-progresso-aviso" class="rodape-aviso" aria-live="polite"></span>
+      </p>
+    </div>
+    <div class="rodape-coluna">
+      <h4>Autores</h4>
+      <p>Adriano Lúcio Uchôa Brandão</p>
+      <p>Heitor Oliveira Nunes</p>
+      <p>Herik Daurizio Ricardo</p>
+    </div>
+  </div>
+</footer>
+
+<!-- bibliotecas locais (copiadas do npm para vendor/, sem CDN) -->
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script type="module" src="js/principal.js"></script>
+</body>
+</html>

@@ -1,0 +1,1722 @@
+/* Componentes da narrativa por perguntas (Q2 → Q5 → Q4), que não existiam na demo:
+   mapa das perguntas, selos, pergunta do ato, contexto histórico, convite, card
+   matemático, resposta em uma frase e resumo final.
+
+   Mesmas regras do estilo.css: só tokens de css/tokens.css (nenhum hexadecimal solto,
+   com a exceção já conhecida das máscaras SVG em data URI, que não enxergam variáveis),
+   pesos 400/600/700, raios e espaçamentos da escala, e a cor de dados (laranja/azul)
+   nunca usada na interface. Nada aqui toca nos gráficos. */
+
+/* ===================================================== mapa das perguntas ==== */
+
+.mapa-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--esp-lg);
+  grid-template-columns: 1fr;
+  counter-reset: none;
+}
+@media (min-width: 860px) {
+  .mapa-lista { grid-template-columns: repeat(3, 1fr); gap: var(--esp-xl); }
+}
+.mapa-item { position: relative; }
+
+/* Em telas largas, uma seta riscada à mão liga um cartão ao próximo. É uma máscara
+   pintada com a cor de traço do tema, então acompanha o claro e o escuro. */
+@media (min-width: 860px) {
+  .mapa-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 46px;
+    right: calc(-1 * var(--esp-xl) - 6px);
+    width: calc(var(--esp-xl) + 12px);
+    height: 18px;
+    z-index: 2;
+    background-color: var(--cor-primaria);
+    opacity: 0.8;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 18'%3E%3Cpath d='M2 10 C 12 7, 24 12, 34 8.6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M28.5 4 L35 8.4 L29 13.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 18'%3E%3Cpath d='M2 10 C 12 7, 24 12, 34 8.6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M28.5 4 L35 8.4 L29 13.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+  }
+}
+
+.mapa-cartao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-sm);
+  height: 100%;
+  padding: var(--esp-xl) var(--esp-xl) var(--esp-lg);
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-xl);
+  color: var(--cor-texto);
+  transition: transform var(--transicao-media), box-shadow var(--transicao-media),
+              border-color var(--transicao-media);
+}
+.mapa-cartao:hover,
+.mapa-cartao:focus-visible {
+  text-decoration: none;
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-cartao);
+  border-color: var(--cor-borda-forte);
+}
+
+/* O número do ato, em serifa itálica, dentro de um anel desenhado à mão. */
+.mapa-numero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: var(--esp-xs);
+  font-family: var(--fonte-serif);
+  font-style: italic;
+  font-weight: var(--peso-forte);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--cor-primaria-forte);
+}
+.mapa-numero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--cor-primaria);
+  opacity: 0.85;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54'%3E%3Cpath d='M27 4.5 C 40.5 3.8, 50.2 14, 49.6 27.4 C 49 40.6, 38.8 50.4, 26 49.6 C 13.6 48.8, 4.2 39.4, 4.6 26.2 C 5 14.4, 13.8 5.6, 28.6 5.2' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M30 7.8 C 42 9, 48.4 18.6, 47.4 30' fill='none' stroke='black' stroke-width='0.9' stroke-linecap='round' opacity='0.55'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54'%3E%3Cpath d='M27 4.5 C 40.5 3.8, 50.2 14, 49.6 27.4 C 49 40.6, 38.8 50.4, 26 49.6 C 13.6 48.8, 4.2 39.4, 4.6 26.2 C 5 14.4, 13.8 5.6, 28.6 5.2' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M30 7.8 C 42 9, 48.4 18.6, 47.4 30' fill='none' stroke='black' stroke-width='0.9' stroke-linecap='round' opacity='0.55'/%3E%3C/svg%3E") no-repeat center / contain;
+  transition: transform var(--transicao-lenta);
+}
+.mapa-cartao:hover .mapa-numero::before { transform: rotate(-14deg); }
+
+.mapa-selo {
+  font-family: var(--fonte-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--cor-suave);
+}
+.mapa-pergunta {
+  font-family: var(--fonte-serif);
+  font-size: 21px;
+  font-weight: var(--peso-forte);
+  line-height: 1.28;
+  color: var(--cor-tinta);
+  text-wrap: balance;
+}
+.mapa-gancho {
+  font-size: 16px;
+  color: var(--cor-texto);
+  flex: 1;
+  text-wrap: pretty;
+}
+.mapa-ir {
+  margin-top: var(--esp-sm);
+  font-family: var(--fonte-sans);
+  font-size: 14px;
+  font-weight: var(--peso-forte);
+  color: var(--cor-primaria-forte);
+}
+.mapa-ir span { display: inline-block; transition: transform var(--transicao-media); }
+.mapa-cartao:hover .mapa-ir span { transform: translateX(4px); }
+
+/* ============================================================ selos do ato === */
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-sm);
+  margin-bottom: var(--esp-md);
+}
+.selos .etiqueta { margin-bottom: 0; }
+.selo-pergunta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fonte-sans);
+  font-size: 12px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--raio-pilula);
+  border: 1px solid var(--cor-primaria);
+  color: var(--cor-primaria-forte);
+}
+.selo-pergunta strong { color: inherit; font-weight: var(--peso-caps); }
+
+/* A pergunta orientadora, logo abaixo do título: serifa itálica com uma barra verde. */
+.pergunta-ato {
+  margin: var(--esp-base) 0 0;
+  padding-left: var(--esp-base);
+  border-left: 3px solid var(--cor-primaria);
+  font-family: var(--fonte-serif);
+  font-style: italic;
+  font-size: clamp(19px, 2.3vw, 23px);
+  line-height: 1.35;
+  color: var(--cor-tinta);
+  text-wrap: balance;
+}
+
+/* ===================================================== contexto e convite ==== */
+
+.contexto-historico {
+  position: relative;
+  padding: var(--esp-base) var(--esp-lg);
+  background-color: var(--cor-superficie-tom);
+  border-radius: var(--raio-lg);
+}
+.secao--tom .contexto-historico { background-color: var(--cor-superficie); }
+.contexto-ano {
+  display: inline-block;
+  margin-right: var(--esp-sm);
+  padding: 1px 8px;
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  border-radius: var(--raio-sm);
+  background-color: var(--cor-primaria);
+  color: var(--cor-sobre-escuro);
+  vertical-align: 1px;
+}
+
+.formula-inline {
+  font-family: var(--fonte-mono);
+  font-size: 0.92em;
+  white-space: nowrap;
+  color: var(--cor-tinta);
+}
+
+/* O convite a mexer: um rótulo pequeno em versalete e uma margem tracejada, como uma
+   anotação na margem do caderno. */
+.convite {
+  position: relative;
+  margin-top: var(--esp-lg);
+  padding: var(--esp-md) var(--esp-base) var(--esp-md) var(--esp-lg);
+  border-left: 2px dashed var(--cor-primaria);
+  font-size: 17px;
+  color: var(--cor-tinta);
+}
+.convite-rotulo {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--fonte-sans);
+  font-size: 11px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cor-primaria-forte);
+}
+
+/* ======================================================== card matemático ==== */
+
+.cartao-matematico {
+  margin: 0 0 var(--esp-2xl);
+  padding: var(--esp-xl);
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-xl);
+  box-shadow: var(--sombra-cartao);
+  max-width: 980px;
+}
+.passos-matematicos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--esp-xl);
+  grid-template-columns: 1fr;
+  counter-reset: passo;
+}
+@media (min-width: 900px) {
+  .passos-matematicos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* título, fórmula e texto alinhados entre as três colunas, mesmo com títulos de 1 ou 2 linhas */
+  @supports (grid-template-rows: subgrid) {
+    .passos-matematicos { grid-template-rows: auto auto 1fr; row-gap: 0; }
+    .passos-matematicos li {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 3;
+    }
+    .passos-matematicos .passo-formula { align-self: stretch; display: grid; align-content: center; }
+  }
+}
+.passos-matematicos li {
+  counter-increment: passo;
+  min-width: 0;
+  position: relative;
+  padding-top: var(--esp-lg);
+  border-top: 1px solid var(--cor-borda);
+}
+.passos-matematicos li::before {
+  content: counter(passo);
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--fonte-sans);
+  font-size: 13px;
+  font-weight: var(--peso-caps);
+  background-color: var(--cor-primaria);
+  color: var(--cor-sobre-escuro);
+}
+.passo-titulo {
+  font-family: var(--fonte-sans);
+  font-weight: var(--peso-forte);
+  font-size: 16px;
+  color: var(--cor-tinta);
+  margin-bottom: var(--esp-sm);
+}
+.passos-matematicos p:last-child { margin-bottom: 0; font-size: 16px; }
+.passo-formula {
+  margin: 0 0 var(--esp-md);
+  padding: var(--esp-sm) var(--esp-md);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-tom);
+  color: var(--cor-tinta);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cor-borda) transparent;
+}
+.passo-formula .katex-display { margin: 0.25em 0; }
+.passo-formula .katex { font-size: 1.04em; }
+
+/* ======================================================= resposta do ato ===== */
+
+/* Fecho de cada ato: a resposta em uma frase e a ponte para o próximo. O rótulo ganha
+   o mesmo sublinhado ondulado do nome na abertura. */
+.resposta-ato {
+  position: relative;
+  margin-top: var(--esp-3xl);
+  padding: var(--esp-xl) var(--esp-xl) var(--esp-lg);
+  max-width: 860px;
+  border-radius: var(--raio-xl);
+  background-color: color-mix(in srgb, var(--cor-primaria) 7%, var(--cor-superficie));
+  border: 1px solid color-mix(in srgb, var(--cor-primaria) 30%, var(--cor-borda));
+}
+.secao--tom .resposta-ato {
+  background-color: color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-superficie-tom));
+}
+.resposta-rotulo {
+  display: inline-block;
+  position: relative;
+  margin-bottom: var(--esp-md);
+  padding-bottom: 6px;
+  font-family: var(--fonte-sans);
+  font-size: 12px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cor-primaria-forte);
+}
+.resposta-rotulo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background-color: var(--cor-primaria);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6' preserveAspectRatio='none'%3E%3Cpath d='M1.5 4.2 C 22 1.4, 41 5.6, 61 3.1 S 86 1.6, 98.5 3.9' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6' preserveAspectRatio='none'%3E%3Cpath d='M1.5 4.2 C 22 1.4, 41 5.6, 61 3.1 S 86 1.6, 98.5 3.9' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
+}
+.resposta-texto {
+  font-size: clamp(18px, 2.1vw, 21px);
+  line-height: 1.45;
+  color: var(--cor-tinta);
+  text-wrap: pretty;
+}
+.ponte {
+  margin: var(--esp-base) 0 0;
+  padding-top: var(--esp-md);
+  border-top: 1px dashed var(--cor-borda-forte);
+  font-style: italic;
+  color: var(--cor-texto);
+}
+.ponte a {
+  font-family: var(--fonte-sans);
+  font-style: normal;
+  font-weight: var(--peso-forte);
+  font-size: 15px;
+  white-space: nowrap;
+  margin-left: var(--esp-xs);
+}
+.ponte a span { display: inline-block; transition: transform var(--transicao-media); }
+.ponte a:hover span { transform: translateX(4px); }
+
+/* ========================================================= resumo final ====== */
+
+.resumo-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--esp-lg);
+  max-width: 980px;
+}
+.resumo-item {
+  display: grid;
+  gap: var(--esp-sm);
+  padding: var(--esp-lg) 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.resumo-item:last-child { border-bottom: 0; }
+@media (min-width: 860px) {
+  .resumo-item { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--esp-2xl); align-items: baseline; }
+}
+.resumo-pergunta {
+  margin: 0;
+  font-family: var(--fonte-sans);
+  font-weight: var(--peso-forte);
+  font-size: 17px;
+  color: var(--cor-tinta);
+  text-wrap: balance;
+}
+.resumo-pergunta span {
+  display: inline-block;
+  margin-right: var(--esp-sm);
+  padding: 1px 7px;
+  border-radius: var(--raio-sm);
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  background-color: var(--cor-superficie-areia);
+  color: var(--cor-tinta);
+  vertical-align: 1px;
+}
+.resumo-resposta {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 20px);
+  font-style: italic;
+  color: var(--cor-tinta);
+  text-wrap: pretty;
+}
+
+/* ================================================ gavetas das ativações ====== */
+
+.ativacoes-bloco { margin: 0 0 var(--esp-2xl); max-width: 980px; }
+.ativacoes-cabecalho h3 { margin-bottom: var(--esp-sm); }
+.ativacoes-cabecalho p { color: var(--cor-texto); max-width: var(--largura-texto); }
+
+.gavetas-ativacao { display: grid; gap: var(--esp-sm); }
+
+/* Nas gavetas de conteúdo o título é o nome da função: maior e sem caixa alta. */
+.gaveta-ativacao { background-color: var(--cor-superficie); }
+.secao--tom .gaveta-ativacao { background-color: var(--cor-superficie); }
+.gaveta-ativacao > .gaveta-resumo { padding: 12px var(--esp-base); min-height: 48px; }
+.gaveta-ativacao .gaveta-titulo {
+  font-size: 16px;
+  font-weight: var(--peso-forte);
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--cor-tinta);
+}
+.ativacao-uso {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--raio-pilula);
+  font-family: var(--fonte-mono);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.ativacao-uso--rede {
+  border: 1px solid var(--cor-primaria);
+  color: var(--cor-primaria-forte);
+}
+.ativacao-uso--neuronio {
+  background-color: var(--cor-superficie-areia);
+  color: var(--cor-suave);
+}
+
+.ativacao-corpo {
+  display: grid;
+  gap: var(--esp-lg);
+  padding: var(--esp-sm) var(--esp-base) var(--esp-lg);
+  border-top: 1px solid var(--cor-borda);
+}
+@media (min-width: 860px) {
+  .ativacao-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; }
+}
+.ativacao-texto p { font-size: 16px; margin-bottom: var(--esp-sm); }
+.ativacao-limite {
+  padding-left: var(--esp-md);
+  border-left: 2px solid var(--cor-erro);
+}
+.ativacao-formulas {
+  display: grid;
+  gap: 2px;
+  margin-bottom: var(--esp-md);
+  padding: var(--esp-xs) var(--esp-md);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-tom);
+  color: var(--cor-tinta);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cor-borda) transparent;
+}
+.ativacao-formula .katex-display { margin: 0.35em 0; text-align: left; }
+.ativacao-formula .katex-display > .katex { text-align: left; }
+
+.ativacao-figura { margin: 0; }
+.ativacao-grafico { display: block; width: 100%; height: auto; max-width: 360px; }
+.ativacao-legenda {
+  display: flex;
+  gap: var(--esp-base);
+  margin-top: var(--esp-xs);
+  font-family: var(--fonte-mono);
+  font-size: 12px;
+  color: var(--cor-suave);
+}
+.ativacao-legenda span::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.legenda-f::before { border-top: 2.6px solid var(--grafico-tinta); }
+.legenda-df::before { border-top: 2.2px dashed var(--grafico-destaque); }
+
+/* ================================ laboratório: colunas que se completam ======= */
+
+/* A curva de erro em branco (antes do treino) mostra uma dica no lugar da curva. */
+.lab-erro .erro-dica { font-family: var(--fonte-serif); font-style: italic; font-size: 13px; }
+
+/* O mesmo para o log, enquanto não há nenhuma linha: uma dica, e não uma caixa vazia. */
+.painel-log:empty::before {
+  content: 'Aperte ▶ e cada passo do treino aparece aqui, com os números reais da conta.';
+  display: block;
+  padding-top: var(--esp-xs);
+  font-family: var(--fonte-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--cor-suave);
+}
+
+/* O SVG da curva não conta no tamanho do contêiner: assim ele pode crescer e encolher com o
+   espaço disponível sem "travar" a altura que já ocupou (por exemplo, ao alargar a janela
+   ou entrar em tela cheia). */
+.lab-erro { position: relative; }
+.lab-erro .grafico-erro-svg { position: absolute; inset: 0; }
+
+/* Com duas colunas (a partir de 900 px), a coluna do gráfico tem altura FIXA (barra do
+   treino, plano limitado pela altura da tela e curva de erro de altura fixa), e é ela que
+   define a altura do cartão. O log aberto só preenche o que sobra na coluna da esquerda e
+   rola por dentro: a base do flex é 0 px (não 0 %, que numa coluna de altura indefinida
+   vira "tamanho do conteúdo" e fazia o cartão crescer a cada linha nova do log). */
+@media (min-width: 900px) {
+  .lab-coluna--algoritmo { display: flex; flex-direction: column; }
+  .lab-coluna--algoritmo > .painel-algoritmo { flex: 1 1 0px; display: flex; flex-direction: column; }
+  /* a caixa de abas ocupa o que sobra na coluna; o piso (barra de abas + o pseudocódigo inteiro)
+     impede que ela encolha abaixo do conteúdo e o corte embaixo */
+  .painel-algoritmo > .painel-abas { flex: 1 1 0px; min-height: 268px; }
+  .painel-abas > .aba-painel { flex: 1 1 0px; min-height: 0; }
+  .painel-abas .painel-log { flex: 1 1 0px; height: auto; min-height: 0; }
+
+  .lab-erro-embrulho { flex: none; }
+  .lab-erro-embrulho > .lab-erro { height: 150px; }
+}
+
+/* ===================================================== laboratório compacto == */
+
+/* Seletores numa grade de colunas iguais, mais baixos no computador: no laboratório livre
+   os nove cabem em duas linhas, em vez de empurrar o gráfico para baixo. */
+.lab-controles { margin-bottom: var(--esp-base); }
+.lab-campos {
+  display: grid;
+  /* colunas estreitas: os quatro seletores do Ato 2 (porta, regra, taxa, velocidade) cabem
+     numa linha só na coluna da esquerda; os textos longos terminam em reticências */
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px 12px;
+}
+.lab-campos .campo { min-width: 0; gap: 3px; }
+.lab-campos .campo-rotulo { font-size: 11px; white-space: nowrap; }
+/* o balão de ajuda mora dentro do rótulo: não pode herdar o nowrap (viraria uma linha só) */
+.lab-campos .campo-rotulo .ajuda-balao { white-space: normal; }
+/* só altura e margem esquerda: o padding da direita é o espaço da seta desenhada do seletor */
+.lab-campos .campo-controle { width: 100%; min-height: 38px; padding-block: 7px; padding-left: 10px; font-size: 14.5px; }
+/* o laboratório livre tem nove seletores, com textos mais longos ("Portas lógicas"): fica com
+   as colunas largas de antes, em três linhas */
+#lab-livre .lab-campos { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); }
+.lab-campos .campo-seletor > .campo-controle { padding-right: 28px; }
+.lab-campos .campo-seletor::after { right: 10px; }
+.lab-campos .campo-seletor > .campo-controle { text-overflow: ellipsis; }
+.lab-campos .campo-controle--numero { width: 100%; }
+
+/* Botões do treino e estado numa barra só, logo acima do plano de decisão. */
+.lab-painel-treino {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-sm) var(--esp-base);
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-xl);
+  background-color: var(--cor-superficie-tom);
+}
+/* A dica da primeira visita ("comece por aqui") é ancorada no transporte; enquanto ela
+   está na tela, a barra ganha espaço em cima para a dica não cobrir nenhum seletor. */
+.lab-transporte { position: relative; }
+.laboratorio--dica .lab-painel-treino { margin-top: 62px; }
+.lab-painel-treino { transition: margin-top var(--transicao-media); }
+.lab-painel-treino .botao-tocar { width: 48px; height: 48px; }
+.lab-painel-treino .botao-tocar svg { width: 23px; height: 23px; }
+.lab-painel-treino .botao-secundario { width: 40px; height: 40px; }
+.lab-painel-treino .lab-estado {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  gap: var(--esp-md);
+  font-size: 14px;
+}
+.lab-painel-treino .estado-item { white-space: nowrap; }
+
+/* A rede ocupa a largura toda, mas com teto de altura no computador: ela continua cabendo
+   inteira (o SVG tem viewBox), e o plano de decisão sobe na tela. */
+@media (min-width: 900px) {
+  .rede-desenho { max-height: 250px; }
+  .lab-rede-embrulho { margin-bottom: var(--esp-base); }
+}
+
+@media (max-width: 720px) {
+  /* no telefone, área de toque de pelo menos 44 px */
+  .lab-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-campos .campo-controle { min-height: 44px; }
+  .lab-painel-treino .botao-tocar { width: 52px; height: 52px; }
+  .lab-painel-treino .botao-secundario { width: 44px; height: 44px; }
+  /* estado numa linha própria, abaixo dos botões, em vez de três linhas espremidas */
+  .lab-painel-treino { justify-content: center; }
+  .lab-painel-treino .lab-estado { flex-basis: 100%; justify-content: center; }
+}
+
+/* ================================================= ajustes do laboratório ==== */
+
+/* Rótulos em caixa alta não podem tocar na matemática: η maiúsculo é igual a "H", e
+   "z" vira "Z". O trecho matemático vai num .sem-caixa. */
+.sem-caixa { text-transform: none; letter-spacing: 0; }
+
+/* Balão de ajuda FECHADO não ocupa espaço. Antes ele só ficava invisível, e um (?) perto da
+   borda direita (os controles extras do laboratório livre, a 820 px) empurrava a página 69 px
+   para o lado. Fechado, sai do layout; ao abrir, aparece com um fade curto. */
+.ajuda:not(.ajuda--aberta) .ajuda-balao { display: none; }
+.ajuda--aberta .ajuda-balao { animation: balao-abrir 160ms ease-out; }
+@keyframes balao-abrir { from { opacity: 0; } to { opacity: 1; } }
+
+/* O (?) dos campos fica ao lado do rótulo, e não solto embaixo do seletor. */
+.campo-rotulo { display: inline-flex; align-items: center; gap: 6px; min-height: 18px; }
+.campo-rotulo .ajuda-botao { width: 18px; height: 18px; font-size: 10px; }
+.campo-rotulo .ajuda { margin-block: -2px; }
+
+/* ============================================ desafios de classificação ====== */
+
+.desafios-classificacao { margin-top: var(--esp-2xl); max-width: 860px; }
+.desafios-classificacao h3 { margin-bottom: var(--esp-sm); }
+.desafios-lista { display: grid; gap: var(--esp-sm); margin: var(--esp-base) 0; }
+.desafio { background-color: var(--cor-superficie); }
+.desafio > .gaveta-resumo { min-height: 48px; padding: 10px var(--esp-base); }
+.desafio-titulo { font-family: var(--fonte-sans); font-weight: var(--peso-forte); font-size: 16px; color: var(--cor-tinta); }
+.desafio-nivel {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--raio-pilula);
+  border: 1px solid var(--cor-borda-forte);
+  font-family: var(--fonte-mono);
+  font-size: 11.5px;
+  color: var(--cor-suave);
+}
+.desafio-corpo {
+  margin: 0;
+  padding: var(--esp-md) var(--esp-base) var(--esp-base);
+  border-top: 1px solid var(--cor-borda);
+  font-size: 16px;
+}
+.desafios-nota { font-size: 14px; color: var(--cor-suave); }
+
+/* ===================================================== campo numérico ======== */
+
+.campo-controle--numero { width: 104px; cursor: text; }
+
+/* =============================================== superfície de erro (Ato 2) == */
+
+/* Ilustração ao vivo em canvas (superficie_erro.js): um terreno de curvas de nível erguidas
+   na própria altura e uma câmera que flutua devagar sobre ele. O canvas é transparente, então
+   herda o fundo da seção. No telefone e no tablet ele vem abaixo do texto, de ponta a ponta
+   da tela; no PC (ver "PC: figuras maiores") vira uma camada atrás do texto. */
+.superficie-erro { margin: var(--esp-lg) 0 var(--esp-base); pointer-events: none; }
+.texto-com-figura { margin-bottom: var(--esp-xl); }
+.texto-com-figura .texto-coluna { margin-bottom: 0; }
+.texto-com-figura .superficie-erro { width: 100vw; margin: var(--esp-base) 0 0 calc(50% - 50vw); }
+.superficie-erro canvas { display: block; width: 100%; aspect-ratio: 1 / 0.78; }
+@media (min-width: 600px) { .superficie-erro canvas { aspect-ratio: 16 / 10; } }
+
+/* ===================================================== acessibilidade ======== */
+
+.sr-only,
+.sr-anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================== progresso do Ato 1 (n/5) ===== */
+
+.progresso-portas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-sm) var(--esp-md);
+  margin: var(--esp-lg) 0 0;
+}
+.progresso-rotulo {
+  font-family: var(--fonte-sans);
+  font-size: 12px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cor-suave);
+}
+.progresso-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.progresso-porta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 7px;
+  border-radius: var(--raio-pilula);
+  border: 1px dashed var(--cor-borda-forte);
+  font-family: var(--fonte-mono);
+  font-size: 12.5px;
+  color: var(--cor-suave);
+  transition: background-color var(--transicao-media), border-color var(--transicao-media), color var(--transicao-media);
+}
+.progresso-porta svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.25;
+}
+.progresso-porta--feita {
+  border-style: solid;
+  border-color: var(--cor-primaria);
+  background-color: color-mix(in srgb, var(--cor-primaria) 12%, transparent);
+  color: var(--cor-primaria-forte);
+}
+.progresso-porta--feita svg { opacity: 1; }
+.progresso-porta--nova { animation: porta-nova 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes porta-nova {
+  0% { transform: scale(0.85); }
+  55% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.progresso-contagem {
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  color: var(--cor-tinta);
+}
+
+/* ======================================================= aviso de conquista == */
+
+.conquista {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--esp-base);
+  margin-top: var(--esp-base);
+  padding: var(--esp-base) var(--esp-lg);
+  padding-right: 56px;
+  border-radius: var(--raio-xl);
+  border: 1.5px solid var(--cor-primaria);
+  background-color: color-mix(in srgb, var(--cor-primaria) 10%, var(--cor-superficie));
+  box-shadow: var(--sombra-cartao);
+  transition: opacity 240ms ease-out, transform 240ms ease-out;
+}
+.conquista--saindo { opacity: 0; transform: translateY(6px); }
+.conquista-selo { width: 58px; height: 58px; flex-shrink: 0; overflow: visible; }
+.selo-anel { stroke: var(--cor-primaria); stroke-width: 2.2; }
+.selo-anel--fino { stroke: var(--cor-primaria-profunda); stroke-width: 1; opacity: 0.5; }
+.selo-visto { stroke: var(--cor-primaria-forte); stroke-width: 3.6; }
+.selo-raios path { stroke: var(--cor-primaria); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
+.conquista-rotulo {
+  margin: 0 0 2px;
+  font-family: var(--fonte-sans);
+  font-size: 11px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cor-primaria-forte);
+}
+.conquista-titulo {
+  margin: 0 0 2px;
+  font-family: var(--fonte-sans);
+  font-weight: var(--peso-forte);
+  font-size: 17px;
+  color: var(--cor-tinta);
+  text-wrap: balance;
+}
+.conquista-corpo { margin: 0; font-size: 16px; color: var(--cor-texto); text-wrap: pretty; }
+.conquista-fechar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cor-suave);
+  cursor: pointer;
+  transition: background-color var(--transicao-rapida), color var(--transicao-rapida);
+}
+.conquista-fechar:hover { background-color: color-mix(in srgb, var(--cor-primaria) 14%, transparent); color: var(--cor-tinta); }
+.conquista-fechar svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* ================================================================ pistas ====== */
+
+.pistas { margin-top: var(--esp-base); max-width: 860px; }
+.gaveta-pistas { background-color: var(--cor-superficie); }
+.secao--tom .gaveta-pistas { background-color: var(--cor-superficie); }
+.gaveta-pistas > .gaveta-resumo { min-height: 48px; padding: 10px var(--esp-base); }
+.gaveta-pistas .gaveta-titulo { color: var(--cor-tinta); }
+.pistas-icone {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--cor-primaria);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pistas-contador {
+  margin-left: auto;
+  font-family: var(--fonte-mono);
+  font-size: 12px;
+  color: var(--cor-primaria-forte);
+  white-space: nowrap;
+}
+.pistas-contador--nova { animation: pista-nova 1.4s ease-out 2; }
+@keyframes pista-nova {
+  0%, 100% { background-color: transparent; }
+  30% { background-color: var(--cor-marca-texto); }
+}
+.pistas-corpo { padding: 0 var(--esp-base) var(--esp-base); border-top: 1px solid var(--cor-borda); }
+.pistas-lista { list-style: none; margin: 0; padding: 0; }
+.pista {
+  display: flex;
+  gap: var(--esp-md);
+  align-items: baseline;
+  padding: var(--esp-md) 0;
+  border-bottom: 1px dashed var(--cor-borda);
+  font-size: 16px;
+}
+.pista:last-child { border-bottom: 0; }
+.pista-numero {
+  flex-shrink: 0;
+  min-width: 64px;
+  font-family: var(--fonte-sans);
+  font-size: 11.5px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cor-primaria-forte);
+}
+.pista--liberada .pista-texto { color: var(--cor-tinta); }
+.pista--bloqueada { align-items: center; color: var(--cor-suave); font-style: italic; font-size: 15px; }
+.pista-cadeado {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.pista--porque {
+  margin-top: var(--esp-sm);
+  padding: var(--esp-md);
+  border: 0;
+  border-radius: var(--raio-md);
+  background-color: color-mix(in srgb, var(--cor-primaria) 9%, transparent);
+}
+.pistas-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-sm) var(--esp-md);
+  margin-top: var(--esp-md);
+}
+.botao-pista {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--raio-md);
+  border: 1px dashed var(--cor-primaria);
+  background-color: transparent;
+  color: var(--cor-primaria-forte);
+  font-family: var(--fonte-sans);
+  font-size: 14px;
+  font-weight: var(--peso-forte);
+  cursor: pointer;
+  transition: background-color var(--transicao-rapida);
+}
+.botao-pista:hover:not(:disabled) { background-color: color-mix(in srgb, var(--cor-primaria) 10%, transparent); }
+.botao-pista:disabled { opacity: 0.55; cursor: progress; }
+.pistas-espera { font-size: 14px; font-style: italic; color: var(--cor-suave); }
+
+/* ================================================================ rodapé ====== */
+
+.rodape-progresso { margin-top: var(--esp-md); }
+.botao-rodape {
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--cor-suave-clara);
+  font-family: var(--fonte-sans);
+  font-size: 13px;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.botao-rodape:hover { color: var(--cor-sobre-escuro); }
+.rodape-aviso { display: block; font-size: 13px; color: var(--cor-primaria-fraca); }
+
+/* ============================================== PC: figuras maiores ========== */
+
+/* Em telas largas (computador, projetor da sala) as figuras crescem junto com a página:
+   o plano de decisão, a curva de erro, a rede, os gráficos das ativações e a ilustração
+   da superfície. No telefone nada muda. */
+@media (min-width: 1100px) {
+  /* laboratório: o plano ocupa a coluna do gráfico (a da esquerda continua larga o
+     bastante para cada linha do log caber numa linha só) */
+  .lab-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr); }
+  .lab-erro-embrulho > .lab-erro { height: 160px; }
+  .rede-desenho { max-height: 300px; }
+  .painel-equacao { font-size: 17px; }
+
+  /* Ato 2: o texto na largura de leitura e, atrás dele, o terreno: a ilustração começa no
+     meio do texto e vai até a margem direita da página (o body corta a sobra com
+     overflow-x: clip), passando um pouco acima e abaixo do bloco. Um degradê (no canvas) a
+     deixa quase transparente sob o texto e plena depois dele. */
+  .texto-com-figura { position: relative; }
+  .texto-com-figura .texto-coluna { position: relative; z-index: 1; }
+  .texto-com-figura .superficie-erro {
+    --inicio: calc(var(--largura-texto) * 0.45);
+    position: absolute;
+    z-index: 0;
+    top: -100px;
+    bottom: -140px;
+    left: var(--inicio);
+    right: calc((100% - 100vw) / 2 + 16px);
+    width: auto;
+    margin: 0;
+  }
+  /* o degradê sob o texto é desenhado no próprio canvas (superficie_erro.js) */
+  .texto-com-figura .superficie-erro canvas { width: 100%; height: 100%; aspect-ratio: auto; }
+
+  /* gavetas das ativações: gráfico maior ao lado do texto */
+  .ativacoes-bloco { max-width: 1080px; }
+  .ativacao-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: var(--esp-2xl); }
+  .ativacao-grafico { max-width: 460px; }
+  .ativacao-legenda { font-size: 13px; }
+
+  /* card matemático e fórmulas */
+  .cartao-matematico { max-width: 1080px; padding: var(--esp-2xl); }
+  .passo-formula .katex { font-size: 1.14em; }
+  .passo-titulo { font-size: 17px; }
+
+  /* selos e números */
+  .mapa-numero { width: 62px; height: 62px; font-size: 34px; }
+  .mapa-pergunta { font-size: 23px; }
+  .conquista-selo { width: 66px; height: 66px; }
+  .conquista-titulo { font-size: 19px; }
+}
+
+/* ============================================================ telefone ======= */
+
+@media (max-width: 720px) {
+  .mapa-cartao { padding: var(--esp-lg); }
+  .mapa-pergunta { font-size: 19px; }
+  .cartao-matematico { padding: var(--esp-lg) var(--esp-base); }
+  .resposta-ato { padding: var(--esp-lg) var(--esp-base) var(--esp-base); margin-top: var(--esp-2xl); }
+  .contexto-historico { padding: var(--esp-md) var(--esp-base); }
+  .conquista { gap: var(--esp-md); padding: var(--esp-md) 48px var(--esp-md) var(--esp-md); }
+  .conquista-selo { width: 44px; height: 44px; }
+  .pista { flex-direction: column; gap: 2px; }
+  .pista--bloqueada { flex-direction: row; }
+}
+
+/* ---------------------------------------------------------------------------
+   Rodapé no modo escuro. No tema escuro --cor-tinta vira quase branco, e o rodapé
+   (que usa a tinta como fundo) ficava claro. Aqui ele ganha um verde-escuro próprio,
+   um degrau acima do papel da página (#0e1512), para marcar onde a página acaba,
+   com textos claros por cima.
+--------------------------------------------------------------------------- */
+@media (min-width: 760px) { .rodape-interno { grid-template-columns: 2fr 1fr; } }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) .rodape,
+  :root:not([data-tema='claro']) .rodape::before { background-color: #1d2b25; }
+  :root:not([data-tema='claro']) .rodape { color: #eef5f0; }
+  :root:not([data-tema='claro']) .rodape .marca-neuro { color: #eef5f0; }
+  :root:not([data-tema='claro']) .rodape .marca-logica { color: #7ccb9f; }
+  :root:not([data-tema='claro']) .rodape p,
+  :root:not([data-tema='claro']) .rodape h4,
+  :root:not([data-tema='claro']) .botao-rodape { color: #a3b8ab; }
+  :root:not([data-tema='claro']) .botao-rodape:hover { color: #eef5f0; }
+  :root:not([data-tema='claro']) .rodape-aviso { color: #7ccb9f; }
+}
+:root[data-tema='escuro'] .rodape,
+:root[data-tema='escuro'] .rodape::before { background-color: #1d2b25; }
+:root[data-tema='escuro'] .rodape { color: #eef5f0; }
+:root[data-tema='escuro'] .rodape .marca-neuro { color: #eef5f0; }
+:root[data-tema='escuro'] .rodape .marca-logica { color: #7ccb9f; }
+:root[data-tema='escuro'] .rodape p,
+:root[data-tema='escuro'] .rodape h4,
+:root[data-tema='escuro'] .botao-rodape { color: #a3b8ab; }
+:root[data-tema='escuro'] .botao-rodape:hover { color: #eef5f0; }
+:root[data-tema='escuro'] .rodape-aviso { color: #7ccb9f; }
+
+/* ====================================================== laboratório: duas colunas == */
+
+/* A coluna da esquerda guarda os seletores, o aviso e o painel do algoritmo; a da direita
+   (rede, barra do treino, plano e curva) começa no topo do cartão, ao lado dos seletores.
+   Antes os seletores ocupavam a largura toda e deixavam um vazio à direita. */
+.lab-coluna--algoritmo { min-width: 0; }
+.lab-rede-embrulho { margin-bottom: 0; }
+
+@media (min-width: 900px) {
+  .lab-coluna--esquerda { display: flex; flex-direction: column; }
+  .lab-coluna--esquerda > .lab-coluna--algoritmo { flex: 1 1 auto; min-height: 0; }
+  /* o plano usa toda a altura que a tela deixa (descontados o cabeçalho, a barra do treino
+     e a curva) e toda a largura da coluna */
+  .lab-plano { max-width: clamp(340px, calc(100vh - 430px), 620px); }
+}
+
+/* Abaixo de 900 px a coluna da esquerda se desfaz e os blocos entram na ordem de leitura:
+   seletores, aviso, gráficos (com a rede) e, por último, o algoritmo. */
+@media (max-width: 899px) {
+  .lab-coluna--esquerda { display: contents; }
+  .lab-coluna--grafico { order: 1; }
+  .lab-coluna--esquerda > .lab-coluna--algoritmo { order: 2; }
+  .lab-controles { margin-bottom: 0; }
+  .lab-aviso { margin-bottom: 0; }
+}
+
+/* ======================================== equação e pesos numa caixa só ===== */
+
+/* A fronteira de decisão e os pesos que a formam dividem a mesma caixa: a equação em cima
+   e, separados por um fio, os pesos em pílulas menores. Abre espaço no painel. */
+.painel-reta {
+  background-color: var(--cor-superficie-tom);
+  border-radius: var(--raio-lg);
+  padding: 6px var(--esp-base) 12px;
+}
+.painel-reta .painel-equacao {
+  background: none;
+  padding: 6px 0;
+  border-radius: 0;
+  min-height: 52px;
+}
+.painel-reta .painel-pesos {
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cor-borda);
+}
+.painel-reta .peso-chip { background-color: var(--cor-superficie); padding: 3px 9px; }
+.painel-reta .peso-chip--mudou { background-color: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie)); }
+.painel-reta .peso-valor { font-size: 13.5px; }
+.painel-reta .peso-resumo { font-size: 13.5px; }
+
+/* ================================================ seletores: a lista aberta == */
+
+/* A lista aberta de um <select> é desenhada pelo sistema (o azul do Windows destoava do
+   resto). Nos navegadores que já deixam estilizá-la (Chrome e Edge 135+, com
+   appearance: base-select), ela ganha a cara do site: cartão com sombra, opções com
+   hover suave e um traço verde na escolhida. Nos outros, continua a lista nativa. */
+@supports (appearance: base-select) {
+  .campo-seletor > select.campo-controle,
+  .campo-seletor > select.campo-controle::picker(select) {
+    appearance: base-select;
+  }
+  .campo-seletor > select.campo-controle {
+    display: flex;
+    align-items: center;
+  }
+  /* a seta é a nossa (::after do invólucro); a do navegador sai */
+  .campo-seletor > select.campo-controle::picker-icon { display: none; }
+  .campo-seletor:has(select:open)::after { background-color: var(--cor-primaria); transform: rotate(180deg); }
+  .campo-seletor::after { transition: background-color var(--transicao-rapida), transform var(--transicao-rapida); }
+  .campo-seletor > select.campo-controle:open { border-color: var(--cor-primaria); }
+
+  .campo-seletor > select.campo-controle::picker(select) {
+    margin-top: 6px;
+    padding: 5px;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-lg);
+    background-color: var(--cor-superficie);
+    box-shadow: var(--sombra-elevada);
+    min-width: anchor-size(width);
+    opacity: 0;
+    translate: 0 -4px;
+    transition: opacity 140ms ease-out, translate 140ms ease-out, overlay 140ms allow-discrete, display 140ms allow-discrete;
+  }
+  .campo-seletor > select.campo-controle:open::picker(select) { opacity: 1; translate: 0 0; }
+  @starting-style {
+    .campo-seletor > select.campo-controle:open::picker(select) { opacity: 0; translate: 0 -4px; }
+  }
+
+  .campo-seletor > select.campo-controle option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--raio-md);
+    font-family: var(--fonte-sans);
+    font-size: 14.5px;
+    color: var(--cor-tinta);
+    background: none;
+    cursor: pointer;
+    transition: background-color var(--transicao-rapida);
+  }
+  .campo-seletor > select.campo-controle option:hover,
+  .campo-seletor > select.campo-controle option:focus-visible {
+    background-color: var(--cor-superficie-tom);
+    outline: none;
+  }
+  .campo-seletor > select.campo-controle option:checked {
+    background-color: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie));
+    color: var(--cor-tinta);
+    font-weight: var(--peso-forte);
+  }
+  /* o tique da opção escolhida, à direita, em verde */
+  .campo-seletor > select.campo-controle option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--cor-primaria);
+    font-weight: var(--peso-forte);
+  }
+  .campo-seletor > select.campo-controle option:disabled { color: var(--cor-suave); cursor: not-allowed; }
+}
+
+/* ============================================ abas: algoritmo / log de treino == */
+
+.painel-abas {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cor-superficie-tom);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+}
+.abas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.aba {
+  font-family: var(--fonte-sans);
+  font-size: 12px;
+  font-weight: var(--peso-caps);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cor-suave);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--raio-pilula);
+  padding: 5px 13px;
+  min-height: 32px;
+  cursor: pointer;
+  transition: color var(--transicao-rapida), background-color var(--transicao-rapida), border-color var(--transicao-rapida);
+}
+.aba:hover { color: var(--cor-tinta); background-color: var(--cor-superficie-areia); }
+.aba[aria-selected='true'] {
+  color: var(--cor-primaria-forte);
+  background-color: color-mix(in srgb, var(--cor-primaria) 13%, var(--cor-superficie));
+  border-color: color-mix(in srgb, var(--cor-primaria) 38%, transparent);
+}
+.aba:focus-visible { outline: 2px solid var(--cor-primaria); outline-offset: 1px; }
+.aba-pista {
+  margin-left: auto;
+  padding-right: 6px;
+  font-family: var(--fonte-mono);
+  font-size: 11.5px;
+  color: var(--cor-primaria-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.aba-pista[hidden] { display: none; }
+.aba-painel { padding-top: 8px; overflow-y: auto; }
+.aba-painel[hidden] { display: none; }
+.aba-painel--log { display: flex; flex-direction: column; padding-top: 4px; }
+.aba-painel--log[hidden] { display: none; }
+.painel-abas .painel-log { height: 168px; }
+@media (min-width: 900px) { .painel-abas .painel-log { height: auto; } }
+@media (max-width: 720px) {
+  .aba { min-height: 44px; padding-inline: 14px; }
+  .painel-abas .painel-log { height: 200px; }
+}
+
+/* ================================================ play flutuante (telas estreitas) == */
+
+/* No telefone e no tablet em coluna única, o play do treino fica preso no canto da tela
+   enquanto o leitor rola pelo laboratório de um ato (ver play_flutuante.js). No PC não existe. */
+.play-flutuante { display: none; }
+@media (max-width: 899px) {
+  .play-flutuante {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 25;                      /* abaixo dos balões de ajuda (30) e do cabeçalho (40) */
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--cor-primaria);
+    color: var(--cor-sobre-escuro);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), 0 0 0 4px color-mix(in srgb, var(--cor-primaria) 22%, transparent);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(16px) scale(0.9);
+    transition: opacity 180ms ease-out, transform 180ms ease-out, visibility 0s linear 180ms, background-color var(--transicao-rapida);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .play-flutuante--visivel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition-delay: 0s;
+  }
+  .play-flutuante:active { transform: scale(0.94); }
+  .play-flutuante:focus-visible { outline: 3px solid var(--cor-primaria-forte); outline-offset: 3px; }
+  .play-flutuante svg { width: 28px; height: 28px; fill: currentColor; }
+  .play-flutuante .icone-pausar { display: none; }
+  .play-flutuante--rodando .icone-tocar { display: none; }
+  .play-flutuante--rodando .icone-pausar { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-flutuante { transition: opacity 1ms, visibility 0s; transform: none; }
+}
+
+/* ============================================ arte de borda a borda (Ato 3) ===== */
+
+/* As duas retas atravessam a tela inteira, da borda esquerda à direita. A versão estreita
+   (telefone) é mais inclinada; a larga (a partir de 700 px) é mais comprida e rasa. O
+   desenho está direto na seção, que ocupa a largura toda. Sem o "tremido de lápis" animado:
+   um filtro refeito 8 vezes por segundo numa área desse tamanho pesaria em máquinas
+   modestas, e o traço de lápis estático continua. */
+.arte-margem--total {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin: calc(-1 * var(--esp-lg)) 0 var(--esp-base);
+}
+.arte-margem--estreita { height: auto; }
+.arte-margem--larga { display: none; height: clamp(190px, 20vw, 540px); }
+@media (min-width: 700px) {
+  .arte-margem--estreita { display: none; }
+  .arte-margem--larga { display: block; }
+}
+.arte-margem--total .arte-ferve,
+.arte-margem--total.revelado.arte--visivel .arte-ferve { animation: none !important; }
+
+/* ======================================= gráfico de erro: eixos e leitura ===== */
+
+/* O nome de cada eixo, bem pequeno, e a leitura do valor sob o cursor (ou o dedo). */
+.lab-erro .erro-eixo-nome { font-family: var(--fonte-sans); font-size: 9.5px; letter-spacing: 0.02em; }
+.lab-erro .erro-alvo { cursor: crosshair; touch-action: pan-y pinch-zoom; }
+.erro-leitura-guia { stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
+.erro-leitura-ponto { stroke: var(--cor-superficie); stroke-width: 2; }
+.erro-leitura-caixa rect {
+  fill: var(--cor-superficie);
+  stroke: var(--cor-borda-forte);
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
+}
+.erro-leitura-epoca { font-family: var(--fonte-sans); font-size: 10.5px; font-weight: var(--peso-forte); fill: var(--cor-suave); }
+.erro-leitura-valor { font-family: var(--fonte-mono); font-size: 11.5px; fill: var(--cor-tinta); }
+
+/* ================================================ rede: peso de cada ligação ===== */
+
+/* Passar o mouse numa ligação da rede mostra o peso dela (rede_visual.js). */
+.rede-visual { position: relative; }
+.rede-alvo { pointer-events: stroke; cursor: help; }
+.rede-dica-peso {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.rede-dica-peso[hidden] { display: none; }
+.rede-dica-rota { font-family: var(--fonte-sans); font-size: 11.5px; color: var(--cor-suave); }
+.rede-dica-valor { font-family: var(--fonte-mono); font-size: 13px; font-weight: var(--peso-forte); }
+.rede-dica-valor--positivo { color: var(--cor-classe-1); }
+.rede-dica-valor--negativo { color: var(--cor-classe-0); }
+
+/* ========================================================= tela de carregamento == */
+
+/* Na abertura, "Lógica" fica sem o sublinhado ondulado (o risco de progresso logo abaixo
+   já faz esse papel). */
+.carregamento-nome .marca-logica::after { display: none; }
+
+/* ==================================== abertura: brilho, cometa, sinais, saída ===== */
+
+/* Brilho de fundo: duas manchas radiais de verde, fracas, que respiram e derivam devagar
+   (só transform e opacidade, nada de filtro de desfoque, que pesaria). Uma vinheta escurece
+   as bordas. No tema claro tudo fica mais discreto. */
+.carregamento { --brilho-forca: 0.12; --vinheta-forca: 0.22; overflow: hidden; }
+@media (prefers-color-scheme: dark) { :root:not([data-tema='claro']) .carregamento { --brilho-forca: 0.18; --vinheta-forca: 0.6; } }
+:root[data-tema='escuro'] .carregamento { --brilho-forca: 0.18; --vinheta-forca: 0.6; }
+
+.carregamento-brilho { position: absolute; inset: 0; pointer-events: none; }
+.carregamento-brilho::after {
+  /* vinheta */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, color-mix(in srgb, var(--cor-superficie) 70%, #000) 120%);
+  opacity: var(--vinheta-forca);
+}
+.carregamento-brilho span {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(900px, 140vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cor-primaria) 100%, transparent) 0%, color-mix(in srgb, var(--cor-primaria) 35%, transparent) 28%, transparent 62%);
+  opacity: 0;
+  transform: scale(0.6);
+  will-change: transform, opacity;
+}
+.carregamento-brilho span:nth-child(2) {
+  width: min(560px, 100vw);
+  top: 40%;
+  left: 54%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cor-primaria-fraca) 100%, transparent) 0%, transparent 60%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .carregamento--preparado .carregamento-brilho span:nth-child(1) {
+    animation: brilho-entra 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, brilho-respira 5.5s ease-in-out 1.6s infinite;
+  }
+  .carregamento--preparado .carregamento-brilho span:nth-child(2) {
+    animation: brilho-entra 2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, brilho-deriva 9s ease-in-out 2.3s infinite;
+  }
+}
+@keyframes brilho-entra { to { opacity: var(--brilho-forca); transform: scale(1); } }
+@keyframes brilho-respira {
+  0%, 100% { opacity: var(--brilho-forca); transform: scale(1); }
+  50% { opacity: calc(var(--brilho-forca) * 0.7); transform: scale(1.06); }
+}
+@keyframes brilho-deriva {
+  0%, 100% { opacity: calc(var(--brilho-forca) * 0.6); transform: scale(1) translate(0, 0); }
+  50% { opacity: calc(var(--brilho-forca) * 0.9); transform: scale(1.1) translate(-4%, 3%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carregamento-brilho span { opacity: var(--brilho-forca); transform: none; }
+}
+
+/* o conteúdo fica acima do brilho */
+.carregamento-conteudo { position: relative; z-index: 1; }
+
+/* cometa da órbita */
+.anel-cometa { stroke: var(--cor-primaria); fill: none; stroke-linecap: round; opacity: 0; filter: drop-shadow(0 0 4px var(--cor-primaria)); }
+
+/* clarão, onda e sinais do neurônio */
+.brilho-soma-centro { stop-color: var(--cor-primaria); stop-opacity: 0.9; }
+.brilho-soma-meio { stop-color: var(--cor-primaria); stop-opacity: 0.28; }
+.brilho-soma-borda { stop-color: var(--cor-primaria); stop-opacity: 0; }
+.logo-halo { opacity: 0; }
+.logo-onda { stroke: var(--cor-primaria); opacity: 0; stroke-width: 1.4px; vector-effect: non-scaling-stroke; }
+.logo-sinal { fill: var(--cor-primaria-fraca); opacity: 0; filter: drop-shadow(0 0 1.2px var(--cor-primaria)); }
+.carregamento-logo .logo-soma { filter: drop-shadow(0 0 0 transparent); }
+
+/* nome: cada letra entra saindo do desfoque */
+.carregamento-nome .letra { display: inline-block; will-change: transform, opacity, filter; }
+.carregamento-nome .marca-logica { text-shadow: 0 0 0 transparent; transition: text-shadow 900ms ease; }
+.carregamento-nome.nome--aceso .marca-logica { text-shadow: 0 0 18px color-mix(in srgb, var(--cor-primaria) 45%, transparent); }
+
+/* risco de progresso com um leve brilho */
+.carregamento-progresso path { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--cor-primaria) 60%, transparent)); }
+
+/* saída: o conteúdo se aproxima um pouco e desfoca enquanto a tela some */
+.carregamento-conteudo { transition: transform 620ms cubic-bezier(0.4, 0, 0.2, 1), filter 620ms ease; }
+.carregamento--saindo .carregamento-conteudo { transform: scale(1.06); filter: blur(6px); }
+@media (prefers-reduced-motion: reduce) {
+  .carregamento--saindo .carregamento-conteudo { transform: none; filter: none; }
+}
+
+/* ===================================== rede: rótulo de camadas com largura fixa == */
+
+/* "1 camada oculta" → "2 camadas ocultas": o texto alargava e, como o grupo é centralizado,
+   empurrava os botões − e +. O rótulo agora reserva a largura do texto mais longo, alinhado
+   à esquerda, e os botões ficam parados. */
+.rede-barra-camadas .contador-rotulo {
+  display: inline-block;
+  min-width: 17ch;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* =================================================================================
+   ACABAMENTO: brilhos, vidro e luz
+   Efeitos discretos, só onde ajudam a ler a página: o cabeçalho vira vidro fosco, o topo
+   ganha uma luz verde ambiente (a mesma da abertura), os botões principais brilham, o
+   laboratório "acende" enquanto treina, e as caixas ganham um fio de luz no tema escuro.
+   Tudo lê os tokens do tema. Para o celular: nada de desfoque animado, e as animações
+   decorativas de hover só existem com mouse; "reduzir movimento" desliga o resto.
+   ================================================================================= */
+
+:root {
+  --luz-verde-fraca: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
+  --luz-verde: color-mix(in srgb, var(--cor-primaria) 28%, transparent);
+  --luz-verde-forte: color-mix(in srgb, var(--cor-primaria) 45%, transparent);
+  --luz-borda: rgba(0, 0, 0, 0);          /* fio de luz no alto das caixas (só no escuro) */
+  --luz-topo-forca: 0.55;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) { --luz-borda: rgba(255, 255, 255, 0.05); --luz-topo-forca: 1; }
+}
+:root[data-tema='escuro'] { --luz-borda: rgba(255, 255, 255, 0.05); --luz-topo-forca: 1; }
+
+/* ---- cabeçalho de vidro fosco ---- */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .cabecalho {
+    background-color: color-mix(in srgb, var(--cor-superficie-tom) 74%, transparent);
+    -webkit-backdrop-filter: saturate(1.5) blur(14px);
+    backdrop-filter: saturate(1.5) blur(14px);
+  }
+  /* com o menu aberto no telefone, o painel continua sólido (legibilidade) */
+  .cabecalho--menu-aberto { background-color: var(--cor-superficie-tom); }
+}
+/* um fio de luz verde na base do cabeçalho, mais forte no centro, quando a página rola */
+.cabecalho::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--luz-verde-forte) 50%, transparent);
+  opacity: 0;
+  transition: opacity var(--transicao-media);
+  pointer-events: none;
+}
+.cabecalho--rolado::after { opacity: 0.8; }
+
+/* ---- luz ambiente no topo (a mesma da abertura, mais fraca e parada) ---- */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 120%;
+  background:
+    radial-gradient(40% 45% at 22% 38%, var(--luz-verde) 0%, transparent 70%),
+    radial-gradient(30% 35% at 78% 30%, var(--luz-verde-fraca) 0%, transparent 70%);
+  opacity: var(--luz-topo-forca);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-enfase { text-shadow: 0 0 28px var(--luz-verde-fraca); }
+
+/* ---- botões ---- */
+.botao-primario {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 18px -8px var(--luz-verde-forte);
+  transition: transform var(--transicao-rapida), background-color var(--transicao-rapida),
+              border-color var(--transicao-rapida), box-shadow var(--transicao-media);
+}
+.botao-primario:hover { box-shadow: 0 10px 28px -8px var(--luz-verde-forte), 0 0 0 4px var(--luz-verde-fraca); }
+/* um reflexo de luz atravessa o botão ao passar o mouse */
+.botao-primario::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .botao-primario:hover::after { transform: translateX(120%); transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+}
+.botao-vazado { transition: transform var(--transicao-rapida), background-color var(--transicao-rapida), border-color var(--transicao-rapida), box-shadow var(--transicao-media); }
+.botao-vazado:hover { box-shadow: 0 0 0 4px var(--luz-verde-fraca); }
+
+/* play do treino: halo verde em repouso; rodando, um anel de luz pulsa em volta
+   (só opacidade e escala num pseudo-elemento: barato até no celular) */
+.botao-tocar {
+  position: relative;
+  box-shadow: 0 6px 20px -6px var(--luz-verde-forte), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.botao-tocar:hover { box-shadow: 0 8px 26px -6px var(--luz-verde-forte), 0 0 0 5px var(--luz-verde-fraca), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+.botao-tocar::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--luz-verde-forte);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .laboratorio--rodando .botao-tocar::after { animation: play-onda 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+}
+@keyframes play-onda {
+  0% { opacity: 0.85; transform: scale(0.92); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+.botao-secundario:hover { border-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda)); color: var(--cor-primaria-forte); }
+.play-flutuante { box-shadow: 0 10px 30px -6px var(--luz-verde-forte), 0 0 0 4px var(--luz-verde-fraca), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+
+/* ---- laboratório: fio de luz no escuro e um brilho verde enquanto treina ---- */
+.laboratorio {
+  position: relative;
+  box-shadow: var(--sombra-elevada), inset 0 1px 0 var(--luz-borda);
+  transition: box-shadow 600ms ease, border-color 600ms ease;
+}
+.laboratorio--rodando {
+  border-color: color-mix(in srgb, var(--cor-primaria) 32%, var(--cor-borda));
+  box-shadow: var(--sombra-elevada), inset 0 1px 0 var(--luz-borda), 0 0 0 1px var(--luz-verde-fraca), 0 24px 70px -30px var(--luz-verde-forte);
+}
+/* plano de decisão: assenta na página com uma sombra macia */
+.plano-canvas { box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.35); }
+
+/* caixas internas (equação, abas, barra do treino, rede, gavetas): fio de luz no alto */
+.painel-reta, .painel-abas, .lab-painel-treino, .rede-visual, .gaveta, .contexto-historico {
+  box-shadow: inset 0 1px 0 var(--luz-borda);
+}
+
+/* ---- resposta do ato: o fechamento de cada ato ganha uma aura verde ---- */
+.resposta-ato { box-shadow: 0 0 0 1px var(--luz-verde-fraca), 0 26px 60px -34px var(--luz-verde-forte), inset 0 1px 0 var(--luz-borda); }
+
+/* ---- conquista: aura e um reflexo que atravessa uma vez ao aparecer ---- */
+.conquista {
+  overflow: hidden;
+  box-shadow: var(--sombra-cartao), 0 0 0 4px var(--luz-verde-fraca), 0 18px 46px -22px var(--luz-verde-forte);
+}
+.conquista::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .conquista::after { animation: reflexo 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s 1 both; }
+}
+@keyframes reflexo { to { transform: translateX(120%); } }
+
+/* ---- abas e seletores: o estado ativo e o foco brilham de leve ---- */
+.aba[aria-selected='true'] { box-shadow: 0 0 14px -4px var(--luz-verde), inset 0 1px 0 var(--luz-borda); }
+.campo-controle:focus-visible { outline: 2px solid var(--cor-primaria); outline-offset: 1px; box-shadow: 0 0 0 5px var(--luz-verde-fraca); }
+
+/* ---- revelação ao rolar: no PC, os blocos também saem de um leve desfoque.
+   No telefone fica só o deslizar (desfoque em blocos grandes pesaria ao rolar). E o
+   filtro some por completo depois (filter: none), para não afetar nada posicionado. ---- */
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  [data-revelar]:not(.arte-margem) {
+    filter: blur(3px);
+    transition: opacity var(--transicao-lenta), transform var(--transicao-lenta), filter 450ms ease-out;
+  }
+  [data-revelar].revelado:not(.arte-margem) { filter: none; }
+}
+
+/* ---- barra de rolagem e seleção no tom do site ---- */
+html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-borda)) transparent; }
+::selection { background-color: color-mix(in srgb, var(--cor-primaria) 30%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .botao-primario::after, .conquista::after { display: none; }
+}
+
+/* ============================================ zoom nos dedos (zoom_leve.js) ===== */
+
+/* Com a página ampliada, o navegador do celular rasteriza de novo, na escala nova, tudo
+   que tem filtro, sombra grande ou animação: era o que congelava a tela. Enquanto há zoom,
+   essas camadas ficam simples; ao voltar ao normal, tudo retorna. */
+.zoom-ativo .arte-ferve,
+.zoom-ativo .arte-ferve-fina,
+.zoom-ativo .anel-cometa,
+.zoom-ativo .logo-sinal,
+.zoom-ativo .carregamento-progresso path { filter: none !important; animation: none !important; }
+.zoom-ativo .cabecalho { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: var(--cor-superficie-tom); }
+.zoom-ativo .botao-tocar::after,
+.zoom-ativo .botao-primario::after,
+.zoom-ativo .conquista::after { animation: none !important; display: none; }
+.zoom-ativo .laboratorio,
+.zoom-ativo .laboratorio--rodando,
+.zoom-ativo .resposta-ato,
+.zoom-ativo .conquista,
+.zoom-ativo .plano-canvas { box-shadow: none !important; }
+.zoom-ativo [data-revelar] { filter: none !important; }
+.zoom-ativo .play-flutuante { box-shadow: none; }
+
+/* ====== rede: controles das camadas em grade quando a rede é estreita ====== */
+
+/* No PC cada controle (− n +) fica em cima da coluna do desenho. Quando a rede é estreita,
+   as colunas ficam mais próximas do que a largura de um controle e eles se sobrepõem. Isso
+   acontece em duas situações: no telefone (até 720 px) e nos tablets e telas médias, onde o
+   laboratório usa duas colunas e a rede tem menos de ~480 px (de ~880 a ~1100 px de tela).
+   Então os controles saem de cima do desenho e viram uma grade de duas colunas, cada um
+   com o nome da camada. O critério é a largura da própria rede (container query), e não a
+   da tela. */
+.rede-visual { container-type: inline-size; container-name: rede; }
+.rede-barra-colunas { counter-reset: camada; }
+.rede-controle-camada { counter-increment: camada; }
+@media (max-width: 720px) {
+  .rede-barra-colunas {
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: var(--esp-md);
+  }
+  .rede-controle-camada {
+    position: static;
+    transform: none;
+    left: auto !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 6px 8px;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-lg);
+    background-color: var(--cor-superficie-tom);
+  }
+  .rede-controle-camada::before {
+    content: 'Camada ' counter(camada);
+    font-family: var(--fonte-sans);
+    font-size: 10.5px;
+    font-weight: var(--peso-caps);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--cor-suave);
+  }
+  .rede-controle-camada .contador { justify-content: space-between; gap: 6px; }
+  .rede-controle-camada .contador-botao { width: 36px; height: 36px; font-size: 17px; }
+  .rede-controle-camada .rede-coluna-titulo { font-size: 15px; }
+}
+@container rede (max-width: 480px) {
+  .rede-barra-colunas {
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: var(--esp-md);
+  }
+  .rede-controle-camada {
+    position: static;
+    transform: none;
+    left: auto !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 6px 8px;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-lg);
+    background-color: var(--cor-superficie-tom);
+  }
+  .rede-controle-camada::before {
+    content: 'Camada ' counter(camada);
+    font-family: var(--fonte-sans);
+    font-size: 10.5px;
+    font-weight: var(--peso-caps);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--cor-suave);
+  }
+  .rede-controle-camada .contador { justify-content: space-between; gap: 6px; }
+  .rede-controle-camada .contador-botao { width: 36px; height: 36px; font-size: 17px; }
+  .rede-controle-camada .rede-coluna-titulo { font-size: 15px; }
+}
+
+/* ================================================ sem zoom de pinça (celular) ===== */
+
+/* Zoom de pinça liberado no celular (o viewport não trava a escala). A leitura do valor
+   nos gráficos de erro usa `touch-action: pan-y` só no próprio gráfico. */
+
+/* ===================== plano de decisão: anel e legenda do ponto rente à reta ===== */
+
+.plano-realce-anel { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .plano-realce-anel { animation: realce-pulso 1.6s ease-in-out infinite; }
+}
+@keyframes realce-pulso {
+  0%, 100% { opacity: 0.95; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.22); }
+}
+/* o botão "?" ao lado do ponto e o balão com a explicação */
+.plano-realce-botao { cursor: pointer; outline: none; }
+.plano-realce-botao-fundo { fill: var(--cor-superficie); stroke: var(--cor-primaria); stroke-width: 1.6; transition: fill var(--transicao-rapida); }
+.plano-realce-botao-texto { font-family: var(--fonte-sans); font-size: 13px; font-weight: var(--peso-forte); fill: var(--cor-primaria); pointer-events: none; }
+.plano-realce-botao:hover .plano-realce-botao-fundo,
+.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-fundo { fill: var(--cor-primaria); }
+.plano-realce-botao:hover .plano-realce-botao-texto,
+.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-texto { fill: var(--cor-superficie); }
+.plano-realce-botao:focus-visible .plano-realce-botao-fundo { stroke-width: 3; }
+.plano-balao {
+  position: absolute;
+  z-index: 6;
+  padding: 10px 12px;
+  border: 1px solid var(--cor-primaria);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  font-family: var(--fonte-serif);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--cor-texto);
+  text-align: left;
+}
+.plano-balao > strong:first-child { display: block; margin-bottom: 4px; font-family: var(--fonte-sans); font-size: 12.5px; color: var(--cor-tinta); }
+.plano-balao p { margin: 0 0 6px; }
+.plano-balao p:last-child { margin-bottom: 0; color: var(--cor-suave); }

@@ -1,0 +1,244 @@
+/* Tokens de design do NeuroLógica.
+   Traduz o DESIGN.md (na raiz do repositório) para variáveis CSS: interface verde
+   inspirada na paleta da UEL, sobre papel esverdeado, com um único acento (#00864a).
+   Nenhum valor hexadecimal deve ser escrito direto em estilo.css — sempre referenciar
+   um token daqui, para que reconfigurar o tema seja mexer só neste arquivo.
+
+   DUAS PALETAS CONVIVEM AQUI, de propósito (Decisão 15 em
+   planejamento/06_detalhes_implementacao.md):
+
+   - a da INTERFACE (--cor-*), que ficou verde;
+   - a dos GRÁFICOS (--cor-classe-* e --grafico-*), que continua a ANTIGA: laranja-
+     terracota e azul, com os mesmos cinzas de antes. Os gráficos leem --cor-* nos
+     próprios contêineres; o bloco "Escopo de cor dos gráficos" em estilo.css redeclara
+     essas variáveis ali, apontando para --grafico-*. Assim o código dos gráficos não
+     muda e eles ficam idênticos.
+
+   Os nomes antigos das variáveis foram mantidos para não mexer no resto do CSS; um
+   deles ficou com nome enganoso (--cor-superficie-areia, hoje um verde-claro). */
+
+:root {
+  /* ---- Interface: acento e marca ---- */
+  --cor-primaria: #00864a;          /* verde UEL. 4,42:1 no papel: NÃO usar como texto pequeno */
+  --cor-primaria-forte: #006b3b;    /* verde de TEXTO (6,30:1) e hover */
+  --cor-primaria-fraca: #7ccb9f;    /* verde suave: órbitas, "Lógica" no rodapé */
+  --cor-primaria-profunda: #004d2a; /* traço de ênfase nas ilustrações */
+  --cor-marca-texto: #bfe3cd;       /* faixa de canetinha sob títulos */
+
+  /* ---- Interface: tinta e texto ---- */
+  --cor-tinta: #0d1411;
+  --cor-texto: #3d4b43;
+  --cor-suave: #5a6a61;
+  --cor-suave-clara: #a9bcb0;
+  --cor-suave-fraca: #7c8c83;
+
+  /* ---- Interface: superfícies (papel -> tom -> lavado) ---- */
+  --cor-superficie: #f6faf7;        /* o "papel". Nunca branco puro. */
+  --cor-superficie-tom: #ebf3ee;
+  --cor-superficie-areia: #dceae1;  /* nome legado: hoje é o papel-lavado */
+  --cor-sobre-escuro: #ffffff;      /* rótulo sobre o acento; único branco puro */
+
+  /* ---- Interface: linhas ---- */
+  --cor-borda: #c8dccf;
+  --cor-borda-forte: #a6c2b1;
+
+  /* ---- Interface: estados ---- */
+  --cor-neutra: #bcd1ca;
+  --cor-acerto: #006b3b;
+  --cor-erro: #b3323f;
+
+  /* ---- Gráficos: paleta ANTIGA, preservada ----
+     A dupla laranja/azul carrega o significado nos gráficos: laranja = classe 1 /
+     peso positivo / ativado; azul = classe 0 / peso negativo / desativado.
+     --cor-classe-* NÃO mudaram de valor; as --grafico-* guardam o resto da paleta
+     antiga que o código dos gráficos lê. */
+  --cor-classe-1: #d97757;
+  --cor-classe-0: #6a9bcc;
+  --grafico-destaque: #d97757;      /* ponto em avaliação e curva de erro */
+  --grafico-tinta: #141413;
+  --grafico-suave: #73726c;
+  --grafico-superficie: #faf9f5;
+  --grafico-borda: #d1cfc5;
+  --grafico-borda-forte: #bdbab0;
+  --grafico-reta-1: #141413;        /* retas de decisão (lidas por retasAtuais) */
+  --grafico-reta-2: #788c5d;
+  --grafico-reta-3: #c25f3f;
+  --grafico-reta-4: #73726c;
+
+  /* ---- Aliases dos neutros do tema ----
+     Propriedades personalizadas herdam o valor JÁ resolvido. Declarados aqui no :root,
+     estes aliases guardam os neutros do tema mesmo dentro de um contêiner de gráfico
+     que redeclara --cor-tinta & cia. — é o que permite devolver os controles da rede
+     (botões +/- e (?)) às cores da interface. */
+  --tema-tinta: var(--cor-tinta);
+  --tema-suave: var(--cor-suave);
+  --tema-superficie: var(--cor-superficie);
+  --tema-borda: var(--cor-borda);
+  --tema-borda-forte: var(--cor-borda-forte);
+
+  /* ---- Tipografia ---- */
+  --fonte-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fonte-serif: 'Source Serif 4 Variable', ui-serif, Georgia, 'Times New Roman', serif;
+  --fonte-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  /* Só existem os pesos 400, 600 e 700. O 500 é deliberadamente ausente. */
+  --peso-normal: 400;
+  --peso-forte: 600;
+  --peso-caps: 700;
+
+  /* ---- Espaçamento (escala de 8px com meio-passo de 4px) ---- */
+  --esp-xs: 4px;
+  --esp-sm: 8px;
+  --esp-md: 12px;
+  --esp-base: 16px;
+  --esp-lg: 20px;
+  --esp-xl: 24px;
+  --esp-2xl: 32px;
+  --esp-3xl: 48px;
+  --esp-4xl: 64px;
+  --esp-calha: 40px;
+
+  /* ---- Raios ---- */
+  --raio-xs: 4px;
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 12px;
+  --raio-xl: 16px;
+  --raio-2xl: 24px;
+  --raio-pilula: 999px;
+
+  /* ---- Elevação (máx. 0.08 de alfa) ---- */
+  --sombra-cartao: rgba(0, 0, 0, 0.05) 0 4px 24px 0;
+  --sombra-elevada:
+    rgba(0, 0, 0, 0.04) 0 1px 1px 0,
+    rgba(0, 0, 0, 0.06) 0 4px 4px 0,
+    rgba(0, 0, 0, 0.08) 0 16px 24px 0;
+
+  /* ---- Textura ----
+     Intensidade do grão de papel sobreposto à página. No tema claro o ruído
+     escurece (multiply) para imitar fibra de papel; no escuro ele clareia
+     (screen), porque multiplicar sobre uma superfície já escura não apareceria. */
+  --grao-opacidade: 0.05;
+  --grao-mistura: multiply;
+
+  /* Presença das ilustrações decorativas desenhadas à mão. --arte-giz engrossa um
+     pouco os traços no tema escuro, para parecerem giz no quadro. */
+  --arte-opacidade: 0.9;
+  --arte-giz: 1;
+
+  /* ---- Movimento ---- */
+  --transicao-rapida: 140ms cubic-bezier(0.2, 0, 0.2, 1);
+  --transicao-media: 280ms cubic-bezier(0.2, 0, 0.2, 1);
+  --transicao-lenta: 620ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- Layout ---- */
+  --largura-max: 1240px;
+  --largura-texto: 68ch;
+  --altura-cabecalho: 68px;
+}
+
+/* Tema escuro: "quadro-negro a giz". O papel vira um verde quase preto, a tinta vira
+   giz, e o acento sobe de luminosidade para manter contraste. Ativado por preferência
+   do sistema ou pelo botão do cabeçalho (data-tema="escuro"). Os dois blocos abaixo
+   são idênticos: um cobre a preferência do sistema, o outro a escolha manual. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    --cor-primaria: #2ec27e;
+    --cor-primaria-forte: #63d99f;
+    --cor-primaria-fraca: #2f7a55;
+    --cor-primaria-profunda: #1a8f5a;
+    --cor-marca-texto: #1f3d2f;
+
+    --cor-tinta: #eef5f0;
+    --cor-texto: #bccac1;
+    --cor-suave: #93a59a;
+    --cor-suave-clara: #6f8177;
+    --cor-suave-fraca: #6f8177;
+
+    --cor-superficie: #0e1512;
+    --cor-superficie-tom: #141d19;
+    --cor-superficie-areia: #1c2823;
+    --cor-sobre-escuro: #0e1512;
+
+    --cor-borda: #2a3a33;
+    --cor-borda-forte: #3a4f45;
+
+    --cor-acerto: #63d99f;
+    --cor-erro: #e8737d;
+
+    /* gráficos: paleta antiga do tema escuro */
+    --cor-classe-1: #e08a68;
+    --cor-classe-0: #7fb0dd;
+    --grafico-destaque: #e08a68;
+    --grafico-tinta: #f5f3ee;
+    --grafico-suave: #a09d93;
+    --grafico-superficie: #16161a;
+    --grafico-borda: #33333a;
+    --grafico-borda-forte: #45454e;
+    --grafico-reta-1: #f5f3ee;
+    --grafico-reta-2: #9ab17a;
+    --grafico-reta-3: #ec9b7a;
+    --grafico-reta-4: #a09d93;
+
+    --grao-opacidade: 0.035;
+    --grao-mistura: screen;
+    --arte-opacidade: 0.8;
+    --arte-giz: 1.15;
+
+    --sombra-cartao: rgba(0, 0, 0, 0.4) 0 4px 24px 0;
+    --sombra-elevada:
+      rgba(0, 0, 0, 0.3) 0 1px 1px 0,
+      rgba(0, 0, 0, 0.35) 0 4px 8px 0,
+      rgba(0, 0, 0, 0.45) 0 16px 32px 0;
+  }
+}
+
+:root[data-tema='escuro'] {
+  --cor-primaria: #2ec27e;
+  --cor-primaria-forte: #63d99f;
+  --cor-primaria-fraca: #2f7a55;
+  --cor-primaria-profunda: #1a8f5a;
+  --cor-marca-texto: #1f3d2f;
+
+  --cor-tinta: #eef5f0;
+  --cor-texto: #bccac1;
+  --cor-suave: #93a59a;
+  --cor-suave-clara: #6f8177;
+  --cor-suave-fraca: #6f8177;
+
+  --cor-superficie: #0e1512;
+  --cor-superficie-tom: #141d19;
+  --cor-superficie-areia: #1c2823;
+  --cor-sobre-escuro: #0e1512;
+
+  --cor-borda: #2a3a33;
+  --cor-borda-forte: #3a4f45;
+
+  --cor-acerto: #63d99f;
+  --cor-erro: #e8737d;
+
+  /* gráficos: paleta antiga do tema escuro */
+  --cor-classe-1: #e08a68;
+  --cor-classe-0: #7fb0dd;
+  --grafico-destaque: #e08a68;
+  --grafico-tinta: #f5f3ee;
+  --grafico-suave: #a09d93;
+  --grafico-superficie: #16161a;
+  --grafico-borda: #33333a;
+  --grafico-borda-forte: #45454e;
+  --grafico-reta-1: #f5f3ee;
+  --grafico-reta-2: #9ab17a;
+  --grafico-reta-3: #ec9b7a;
+  --grafico-reta-4: #a09d93;
+
+  --grao-opacidade: 0.035;
+  --grao-mistura: screen;
+  --arte-opacidade: 0.8;
+  --arte-giz: 1.15;
+
+  --sombra-cartao: rgba(0, 0, 0, 0.4) 0 4px 24px 0;
+  --sombra-elevada:
+    rgba(0, 0, 0, 0.3) 0 1px 1px 0,
+    rgba(0, 0, 0, 0.35) 0 4px 8px 0,
+    rgba(0, 0, 0, 0.45) 0 16px 32px 0;
+}

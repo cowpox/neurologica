@@ -1,0 +1,31 @@
+/* Fontes auto-hospedadas (copiadas do npm @fontsource, ver docs/package.json).
+   As fontes originais da linguagem visual de referência (Anthropic Sans/Serif) são
+   proprietárias; estas são as substitutas livres recomendadas no próprio DESIGN.md
+   (Decisão 4 em planejamento/06_detalhes_implementacao.md). */
+
+/* Sans — títulos, rótulos e interface */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./files/inter-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+/* Serifa — leitura, texto corrido e navegação */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('./files/source-serif-4-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+/* Monoespaçada — pesos, log de treino e pseudocódigo */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./files/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+}
