@@ -1,0 +1,38 @@
+{
+  "ato1_perceptron_AND": {
+    "epoca": 7,
+    "convergiu": true,
+    "erros": 0
+  },
+  "ato1_perceptron_XOR": {
+    "epoca": 40,
+    "convergiu": false,
+    "erros": 3
+  },
+  "ato2_adaline_AND_eta_0_1": {
+    "epoca": 43,
+    "convergiu": true,
+    "erros": 0,
+    "sse": 0.5061
+  },
+  "ato2_adaline_AND_eta_0_7": {
+    "epoca": 12,
+    "convergiu": true,
+    "erros": 1,
+    "sse": 4.5816
+  },
+  "ato2_adaline_XOR": {
+    "epoca": 49,
+    "convergiu": true,
+    "erros": 3,
+    "sse": 2.0357
+  },
+  "ato3_mlp_XOR_tanh_eta_2": {
+    "epoca": 1294,
+    "estado": "convergiu",
+    "reinicios": [
+      899
+    ],
+    "erros": 0
+  }
+}

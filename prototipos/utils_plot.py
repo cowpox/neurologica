@@ -121,6 +121,97 @@ def draw_neuron_diagram(ax, n_entradas, rotulo_ativacao="degrau"):
     return {"pesos": pesos_textos, "bias": bias_texto, "soma": soma_texto, "saida": saida_texto}
 
 
+# Cores das conexões da rede: sinal do peso (positivo = laranja-terracota, negativo = azul),
+# a mesma convenção que o site usa (Decisão 7 da demo).
+COR_PESO_POSITIVO = "#D97757"
+COR_PESO_NEGATIVO = "#6A9BCC"
+
+
+def estilo_conexao(peso, espessura_max=4.0, escala=2.0):
+    """Traduz um peso em (cor, espessura) para desenhar a conexão entre dois neurônios:
+    cor pelo SINAL do peso e espessura pela MAGNITUDE, saturando em `espessura_max` para
+    um peso grande não estourar o desenho (e com um mínimo para a linha não sumir).
+    """
+    cor = COR_PESO_POSITIVO if peso >= 0 else COR_PESO_NEGATIVO
+    espessura = min(abs(peso) * escala, espessura_max)
+    return cor, max(espessura, 0.4)
+
+
+def draw_network_diagram(ax, n_entradas, n_ocultos, rotulo_ativacao="sigmoide"):
+    """Desenha o diagrama de uma MLP (entradas -> camada oculta -> saída). As conexões
+    são linhas cuja ESPESSURA representa |peso| e cuja COR representa o sinal do peso
+    (`estilo_conexao`), atualizadas a cada frame da animação.
+
+    É o protótipo em matplotlib da estética da rede no site (inspirada no TensorFlow
+    Playground): validar aqui, no simples, que "espessura = magnitude, cor = sinal"
+    comunica o que a rede está fazendo, antes de reimplementar em SVG/D3.
+
+    Retorna um dicionário de artists a atualizar a cada frame:
+    {"conexoes_entrada": [[Line2D, ...] por oculto], "conexoes_saida": [Line2D, ...],
+     "textos_ocultos": [Text, ...], "texto_saida": Text}.
+    """
+    import matplotlib.patches as mpatches
+
+    ax.set_xlim(0, 3.4)
+    ax.set_ylim(-0.4, 1.2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_aspect("equal")  # nós redondos, e não elipses
+    ax.set_title("A rede por dentro", fontsize=10)
+    for lado in ax.spines.values():
+        lado.set_visible(False)
+
+    def posicoes(n, x):
+        """Distribui n nós verticalmente na coluna x, centralizados em y = 0.5."""
+        if n == 1:
+            return [(x, 0.5)]
+        passo = 0.8 / (n - 1)
+        return [(x, 0.9 - i * passo) for i in range(n)]
+
+    pos_entradas = posicoes(n_entradas, 0.35)
+    pos_ocultos = posicoes(n_ocultos, 1.75)
+    pos_saida = posicoes(1, 3.05)
+
+    # conexões desenhadas ANTES dos nós, para ficarem por baixo (zorder menor)
+    conexoes_entrada = []
+    for po in pos_ocultos:
+        deste_oculto = []
+        for pe in pos_entradas:
+            linha, = ax.plot([pe[0], po[0]], [pe[1], po[1]], color="#cccccc", linewidth=1, zorder=1)
+            deste_oculto.append(linha)
+        conexoes_entrada.append(deste_oculto)
+
+    conexoes_saida = []
+    for po in pos_ocultos:
+        linha, = ax.plot([po[0], pos_saida[0][0]], [po[1], pos_saida[0][1]],
+                         color="#cccccc", linewidth=1, zorder=1)
+        conexoes_saida.append(linha)
+
+    for i, (x, yy) in enumerate(pos_entradas):
+        ax.add_patch(mpatches.Circle((x, yy), 0.13, facecolor="#a8c6e8", edgecolor="black", zorder=3))
+        ax.text(x, yy, f"x{i + 1}", ha="center", va="center", zorder=4, fontsize=9)
+
+    textos_ocultos = []
+    for i, (x, yy) in enumerate(pos_ocultos):
+        ax.add_patch(mpatches.Circle((x, yy), 0.15, facecolor="#d9d9f7", edgecolor="black", zorder=3))
+        ax.text(x, yy, f"h{i + 1}", ha="center", va="center", zorder=4, fontsize=9)
+        textos_ocultos.append(ax.text(x, yy - 0.24, "", ha="center", va="center", fontsize=7.5, zorder=4))
+
+    x_s, y_s = pos_saida[0]
+    ax.add_patch(mpatches.Circle((x_s, y_s), 0.15, facecolor="#f7d9d9", edgecolor="black", zorder=3))
+    ax.text(x_s, y_s, "ŷ", ha="center", va="center", zorder=4, fontsize=10)
+    texto_saida = ax.text(x_s, y_s - 0.24, "", ha="center", va="center", fontsize=7.5, zorder=4)
+
+    ax.text(1.75, -0.33, f"ocultos: {rotulo_ativacao} | saída: sigmoide", ha="center", fontsize=7.5, color="#666666")
+
+    return {
+        "conexoes_entrada": conexoes_entrada,
+        "conexoes_saida": conexoes_saida,
+        "textos_ocultos": textos_ocultos,
+        "texto_saida": texto_saida,
+    }
+
+
 def vetor_normal_ancorado(pesos, bias, centro=(0.5, 0.5), comprimento=0.4):
     """Calcula (âncora, ponta) do vetor de pesos (w1, w2), que é o vetor NORMAL ao
     hiperplano de decisão w1*x1 + w2*x2 + b = 0 (Tópico 9 do curso) e aponta sempre
