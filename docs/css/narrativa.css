@@ -652,6 +652,18 @@
    herda o fundo da seção. No telefone e no tablet ele vem abaixo do texto, de ponta a ponta
    da tela; no PC (ver "PC: figuras maiores") vira uma camada atrás do texto. */
 .superficie-erro { margin: var(--esp-lg) 0 var(--esp-base); pointer-events: none; }
+/* Ato 1 não tem ilustração ao lado: em telas largas o texto ocupa duas colunas, em vez de
+   deixar a metade direita vazia. No telefone e no tablet segue uma coluna só. */
+@media (min-width: 1000px) {
+  #ato1 > .envelope > .texto-coluna {
+    max-width: 1080px;
+    column-count: 2;
+    column-gap: var(--esp-2xl);
+  }
+  #ato1 > .envelope > .texto-coluna > * { break-inside: avoid; }
+  #ato1 > .envelope > .texto-coluna > :first-child { margin-top: 0; }
+}
+
 .texto-com-figura { margin-bottom: var(--esp-xl); }
 .texto-com-figura .texto-coluna { margin-bottom: 0; }
 .texto-com-figura .superficie-erro { width: 100vw; margin: var(--esp-base) 0 0 calc(50% - 50vw); }
@@ -1696,12 +1708,12 @@ html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-bo
 }
 /* o botão "?" ao lado do ponto e o balão com a explicação */
 .plano-realce-botao { cursor: pointer; outline: none; }
-.plano-realce-botao-fundo { fill: var(--cor-superficie); stroke: var(--cor-primaria); stroke-width: 1.6; transition: fill var(--transicao-rapida); }
-.plano-realce-botao-texto { font-family: var(--fonte-sans); font-size: 13px; font-weight: var(--peso-forte); fill: var(--cor-primaria); pointer-events: none; }
+.plano-realce-botao-fundo { fill: var(--cor-superficie); stroke: var(--grafico-realce); stroke-width: 2.2; transition: fill var(--transicao-rapida); }
+.plano-realce-botao-texto { font-family: var(--fonte-sans); font-size: 13px; font-weight: var(--peso-forte); fill: var(--cor-tinta); pointer-events: none; }
 .plano-realce-botao:hover .plano-realce-botao-fundo,
-.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-fundo { fill: var(--cor-primaria); }
+.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-fundo { fill: var(--grafico-realce); }
 .plano-realce-botao:hover .plano-realce-botao-texto,
-.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-texto { fill: var(--cor-superficie); }
+.plano-realce-botao[aria-expanded='true'] .plano-realce-botao-texto { fill: #141413; }
 .plano-realce-botao:focus-visible .plano-realce-botao-fundo { stroke-width: 3; }
 .plano-balao {
   position: absolute;

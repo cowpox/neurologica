@@ -47,22 +47,23 @@
   --cor-acerto: #006b3b;
   --cor-erro: #b3323f;
 
-  /* ---- Gráficos: dupla verde/azul-royal ----
-     A dupla carrega o significado nos gráficos: verde (o da interface) = classe 1 /
-     peso positivo / ativado; azul-royal = classe 0 / peso negativo / desativado. As
+  /* ---- Gráficos: dupla rosa/ciano ----
+     A dupla carrega o significado nos gráficos: rosa = classe 1 /
+     peso positivo / ativado; ciano = classe 0 / peso negativo / desativado. As
      --grafico-* guardam o resto da paleta que o código dos gráficos lê. */
-  --cor-classe-1: #00864a;
-  --cor-classe-0: #3b5bdb;
-  --grafico-destaque: #00864a;      /* ponto em avaliação e curva de erro */
+  --cor-classe-1: #DB2777;
+  --cor-classe-0: #0891B2;
+  --grafico-destaque: #00864a;      /* ponto em avaliação e curva de erro (verde, independente das cores das classes) */
   --grafico-tinta: #141413;
   --grafico-suave: #73726c;
   --grafico-superficie: #faf9f5;
   --grafico-borda: #d1cfc5;
   --grafico-borda-forte: #bdbab0;
   --grafico-reta-1: #141413;        /* retas de decisão (lidas por retasAtuais) */
-  --grafico-reta-2: #b8860b;        /* âmbar e magenta: distintas do verde e do azul dos dados */
-  --grafico-reta-3: #a8408c;
+  --grafico-reta-2: #b8860b;        /* âmbar e violeta: distintas do rosa e do ciano dos dados */
+  --grafico-reta-3: #7c3aed;
   --grafico-reta-4: #73726c;
+  --grafico-realce: #ffd60a;        /* anel e botão "?" do ponto rente à reta: amarelo, que contrasta com o rosa e o ciano */
 
   /* ---- Aliases dos neutros do tema ----
      Propriedades personalizadas herdam o valor JÁ resolvido. Declarados aqui no :root,
@@ -165,9 +166,9 @@
     --cor-acerto: #63d99f;
     --cor-erro: #e8737d;
 
-    /* gráficos: verde e azul-royal do tema escuro */
-    --cor-classe-1: #2ec27e;
-    --cor-classe-0: #7c9cff;
+    /* gráficos: rosa e ciano do tema escuro */
+    --cor-classe-1: #DB2777;
+    --cor-classe-0: #0891B2;
     --grafico-destaque: #2ec27e;
     --grafico-tinta: #f5f3ee;
     --grafico-suave: #a09d93;
@@ -176,7 +177,7 @@
     --grafico-borda-forte: #45454e;
     --grafico-reta-1: #f5f3ee;
     --grafico-reta-2: #e0b84a;
-    --grafico-reta-3: #d77bc0;
+    --grafico-reta-3: #a78bfa;
     --grafico-reta-4: #a09d93;
 
     --grao-opacidade: 0.035;
@@ -216,9 +217,9 @@
   --cor-acerto: #63d99f;
   --cor-erro: #e8737d;
 
-  /* gráficos: verde e azul-royal do tema escuro */
-  --cor-classe-1: #2ec27e;
-  --cor-classe-0: #7c9cff;
+  /* gráficos: rosa e ciano do tema escuro */
+  --cor-classe-1: #DB2777;
+  --cor-classe-0: #0891B2;
   --grafico-destaque: #2ec27e;
   --grafico-tinta: #f5f3ee;
   --grafico-suave: #a09d93;
@@ -227,7 +228,7 @@
   --grafico-borda-forte: #45454e;
   --grafico-reta-1: #f5f3ee;
   --grafico-reta-2: #e0b84a;
-  --grafico-reta-3: #d77bc0;
+  --grafico-reta-3: #a78bfa;
   --grafico-reta-4: #a09d93;
 
   --grao-opacidade: 0.035;

@@ -30,6 +30,7 @@ function coresDoTema(elemento) {
     suave: ler('--cor-suave'),
     tinta: ler('--cor-tinta'),
     primaria: ler('--cor-primaria'),
+    realce: ler('--grafico-realce') || '#ffd60a',
   };
 }
 
@@ -161,7 +162,7 @@ export class PlanoDeDecisao {
       dados[posicao + 2] = c0.b + (c1.b - c0.b) * mistura;
       // opacidade menor perto da fronteira: deixa o papel aparecer e evita que o
       // fundo compita com os pontos de dados
-      dados[posicao + 3] = 40 + Math.abs(intensidade) * 120;
+      dados[posicao + 3] = 60 + Math.abs(intensidade) * 150;
     }
 
     this.ctxRegiao.putImageData(this.imagemRegiao, 0, 0);
@@ -269,9 +270,11 @@ export class PlanoDeDecisao {
     todos.select('.ponto-halo')
       .attr('r', (d) => (d.indice === destaque ? 20 : 13))
       .attr('fill', 'none')
-      .attr('stroke', cores.primaria)
-      .attr('stroke-width', 2)
-      .attr('opacity', (d) => (d.indice === destaque ? 0.9 : 0));
+      .attr('stroke', cores.realce)
+      .attr('stroke-width', 2.8)
+      // contorno escuro suave: o amarelo continua legível sobre o rosa, o ciano e o papel
+      .style('filter', 'drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.85))')
+      .attr('opacity', (d) => (d.indice === destaque ? 1 : 0));
 
     todos.select('.ponto-corpo')
       .attr('r', 9)
@@ -368,9 +371,13 @@ export class PlanoDeDecisao {
     const px = this.escalaX(ponto[0]);
     const py = this.entradas === 1 ? this.escalaY(0.5) : this.escalaY(ponto[1]);
 
+    // contorno escuro por baixo: o anel amarelo continua legível sobre o rosa, o ciano e o papel
+    grupo.append('circle')
+      .attr('cx', px).attr('cy', py).attr('r', 17)
+      .attr('fill', 'none').attr('stroke', 'rgba(0, 0, 0, 0.55)').attr('stroke-width', 5.5);
     grupo.append('circle').attr('class', 'plano-realce-anel')
       .attr('cx', px).attr('cy', py).attr('r', 17)
-      .attr('fill', 'none').attr('stroke', cores.primaria).attr('stroke-width', 2.5);
+      .attr('fill', 'none').attr('stroke', cores.realce).attr('stroke-width', 2.8);
 
     // o botão "?": canto de cima à direita do ponto, ou do outro lado perto da borda
     const bx = Math.max(14, Math.min(this.lado - 14, px + (px > this.lado - 40 ? -26 : 26)));

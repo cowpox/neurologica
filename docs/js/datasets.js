@@ -19,7 +19,7 @@
  * original. Os conjuntos são gerados SEM sobreposição entre as classes, para que "acertar
  * todos os pontos" seja possível e sirva de critério de parada.
  *
- * Classes 0/1, como nas portas: 1 = verde, 0 = azul-royal (as cores dos dados).
+ * Classes 0/1, como nas portas: 1 = rosa, 0 = ciano (as cores dos dados).
  */
 
 import { criarAleatorio } from './dados.js';
