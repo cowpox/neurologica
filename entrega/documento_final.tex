@@ -1,0 +1,295 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{csquotes}
+\usepackage{needspace}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage[style=numeric,sorting=nyt]{biblatex}
+\addbibresource{referencias.bib}
+
+\geometry{
+    a4paper,
+    width=160mm,
+    top=20mm,
+    bottom=40mm,
+    bindingoffset=3mm
+}
+
+\pagestyle{fancy}
+\fancyhead{}
+
+\fancyhead[L]{%
+    \parbox[c]{0.60\textwidth}{%
+        \noindent{\large \textbf{NeuroLógica}}\\[2pt]
+        {\small \textbf{Disciplina:} Redes Neurais I}\\[1pt]
+        {\small \textbf{Professor:} Davi Pereira dos Santos}%
+    }%
+}
+
+\fancyhead[R]{%
+    \includegraphics[width=0.30\textwidth]{fig/uel_horizontal.jpg}%
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\setlength{\headheight}{58pt}
+\setlength{\headsep}{1.8cm}
+\fancyheadoffset{1cm}
+
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.7}
+
+\begin{document}
+
+\begin{center}
+    \Large\textbf{NeuroLógica}\\[2pt]
+    \large Um neurônio traça uma reta: Perceptron, Adaline e MLP nas sete portas lógicas
+\end{center}
+
+\smallskip
+
+\section*{Identificação}
+
+\begin{itemize}
+    \item \textbf{Integrantes:} Adriano Lúcio Uchôa Brandão, Herik Daurizio Ricardo, Heitor Oliveira Nunes
+    \item \textbf{Disciplina:} Redes Neurais I, Universidade Estadual de Londrina (UEL)
+    \item \textbf{Professor:} Davi Pereira dos Santos
+    \item \textbf{Nome do projeto:} NeuroLógica
+    \item \textbf{Questões orientadoras respondidas:} Q2, Q5 e Q4, nessa ordem no site
+    \item \textbf{Repositório:} \url{https://github.com/cowpox/neurologica} (público)
+    \item \textbf{Site:} \url{https://neurologica.vercel.app/}
+\end{itemize}
+
+\section{Explicação intuitiva}
+
+Um neurônio artificial aprende traçando uma reta. Ele soma as entradas, cada uma
+multiplicada por um peso, acrescenta um viés e decide: liga ou não liga. Essa soma define uma
+reta. Treinar é mover essa reta, pouco a pouco, até ela separar as duas classes do problema.
+
+O NeuroLógica usa as sete portas lógicas (AND, OR, NOT, NAND, NOR, XOR e XNOR) para contar
+essa história em três atos, um por pergunta orientadora. No Ato 1, o Perceptron só corrige os
+pesos quando erra. Ele resolve cinco das sete portas, mas trava no XOR e no XNOR: não existe
+reta que separe esses dois casos (Q2). No Ato 2, o Adaline corrige os pesos sempre, mesmo
+quando já acerta. Isso é o gradiente descendente em ação (Q5). No Ato 3, uma pequena rede
+dobra o espaço até o XOR virar separável por uma única reta. Isso só funciona porque a
+ativação de cada neurônio não é linear (Q4).
+
+A ideia central, repetida nos três atos: a rede não resolve um problema difícil. Ela
+transforma o problema difícil em um problema fácil, uma camada de cada vez.
+
+\section{Referencial teórico}
+
+\textbf{Do neurônio de McCulloch-Pitts ao Perceptron.} O neurônio de McCulloch e
+Pitts~\cite{mcculloch1943logical} já somava entradas e decidia por um limiar, mas com pesos
+fixos, escolhidos à mão: o NAND, por exemplo, exigia dois neurônios (AND seguido de NOT). O
+Perceptron de Rosenblatt~\cite{rosenblatt1958perceptron} aprende os próprios pesos a partir de
+exemplos:
+$$z = \vec w \cdot \vec x + b, \qquad \hat y = \text{degrau}(z), \qquad w \leftarrow w + \eta\,(y-\hat y)\,x.$$
+Com pesos aprendidos, um único neurônio já resolve o NAND. O algoritmo só corrige quando erra
+a classe. Por isso ele para na primeira reta que zera o erro de treino, mesmo encostada num
+ponto, como mostramos na seção de aprendizados.
+
+\smallskip
+\textbf{Adaline e o gradiente descendente (Q5).} O Adaline de Widrow e
+Hoff~\cite{widrowhoff1960adaline} usa o erro de antes da ativação, $y - z$, não o erro de
+depois:
+$$w \leftarrow w + \eta\,(y - z)\,x.$$
+Esse é um passo de gradiente descendente sobre o erro quadrático $E = \tfrac12\sum (y-z)^2$.
+Por isso o Adaline é, na prática, uma regressão linear usada como classificador. Ele continua
+ajustando os pesos mesmo depois de acertar os quatro pontos de uma porta, porque o erro
+quadrático ainda não é zero.
+
+\smallskip
+\textbf{Por que uma reta não basta (Q2 e Q4).} Minsky e
+Papert~\cite{minskypapert1969perceptrons} provaram que um único neurônio só resolve
+problemas linearmente separáveis. O XOR não é um deles. A solução de Rumelhart, Hinton e
+Williams~\cite{rumelhart1986backprop} é empilhar neurônios em camadas, com
+\textit{backpropagation}. No site, XOR = AND(OR, NAND): os dois neurônios escondidos criam
+um espaço novo onde uma última reta resolve tudo. Para isso funcionar, a ativação de cada
+neurônio precisa ser não linear e diferenciável. Essa dupla exigência explica por que
+sigmoide, tangente hiperbólica e ReLU existem lado a lado, cada uma com vantagens e problemas
+próprios. O teorema da aproximação universal~\cite{cybenko1989approximation,hornik1991universal}
+garante que a solução existe, mas não garante que o treino a encontra: a rede do Ato 3 tem
+mínimos locais reais e precisa de reinícios automáticos.
+
+\section{Conjunto de dados}
+
+Não há um conjunto de dados externo. O dado do projeto são as sete portas lógicas
+booleanas, cada uma com até quatro exemplos e rótulo conhecido pela própria tabela-verdade.
+A escolha é proposital: é o menor problema visualizável em 2D, com solução exata conhecida
+de antemão, e separa os casos que um único neurônio resolve dos que exigem uma rede. O
+laboratório livre do site soma seis conjuntos sintéticos de classificação 2D (círculo, XOR
+em quadrantes, duas gaussianas, espiral, meias-luas e xadrez), para quem quiser ir além das
+sete portas.
+
+\section{Disponibilização da implementação}
+
+O código está publicado e é público, em \url{https://github.com/cowpox/neurologica}. O
+repositório tem duas partes: \texttt{prototipos/}, os quatro marcos do projeto em Python, e
+\texttt{docs/}, o site em HTML, CSS e JavaScript puro, publicado no Vercel em
+\url{https://neurologica.vercel.app/}. A pasta \texttt{testes/} confere, com mais de 300
+verificações automáticas, se o JavaScript do site reproduz os mesmos números dos protótipos
+em Python.
+
+\section{Aplicação e relevância atual}
+
+Perceptron, Adaline e MLP com \textit{backpropagation} são a base conceitual de toda rede
+profunda em uso hoje. O mesmo raciocínio do projeto (uma reta que separa classes, um passo
+de gradiente que reduz um erro, camadas que dobram o espaço) é o raciocínio por trás de
+redes muito maiores. A chamada \enquote{hipótese da variedade} torna essa ponte concreta:
+dados reais de alta dimensão, como uma foto, não preenchem o espaço em que vivem. Eles se
+concentram perto de superfícies de dimensão bem menor, e cada camada de uma rede pode ser
+lida como uma deformação desse espaço até essas superfícies ficarem separáveis. É o que o
+Ato 3 mostra em miniatura, com apenas quatro pontos.
+
+\section{Estratégias para a apresentação ser compreendida pela turma}
+
+A estratégia central é o próprio site: feito para a turma mexer ao vivo, via QR code, não só
+para ser assistido. Cada ato propõe um desafio antes de qualquer explicação, por exemplo:
+\enquote{treine o Perceptron nas sete portas e descubra quais ele resolve}. Conquistas e
+pistas progressivas recompensam quem tenta sozinho antes de ler a resposta. A progressão
+também é deliberada: o site mostra o Perceptron falhar e o Adaline quase resolver antes de
+introduzir a rede, sempre com a mesma pergunta guia (\enquote{por que a reta pega esse ponto
+e não aquele?}). Como plano B, se o site falhar na apresentação, os protótipos em Python
+rodam localmente, com um modo \texttt{--comparar} que mostra o Perceptron e o Adaline lado a
+lado.
+
+\section{Histórico do desenvolvimento}
+
+\begin{itemize}
+    \item \textbf{04/09:} escolha do tema, uma animação de um neurônio ajustando retas para
+    resolver portas lógicas.
+    \item \textbf{06/09:} o projeto ganha nome (NeuroLógica), a pesquisa de trabalhos
+    relacionados confirma o tema, e o grupo decide trabalhar em duas fases: primeiro Python,
+    depois o site.
+    \item \textbf{06--07/09:} Marco 1 (Perceptron), validado nas cinco portas separáveis.
+    \item \textbf{09--12/10:} Marco 2 (Adaline); o Heitor entra no grupo, que fecha em três
+    pessoas.
+    \item \textbf{04/11:} apresentação intermediária pedida pelo professor.
+    \item \textbf{10--20/11:} Marcos 3 e 4 (XOR e MLP) concluídos; o site inteiro é
+    implementado e publicado no Vercel.
+    \item \textbf{20--25/11:} revisão final, este documento e ensaio da apresentação.
+\end{itemize}
+
+\section{Relatos sobre a vivência de cada integrante}
+
+\textbf{Adriano Lúcio Uchôa Brandão.} Minha parte foi tornar palpáveis conceitos abstratos:
+por que o Perceptron para onde para, o que o gradiente descendente otimiza, o que muda numa
+troca de função de ativação. Implementei o Marco 2 (Adaline) e participei da fundamentação
+teórica. Também coordenei o grupo: dividi os marcos e as frentes do site entre os três,
+acompanhei os prazos internos e revisei este documento. O que mais me marcou foi ver, nos
+próprios experimentos, erros de arredondamento decidindo a convergência do treino, algo que
+a teoria da disciplina não antecipa.
+
+\smallskip
+\textbf{Herik Daurizio Ricardo.} Minha parte foi implementar os algoritmos de aprendizado e
+as animações da página. Depois dos quatro marcos validados em Python, portei toda a lógica
+de treino para JavaScript, com testes que conferem se o site reproduz os mesmos números.
+Isso revelou diferenças reais de arredondamento entre Python e JavaScript, que precisei
+corrigir. Também fiquei responsável pela interface: os três atos, o laboratório livre e o
+sistema de conquistas e pistas. Foi a parte em que mais aprendi a diferença entre uma
+implementação que funciona em teoria e uma que funciona ao vivo, na tela de qualquer pessoa.
+
+\smallskip
+\textbf{Heitor Oliveira Nunes.} Minha parte foi cuidar da bibliografia do projeto e do
+design inicial da página, além de ajudar a manter o grupo alinhado. Levantei os trabalhos
+relacionados que situam o NeuroLógica diante do que já existe, como o TensorFlow Playground.
+Contribuí com as primeiras decisões visuais do site, depois aprofundadas conforme a
+interface ganhava forma. O maior aprendizado foi perceber que, num projeto deste tamanho, a
+comunicação constante entre o grupo importa tanto quanto o código.
+
+\section{Colaborações com outros grupos}
+
+Houve troca de ideias com o grupo do colega Rafael Cobo, sobre animações de redes neurais e
+ferramentas pedagógicas de aprendizado. Foi uma conversa natural, já que os dois projetos
+exploram formas visuais e interativas de ensinar redes neurais, com temas e implementações
+independentes. Não houve divisão de tarefas nem reaproveitamento de código entre os grupos.
+
+\section{Aprendizados obtidos e sugestões para o futuro}
+
+\textbf{O Perceptron não maximiza margem.} Em várias portas (OR, NOT, NAND, NOR), a reta
+final termina encostada num ponto. Não é erro: o algoritmo só corrige quando erra, e para na
+primeira reta que zera o erro de treino, sem noção de margem de segurança. Provamos que só
+pontos da classe positiva podem tocar essa reta.
+
+\smallskip
+\textbf{Ruído de ponto flutuante pode decidir a convergência.} Com pesos iniciais zero, um
+ponto do AND caiu repetidas vezes exatamente sobre a fronteira de decisão. Refeita a conta à
+mão, com aritmética exata, a convergência real acontece duas épocas depois da que o
+\texttt{float64} reportava. A correção foi adicionar uma tolerância numérica na comparação
+com zero.
+
+\smallskip
+\textbf{O Adaline é uma regressão linear usada como classificador.} Isso explica por que ele
+continua ajustando os pesos mesmo depois de acertar tudo, e por que, no XOR, o melhor ajuste
+linear possível é a constante zero: um modelo que não decide nada. O limite está em o modelo
+ser linear, não no gradiente descendente.
+
+\smallskip
+\textbf{Portabilidade numérica entre Python e JavaScript não é trivial.} Motores diferentes
+de JavaScript não garantem o mesmo resultado, bit a bit, para funções como exponencial e
+tangente hiperbólica. A solução foi reimplementar essas funções só com operações que o
+padrão IEEE-754 garante idênticas em qualquer motor.
+
+\smallskip
+\textbf{Sugestões para o futuro.} Decidir mais cedo quem cuida de cada frente evitaria
+realocações de tarefa no meio do projeto. Registrar cada decisão técnica num documento
+próprio, no formato demanda, opções, escolha e motivo, ajudou a reconstituir o raciocínio
+meses depois e vale recomendar a outros grupos.
+
+\section{Ilustrações, links e referências}
+
+\begin{itemize}
+    \item \textbf{Site interativo:} \url{https://neurologica.vercel.app/}
+    \item \textbf{Repositório público:} \url{https://github.com/cowpox/neurologica}
+\end{itemize}
+
+\smallskip
+
+% TODO: inserir capturas de tela do site (Ato 1, Ato 2, Ato 3 e laboratório livre),
+% geradas a partir do site publicado, em entrega/fig/, e descomentar os blocos abaixo.
+%
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{fig/screenshot_ato1.png}
+%     \caption{Ato 1 do site: o Perceptron treinando na porta AND.}
+%     \label{fig:ato1}
+% \end{figure}
+
+O projeto fica entre duas ferramentas parecidas. O TensorFlow
+Playground~\cite{smilkov2017playground} é um sandbox genérico, sem portas lógicas nem
+equação do hiperplano visível. O Perceptron Educational Lab~\cite{vlabs2016perceptron} é o
+mais próximo do nosso escopo, mas cobre só três portas e não tem Adaline. O diferencial do
+NeuroLógica é cobrir as sete portas do curso, ligar ao neurônio de McCulloch-Pitts, e mostrar
+a progressão Perceptron, Adaline e MLP pelo gradiente descendente.
+
+\section{Sugestões de aperfeiçoamento deste tipo de trabalho para turmas futuras}
+
+A atividade intermediária ajudou a corrigir o escopo a tempo e vale manter em turmas
+futuras. Por outro lado, a liberdade total de formato faz projetos grandes como o nosso
+crescerem até perto do prazo. Um ponto de controle obrigatório, com um recorte mínimo já
+funcionando, talvez ajude outros grupos a fechar o escopo mais cedo.
+
+\section*{Declaração de uso de ferramentas generativas}
+
+Este documento foi redigido com apoio do Claude Code (Anthropic). Os números citados foram
+conferidos executando os scripts do projeto, não apenas gerados pela ferramenta. O Claude
+Code também apoiou a implementação dos protótipos em Python e do site, sempre com
+verificação manual e testes automatizados do grupo.
+
+\clearpage
+\printbibliography[title={Referências}]
+
+\end{document}

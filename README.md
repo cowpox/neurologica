@@ -4,7 +4,7 @@ Trabalho final de Redes Neurais I (UEL) — animação interativa mostrando um n
 
 Questões orientadoras respondidas: por que o Perceptron não resolve todo tipo de problema preditivo, por que existem diferentes funções de ativação, e como o Gradiente Descendente encontra uma solução.
 
-**Site (Vercel)**: _link a ser adicionado após o primeiro deploy_. Para rodar localmente, ver "Rodando o site".
+**Site (Vercel)**: https://neurologica.vercel.app/. Para rodar localmente, ver "Rodando o site".
 
 ## Autores
 

@@ -13,6 +13,19 @@ venv/
 .DS_Store
 Thumbs.db
 
+# LaTeX: artefatos de compilação do documento final (entrega/), não o .tex nem o .bib
+entrega/*.aux
+entrega/*.bbl
+entrega/*.bcf
+entrega/*.blg
+entrega/*.fdb_latexmk
+entrega/*.fls
+entrega/*.log
+entrega/*.out
+entrega/*.run.xml
+entrega/*.synctex.gz
+entrega/*-blx.bib
+
 # Node: usado só para BAIXAR as bibliotecas do site; o que vai para o repositório
 # são os arquivos já copiados em docs/vendor/, que o site consome direto.
 node_modules/
