@@ -168,7 +168,19 @@ const GERADORES = {
   },
 };
 
+/**
+ * Ordem em que os conjuntos foram criados. NÃO mude: a semente de cada um depende da posição
+ * aqui, e mudar a posição mudaria os pontos (e os números medidos, como as épocas citadas no
+ * site). Novos conjuntos entram no fim. A ordem em que aparecem na interface é a de DATASETS.
+ */
+const ORDEM_DAS_SEMENTES = ['circulo', 'quadrantes', 'gaussianas', 'espiral', 'luas', 'xadrez', 'yinyang'];
+
+/** Do mais fácil ao mais difícil: é a ordem da lista do laboratório e da seção de desafios. */
 export const DATASETS = {
+  gaussianas: {
+    nome: 'Duas gaussianas',
+    resumo: 'Duas nuvens bem separadas. Uma reta basta: até um neurônio só resolve.',
+  },
   circulo: {
     nome: 'Círculo',
     resumo: 'Um aglomerado no centro cercado por um anel da outra classe. Nenhuma reta separa um "dentro" de um "fora".',
@@ -177,16 +189,6 @@ export const DATASETS = {
     nome: 'XOR em quadrantes',
     resumo: 'A porta XOR com centenas de pontos: quadrantes opostos têm a mesma classe.',
   },
-  gaussianas: {
-    nome: 'Duas gaussianas',
-    resumo: 'Duas nuvens bem separadas. Uma reta basta: até um neurônio só resolve.',
-  },
-  espiral: {
-    nome: 'Espiral dupla',
-    resumo: 'Dois braços entrelaçados. O desafio mais difícil: pede mais camadas e mais neurônios.',
-  },
-  // vem DEPOIS dos quatro originais: a semente de cada conjunto depende da posição na lista,
-  // e assim os pontos (e os números medidos) dos antigos não mudam
   luas: {
     nome: 'Duas meias-luas',
     resumo: 'Dois arcos que se encaixam um no outro. Nenhuma reta separa, mas a curva certa sim.',
@@ -198,6 +200,10 @@ export const DATASETS = {
   yinyang: {
     nome: 'Yin-yang',
     resumo: 'Dois "peixes" entrelaçados, cada um com um olho da cor do outro: uma fronteira em S com bolsões.',
+  },
+  espiral: {
+    nome: 'Espiral dupla',
+    resumo: 'Dois braços entrelaçados. O desafio mais difícil: pede mais camadas e mais neurônios.',
   },
 };
 
@@ -211,7 +217,7 @@ export const CHAVES_DATASETS = Object.keys(DATASETS);
 export function gerarDataset(chave, { n = PONTOS_PADRAO, semente = SEMENTE_DOS_DADOS } = {}) {
   const info = DATASETS[chave];
   if (!info) throw new RangeError(`Conjunto de dados desconhecido: ${chave}`);
-  const aleatorio = criarAleatorio(semente * 7919 + CHAVES_DATASETS.indexOf(chave));
+  const aleatorio = criarAleatorio(semente * 7919 + ORDEM_DAS_SEMENTES.indexOf(chave));
   const pontos = GERADORES[chave](n, aleatorio);
   for (let i = pontos.length - 1; i > 0; i -= 1) {
     const j = Math.floor(aleatorio() * (i + 1));

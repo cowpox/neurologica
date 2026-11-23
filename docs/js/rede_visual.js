@@ -114,6 +114,18 @@ export class RedeVisual {
     this.ultimoDesenhoMiniaturas = 0;
     this.canvasPorNo = new Map();
 
+    // Recomeça a arquitetura: volta a 1 camada de 2 neurônios. A ativação e a taxa não
+    // fazem parte da arquitetura, então quem recebe `aoMudarArquitetura` as mantém.
+    this.botaoReiniciar = document.createElement('button');
+    this.botaoReiniciar.type = 'button';
+    this.botaoReiniciar.className = 'contador-botao rede-botao-reiniciar';
+    this.botaoReiniciar.setAttribute('aria-label', 'Reiniciar a rede: 1 camada com 2 neurônios');
+    this.botaoReiniciar.title = 'Voltar a 1 camada com 2 neurônios';
+    this.botaoReiniciar.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>';
+    this.botaoReiniciar.addEventListener('click', () => this.aoMudarArquitetura?.([2]));
+    this.container.appendChild(this.botaoReiniciar);
+
     this.barraCamadas = document.createElement('div');
     this.barraCamadas.className = 'rede-barra-camadas';
     this.container.appendChild(this.barraCamadas);
@@ -187,6 +199,9 @@ export class RedeVisual {
     const treino = this.treino;
 
     this.barraCamadas.innerHTML = '';
+    this.botaoReiniciar.hidden = !this.editavel;
+    // já está em 1 camada de 2 neurônios: não há o que desfazer
+    this.botaoReiniciar.disabled = treino.camadas.length === 1 && treino.camadas[0] === 2;
     if (!this.editavel) {
       // arquitetura fixa: sem botões, e as barras não ocupam espaço
       this.barraCamadas.hidden = true;

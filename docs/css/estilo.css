@@ -958,6 +958,29 @@ a:hover { text-decoration: underline; }
   color: var(--cor-sobre-escuro);
   transform: scale(1.08);
 }
+.contador-botao:disabled { opacity: 0.4; cursor: default; }
+.contador-botao:disabled:hover {
+  background-color: var(--cor-superficie);
+  border-color: var(--cor-borda);
+  color: var(--cor-tinta);
+  transform: none;
+}
+
+/* Reinício da arquitetura: canto superior esquerdo do painel da rede. No telefone esse
+   canto já é ocupado pelo (?) do título; ali o botão fica numa linha própria, no fluxo. */
+.rede-botao-reiniciar {
+  position: absolute;
+  top: var(--esp-base);
+  left: var(--esp-base);
+  z-index: 2;
+  color: var(--cor-tinta);
+}
+.rede-botao-reiniciar[hidden] { display: none; }
+.rede-botao-reiniciar svg { width: 17px; height: 17px; fill: currentColor; }
+@media (max-width: 720px) {
+  .rede-botao-reiniciar { position: static; margin: 0 auto var(--esp-sm); }
+}
+
 .contador-rotulo {
   font-family: var(--fonte-sans);
   font-size: 13px;
@@ -1126,7 +1149,8 @@ a:hover { text-decoration: underline; }
 /* ...e os controles dentro da rede voltam aos neutros da interface, lidos dos aliases
    --tema-*, que guardam o valor do tema resolvido no :root. */
 .rede-barra-camadas,
-.rede-barra-colunas {
+.rede-barra-colunas,
+.rede-botao-reiniciar {
   --cor-tinta: var(--tema-tinta);
   --cor-suave: var(--tema-suave);
   --cor-superficie: var(--tema-superficie);
@@ -1393,6 +1417,84 @@ p, li { text-wrap: pretty; }
 .campo-seletor > .campo-controle:focus-visible {
   outline: 2px solid var(--cor-primaria);
   outline-offset: 1px;
+}
+
+/* ---- Campo com lista (taxa e máx. de épocas): digitar OU escolher um valor pronto ----
+   Montado por criarCampoComLista (laboratorio.js). A lista mostra sempre todos os valores
+   prontos, ao contrário do <datalist> do navegador, que filtra pelo que está escrito. */
+.campo-combo { position: relative; display: block; }
+.campo-combo > .campo-controle {
+  width: 100%;
+  padding-right: 34px;
+  cursor: text;
+}
+.campo-combo-seta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 0 var(--raio-md) var(--raio-md) 0;
+}
+.campo-combo-seta::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 12px;
+  height: 8px;
+  margin-top: -4px;
+  background-color: var(--cor-suave);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.2 1.6 C 3 3.2, 4.4 4.9, 6 6.4 C 7.5 4.8, 9 3.1, 10.8 1.4' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.2 1.6 C 3 3.2, 4.4 4.9, 6 6.4 C 7.5 4.8, 9 3.1, 10.8 1.4' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  transition: background-color var(--transicao-rapida), transform var(--transicao-rapida);
+}
+.campo-combo:hover .campo-combo-seta::after,
+.campo-combo:focus-within .campo-combo-seta::after,
+.campo-combo--aberto .campo-combo-seta::after { background-color: var(--cor-primaria); }
+.campo-combo--aberto .campo-combo-seta::after { transform: rotate(180deg); }
+/* Mesmo contorno dos <select> vizinhos: 1px verde, sem o anel de foco grosso do campo de texto */
+.campo-combo > .campo-controle:focus,
+.campo-combo > .campo-controle:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.campo-combo:focus-within > .campo-controle,
+.campo-combo--aberto > .campo-controle { border-color: var(--cor-primaria); }
+
+.campo-combo-lista {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  margin: 6px 0 0;
+  padding: 5px;
+  list-style: none;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--cor-superficie);
+  box-shadow: var(--sombra-elevada);
+}
+.campo-combo-lista[hidden] { display: none; }
+.campo-combo-opcao {
+  padding: 8px 10px;
+  border-radius: var(--raio-md);
+  font-family: var(--fonte-sans);
+  font-size: 14.5px;
+  color: var(--cor-tinta);
+  cursor: pointer;
+}
+.campo-combo-opcao:hover,
+.campo-combo-opcao--ativa { background-color: var(--cor-superficie-tom); }
+.campo-combo-opcao--atual {
+  background-color: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie));
+  font-weight: var(--peso-forte);
 }
 
 /* ---- Termos difíceis: o botão (?) entra no meio do texto sem aumentar a linha ---- */

@@ -990,7 +990,7 @@
    um degrau acima do papel da página (#0e1512), para marcar onde a página acaba,
    com textos claros por cima.
 --------------------------------------------------------------------------- */
-@media (min-width: 760px) { .rodape-interno { grid-template-columns: 2fr 1fr; } }
+@media (min-width: 760px) { .rodape-interno { grid-template-columns: 2fr 1fr 1fr; } }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema='claro']) .rodape,

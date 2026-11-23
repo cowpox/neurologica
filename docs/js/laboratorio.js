@@ -103,6 +103,117 @@ function lerInteiro(texto) {
   const valor = lerNumero(milhar);
   return valor === null ? null : Math.round(valor);
 }
+/**
+ * Campo que junta as duas coisas: digitar qualquer valor OU escolher um predefinido numa lista.
+ * O <datalist> do navegador não serve: ele filtra as sugestões pelo texto já escrito, então com
+ * o valor atual no campo só sobra uma opção. Esta lista mostra sempre todos os predefinidos.
+ *
+ * `confirmar(texto)` recebe o que o usuário digitou ou escolheu; ao terminar, o campo é
+ * reescrito com `valorAtual()`, o que também desfaz uma entrada inválida.
+ */
+function criarCampoComLista({ valores, valorAtual, formatar, inputMode, rotuloLista, confirmar }) {
+  const embrulho = document.createElement('div');
+  embrulho.className = 'campo-combo';
+
+  const entrada = document.createElement('input');
+  entrada.type = 'text';
+  entrada.inputMode = inputMode;
+  entrada.autocomplete = 'off';
+  entrada.className = 'campo-controle campo-controle--digitavel';
+  entrada.setAttribute('role', 'combobox');
+  entrada.setAttribute('aria-autocomplete', 'none');
+  entrada.setAttribute('aria-expanded', 'false');
+  entrada.value = formatar(valorAtual());
+
+  const seta = document.createElement('button');
+  seta.type = 'button';
+  seta.className = 'campo-combo-seta';
+  seta.tabIndex = -1;
+  seta.setAttribute('aria-label', rotuloLista);
+
+  const lista = document.createElement('ul');
+  lista.className = 'campo-combo-lista';
+  lista.setAttribute('role', 'listbox');
+  lista.setAttribute('aria-label', rotuloLista);
+  lista.hidden = true;
+  entrada.setAttribute('aria-controls', (lista.id = `combo-${++contadorDeListas}`));
+
+  const itens = valores.map((valor) => {
+    const item = document.createElement('li');
+    item.className = 'campo-combo-opcao';
+    item.setAttribute('role', 'option');
+    item.textContent = formatar(valor);
+    item.addEventListener('mousedown', (evento) => evento.preventDefault()); // não tira o foco do campo
+    item.addEventListener('click', (evento) => {
+      evento.preventDefault(); // o <label> do campo não deve redirecionar este clique
+      entrada.value = item.textContent;
+      fechar();
+      aplicar();
+    });
+    lista.appendChild(item);
+    return item;
+  });
+
+  let ativo = -1;
+  const destacar = (indice) => {
+    ativo = indice;
+    itens.forEach((item, i) => {
+      item.classList.toggle('campo-combo-opcao--ativa', i === ativo);
+      item.setAttribute('aria-selected', String(i === ativo));
+    });
+    if (ativo >= 0) itens[ativo].scrollIntoView({ block: 'nearest' });
+  };
+  const marcarAtual = () => {
+    const atual = formatar(valorAtual());
+    itens.forEach((item) => item.classList.toggle('campo-combo-opcao--atual', item.textContent === atual));
+  };
+  const abrir = () => {
+    if (!lista.hidden) return;
+    marcarAtual();
+    lista.hidden = false;
+    embrulho.classList.add('campo-combo--aberto');
+    entrada.setAttribute('aria-expanded', 'true');
+    destacar(-1);
+  };
+  function fechar() {
+    lista.hidden = true;
+    embrulho.classList.remove('campo-combo--aberto');
+    entrada.setAttribute('aria-expanded', 'false');
+  }
+  function aplicar() {
+    confirmar(entrada.value);
+    entrada.value = formatar(valorAtual());
+  }
+
+  seta.addEventListener('mousedown', (evento) => evento.preventDefault());
+  seta.addEventListener('click', (evento) => {
+    evento.preventDefault();
+    if (lista.hidden) { entrada.focus(); abrir(); } else fechar();
+  });
+  entrada.addEventListener('focus', () => entrada.select());
+  entrada.addEventListener('click', () => abrir());
+  entrada.addEventListener('blur', () => { fechar(); aplicar(); });
+  entrada.addEventListener('keydown', (evento) => {
+    if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
+      evento.preventDefault();
+      abrir();
+      const passo = evento.key === 'ArrowDown' ? 1 : -1;
+      destacar((ativo + passo + itens.length) % itens.length);
+    } else if (evento.key === 'Enter') {
+      evento.preventDefault();
+      if (!lista.hidden && ativo >= 0) entrada.value = itens[ativo].textContent;
+      fechar();
+      entrada.blur();
+    } else if (evento.key === 'Escape' && !lista.hidden) {
+      evento.preventDefault();
+      fechar();
+    }
+  });
+
+  embrulho.append(entrada, seta, lista);
+  return embrulho;
+}
+
 const plural = (n, singular, pluralTexto) => `${n} ${n === 1 ? singular : pluralTexto}`;
 
 /** Todos os laboratórios montados: iniciar um pausa os outros (cada um guarda o seu estado). */
@@ -507,33 +618,21 @@ export class Laboratorio {
     const digitavel = this.config.controlesExtras;
     const taxasProntas = [...new Set([...MODOS[this.modo].taxas, this.taxa])].sort((a, b) => a - b);
     let seletorTaxa;
-    let lista = null;
     if (digitavel) {
-      seletorTaxa = document.createElement('input');
-      seletorTaxa.type = 'text';
-      seletorTaxa.inputMode = 'decimal';
-      seletorTaxa.autocomplete = 'off';
-      seletorTaxa.className = 'campo-controle campo-controle--digitavel';
-      const idLista = `taxas-${++contadorDeListas}`;
-      lista = document.createElement('datalist');
-      lista.id = idLista;
-      taxasProntas.forEach((valor) => {
-        const opcao = document.createElement('option');
-        opcao.value = formatarTaxa(valor);
-        lista.appendChild(opcao);
-      });
-      seletorTaxa.setAttribute('list', idLista);
-      seletorTaxa.value = formatarTaxa(this.taxa);
-      seletorTaxa.addEventListener('change', () => {
-        const valor = lerNumero(seletorTaxa.value);
-        if (valor !== null && valor > 0 && valor <= TAXA_MAXIMA) {
+      seletorTaxa = criarCampoComLista({
+        valores: MODOS[this.modo].taxas,
+        valorAtual: () => this.taxa,
+        formatar: formatarTaxa,
+        inputMode: 'decimal',
+        rotuloLista: 'Taxas de aprendizado prontas',
+        confirmar: (texto) => {
+          const valor = lerNumero(texto);
+          if (valor === null || valor <= 0 || valor > TAXA_MAXIMA || valor === this.taxa) return;
           this.taxa = valor;
           this.pausar();
           this.construirTreino();
-        }
-        seletorTaxa.value = formatarTaxa(this.taxa);
+        },
       });
-      seletorTaxa.addEventListener('focus', () => seletorTaxa.select());
     } else {
       seletorTaxa = document.createElement('select');
       seletorTaxa.className = 'campo-controle';
@@ -556,7 +655,6 @@ export class Laboratorio {
       'O tamanho de cada correção. Pequena demais, o treino anda devagar; grande demais, os ' +
       'pesos passam do ponto e o neurônio converge para uma solução ruim, ou o erro diverge.',
     ));
-    if (lista) campoTaxa.appendChild(lista);
     this.elCampos.appendChild(campoTaxa);
     this.seletorTaxa = seletorTaxa;
 
@@ -643,34 +741,22 @@ export class Laboratorio {
       adaline: [50, 100, 300, 1000],
       mlp: [1000, 5000, 20000, 50000],
     }[this.modo];
-    const atual = this.maxEpocasPorModo[this.modo] ?? MODOS[this.modo].maxEpocas;
-    const campoLimite = document.createElement('input');
-    campoLimite.type = 'text';
-    campoLimite.inputMode = 'numeric';
-    campoLimite.autocomplete = 'off';
-    campoLimite.className = 'campo-controle campo-controle--digitavel';
-    const idLimites = `limites-${++contadorDeListas}`;
-    const listaLimites = document.createElement('datalist');
-    listaLimites.id = idLimites;
-    limites.forEach((v) => {
-      const opcao = document.createElement('option');
-      opcao.value = v.toLocaleString('pt-BR');
-      listaLimites.appendChild(opcao);
-    });
-    campoLimite.setAttribute('list', idLimites);
-    campoLimite.value = atual.toLocaleString('pt-BR');
-    campoLimite.addEventListener('change', () => {
-      const valor = lerInteiro(campoLimite.value);
-      if (valor !== null && valor >= 1 && valor <= EPOCAS_MAXIMAS) {
+    const limiteAtual = () => this.maxEpocasPorModo[this.modo] ?? MODOS[this.modo].maxEpocas;
+    const campoLimite = criarCampoComLista({
+      valores: limites,
+      valorAtual: limiteAtual,
+      formatar: (v) => v.toLocaleString('pt-BR'),
+      inputMode: 'numeric',
+      rotuloLista: 'Limites de épocas prontos',
+      confirmar: (texto) => {
+        const valor = lerInteiro(texto);
+        if (valor === null || valor < 1 || valor > EPOCAS_MAXIMAS || valor === limiteAtual()) return;
         this.maxEpocasPorModo[this.modo] = valor;
         this.pausar();
         this.construirTreino();
-      }
-      campoLimite.value = (this.maxEpocasPorModo[this.modo] ?? MODOS[this.modo].maxEpocas).toLocaleString('pt-BR');
+      },
     });
-    campoLimite.addEventListener('focus', () => campoLimite.select());
     const campoEpocas = this.criarCampo('Máx. de épocas', campoLimite);
-    campoEpocas.appendChild(listaLimites);
     this.elCampos.appendChild(campoEpocas);
   }
 
