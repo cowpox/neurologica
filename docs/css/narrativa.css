@@ -1,4 +1,4 @@
-/* Componentes da narrativa por perguntas (Q2 → Q5 → Q4), que não existiam na demo:
+/* Componentes da narrativa por perguntas:
    mapa das perguntas, selos, pergunta do ato, contexto histórico, convite, card
    matemático, resposta em uma frase e resumo final.
 
@@ -7,7 +7,7 @@
    pesos 400/600/700, raios e espaçamentos da escala, e a cor de dados (laranja/azul)
    nunca usada na interface. Nada aqui toca nos gráficos. */
 
-/* ===================================================== mapa das perguntas ==== */
+/* mapa das perguntas */
 
 .mapa-lista {
   list-style: none;
@@ -120,7 +120,7 @@
 .mapa-ir span { display: inline-block; transition: transform var(--transicao-media); }
 .mapa-cartao:hover .mapa-ir span { transform: translateX(4px); }
 
-/* ============================================================ selos do ato === */
+/* selos do ato */
 
 .selos {
   display: flex;
@@ -159,7 +159,7 @@
   text-wrap: balance;
 }
 
-/* ===================================================== contexto e convite ==== */
+/* contexto e convite */
 
 .contexto-historico {
   position: relative;
@@ -209,7 +209,7 @@
   color: var(--cor-primaria-forte);
 }
 
-/* ======================================================== card matemático ==== */
+/* card matemático */
 
 .cartao-matematico {
   margin: 0 0 var(--esp-2xl);
@@ -287,7 +287,7 @@
 .passo-formula .katex-display { margin: 0.25em 0; }
 .passo-formula .katex { font-size: 1.04em; }
 
-/* ======================================================= resposta do ato ===== */
+/* resposta do ato */
 
 /* Fecho de cada ato: a resposta em uma frase e a ponte para o próximo. O rótulo ganha
    o mesmo sublinhado ondulado do nome na abertura. */
@@ -350,7 +350,7 @@
 .ponte a span { display: inline-block; transition: transform var(--transicao-media); }
 .ponte a:hover span { transform: translateX(4px); }
 
-/* ========================================================= resumo final ====== */
+/* resumo final */
 
 .resumo-lista {
   list-style: none;
@@ -398,7 +398,7 @@
   text-wrap: pretty;
 }
 
-/* ================================================ gavetas das ativações ====== */
+/* gavetas das ativações */
 
 .ativacoes-bloco { margin: 0 0 var(--esp-2xl); max-width: 980px; }
 .ativacoes-cabecalho h3 { margin-bottom: var(--esp-sm); }
@@ -484,7 +484,7 @@
 .legenda-f::before { border-top: 2.6px solid var(--grafico-tinta); }
 .legenda-df::before { border-top: 2.2px dashed var(--grafico-destaque); }
 
-/* ================================ laboratório: colunas que se completam ======= */
+/* laboratório: colunas que se completam */
 
 /* A curva de erro em branco (antes do treino) mostra uma dica no lugar da curva. */
 .lab-erro .erro-dica { font-family: var(--fonte-serif); font-style: italic; font-size: 13px; }
@@ -525,7 +525,7 @@
   .lab-erro-embrulho > .lab-erro { height: 150px; }
 }
 
-/* ===================================================== laboratório compacto == */
+/* laboratório compacto */
 
 /* Seletores numa grade de colunas iguais, mais baixos no computador: no laboratório livre
    os nove cabem em duas linhas, em vez de empurrar o gráfico para baixo. */
@@ -598,7 +598,7 @@
   .lab-painel-treino .lab-estado { flex-basis: 100%; justify-content: center; }
 }
 
-/* ================================================= ajustes do laboratório ==== */
+/* ajustes do laboratório */
 
 /* Rótulos em caixa alta não podem tocar na matemática: η maiúsculo é igual a "H", e
    "z" vira "Z". O trecho matemático vai num .sem-caixa. */
@@ -616,7 +616,7 @@
 .campo-rotulo .ajuda-botao { width: 18px; height: 18px; font-size: 10px; }
 .campo-rotulo .ajuda { margin-block: -2px; }
 
-/* ============================================ desafios de classificação ====== */
+/* desafios de classificação */
 
 .desafios-classificacao { margin-top: var(--esp-2xl); max-width: 860px; }
 .desafios-classificacao h3 { margin-bottom: var(--esp-sm); }
@@ -641,11 +641,11 @@
 }
 .desafios-nota { font-size: 14px; color: var(--cor-suave); }
 
-/* ===================================================== campo numérico ======== */
+/* campo numérico */
 
 .campo-controle--numero { width: 104px; cursor: text; }
 
-/* =============================================== superfície de erro (Ato 2) == */
+/* superfície de erro (Ato 2) */
 
 /* Ilustração ao vivo em canvas (superficie_erro.js): um terreno de curvas de nível erguidas
    na própria altura e uma câmera que flutua devagar sobre ele. O canvas é transparente, então
@@ -670,7 +670,7 @@
 .superficie-erro canvas { display: block; width: 100%; aspect-ratio: 1 / 0.78; }
 @media (min-width: 600px) { .superficie-erro canvas { aspect-ratio: 16 / 10; } }
 
-/* ===================================================== acessibilidade ======== */
+/* acessibilidade */
 
 .sr-only,
 .sr-anuncio {
@@ -685,7 +685,7 @@
   border: 0;
 }
 
-/* ============================================== progresso do Ato 1 (n/5) ===== */
+/* progresso do Ato 1 (n/5) */
 
 .progresso-portas {
   display: flex;
@@ -751,7 +751,7 @@
   color: var(--cor-tinta);
 }
 
-/* ======================================================= aviso de conquista == */
+/* aviso de conquista */
 
 .conquista {
   position: relative;
@@ -809,7 +809,7 @@
 .conquista-fechar:hover { background-color: color-mix(in srgb, var(--cor-primaria) 14%, transparent); color: var(--cor-tinta); }
 .conquista-fechar svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
-/* ================================================================ pistas ====== */
+/* pistas */
 
 .pistas { margin-top: var(--esp-base); max-width: 860px; }
 .gaveta-pistas { background-color: var(--cor-superficie); }
@@ -901,7 +901,7 @@
 .botao-pista:disabled { opacity: 0.55; cursor: progress; }
 .pistas-espera { font-size: 14px; font-style: italic; color: var(--cor-suave); }
 
-/* ================================================================ rodapé ====== */
+/* rodapé */
 
 .rodape-progresso { margin-top: var(--esp-md); }
 .botao-rodape {
@@ -919,7 +919,7 @@
 .botao-rodape:hover { color: var(--cor-sobre-escuro); }
 .rodape-aviso { display: block; font-size: 13px; color: var(--cor-primaria-fraca); }
 
-/* ============================================== PC: figuras maiores ========== */
+/* PC: figuras maiores */
 
 /* Em telas largas (computador, projetor da sala) as figuras crescem junto com a página:
    o plano de decisão, a curva de erro, a rede, os gráficos das ativações e a ilustração
@@ -970,7 +970,7 @@
   .conquista-titulo { font-size: 19px; }
 }
 
-/* ============================================================ telefone ======= */
+/* telefone */
 
 @media (max-width: 720px) {
   .mapa-cartao { padding: var(--esp-lg); }
@@ -984,12 +984,12 @@
   .pista--bloqueada { flex-direction: row; }
 }
 
-/* ---------------------------------------------------------------------------
+/*
    Rodapé no modo escuro. No tema escuro --cor-tinta vira quase branco, e o rodapé
    (que usa a tinta como fundo) ficava claro. Aqui ele ganha um verde-escuro próprio,
    um degrau acima do papel da página (#0e1512), para marcar onde a página acaba,
    com textos claros por cima.
---------------------------------------------------------------------------- */
+ */
 @media (min-width: 760px) { .rodape-interno { grid-template-columns: 2fr 1fr 1fr; } }
 
 @media (prefers-color-scheme: dark) {
@@ -1015,7 +1015,7 @@
 :root[data-tema='escuro'] .botao-rodape:hover { color: #eef5f0; }
 :root[data-tema='escuro'] .rodape-aviso { color: #7ccb9f; }
 
-/* ====================================================== laboratório: duas colunas == */
+/* laboratório: duas colunas */
 
 /* A coluna da esquerda guarda os seletores, o aviso e o painel do algoritmo; a da direita
    (rede, barra do treino, plano e curva) começa no topo do cartão, ao lado dos seletores.
@@ -1041,7 +1041,7 @@
   .lab-aviso { margin-bottom: 0; }
 }
 
-/* ======================================== equação e pesos numa caixa só ===== */
+/* equação e pesos numa caixa só */
 
 /* A fronteira de decisão e os pesos que a formam dividem a mesma caixa: a equação em cima
    e, separados por um fio, os pesos em pílulas menores. Abre espaço no painel. */
@@ -1066,7 +1066,7 @@
 .painel-reta .peso-valor { font-size: 13.5px; }
 .painel-reta .peso-resumo { font-size: 13.5px; }
 
-/* ================================================ seletores: a lista aberta == */
+/* seletores: a lista aberta */
 
 /* A lista aberta de um <select> é desenhada pelo sistema (o azul do Windows destoava do
    resto). Nos navegadores que já deixam estilizá-la (Chrome e Edge 135+, com
@@ -1137,7 +1137,7 @@
   .campo-seletor > select.campo-controle option:disabled { color: var(--cor-suave); cursor: not-allowed; }
 }
 
-/* ============================================ abas: algoritmo / log de treino == */
+/* abas: algoritmo / log de treino */
 
 .painel-abas {
   display: flex;
@@ -1199,7 +1199,7 @@
   .painel-abas .painel-log { height: 200px; }
 }
 
-/* ================================================ play flutuante (telas estreitas) == */
+/* play flutuante (telas estreitas) */
 
 /* No telefone e no tablet em coluna única, o play do treino fica preso no canto da tela
    enquanto o leitor rola pelo laboratório de um ato (ver play_flutuante.js). No PC não existe. */
@@ -1245,7 +1245,7 @@
   .play-flutuante { transition: opacity 1ms, visibility 0s; transform: none; }
 }
 
-/* ============================================ arte de borda a borda (Ato 3) ===== */
+/* arte de borda a borda (Ato 3) */
 
 /* As duas retas atravessam a tela inteira, da borda esquerda à direita. A versão estreita
    (telefone) é mais inclinada; a larga (a partir de 700 px) é mais comprida e rasa. O
@@ -1268,7 +1268,7 @@
 .arte-margem--total .arte-ferve,
 .arte-margem--total.revelado.arte--visivel .arte-ferve { animation: none !important; }
 
-/* ======================================= gráfico de erro: eixos e leitura ===== */
+/* gráfico de erro: eixos e leitura */
 
 /* O nome de cada eixo, bem pequeno, e a leitura do valor sob o cursor (ou o dedo). */
 .lab-erro .erro-eixo-nome { font-family: var(--fonte-sans); font-size: 9.5px; letter-spacing: 0.02em; }
@@ -1284,7 +1284,7 @@
 .erro-leitura-epoca { font-family: var(--fonte-sans); font-size: 10.5px; font-weight: var(--peso-forte); fill: var(--cor-suave); }
 .erro-leitura-valor { font-family: var(--fonte-mono); font-size: 11.5px; fill: var(--cor-tinta); }
 
-/* ================================================ rede: peso de cada ligação ===== */
+/* rede: peso de cada ligação */
 
 /* Passar o mouse numa ligação da rede mostra o peso dela (rede_visual.js). */
 .rede-visual { position: relative; }
@@ -1309,13 +1309,13 @@
 .rede-dica-valor--positivo { color: var(--cor-classe-1); }
 .rede-dica-valor--negativo { color: var(--cor-classe-0); }
 
-/* ========================================================= tela de carregamento == */
+/* tela de carregamento */
 
 /* Na abertura, "Lógica" fica sem o sublinhado ondulado (o risco de progresso logo abaixo
    já faz esse papel). */
 .carregamento-nome .marca-logica::after { display: none; }
 
-/* ==================================== abertura: brilho, cometa, sinais, saída ===== */
+/* abertura: brilho, cometa, sinais, saída */
 
 /* Brilho de fundo: duas manchas radiais de verde, fracas, que respiram e derivam devagar
    (só transform e opacidade, nada de filtro de desfoque, que pesaria). Uma vinheta escurece
@@ -1403,7 +1403,7 @@
   .carregamento--saindo .carregamento-conteudo { transform: none; filter: none; }
 }
 
-/* ===================================== rede: rótulo de camadas com largura fixa == */
+/* rede: rótulo de camadas com largura fixa */
 
 /* "1 camada oculta" → "2 camadas ocultas": o texto alargava e, como o grupo é centralizado,
    empurrava os botões − e +. O rótulo agora reserva a largura do texto mais longo, alinhado
@@ -1415,14 +1415,14 @@
   white-space: nowrap;
 }
 
-/* =================================================================================
+/*
    ACABAMENTO: brilhos, vidro e luz
    Efeitos discretos, só onde ajudam a ler a página: o cabeçalho vira vidro fosco, o topo
    ganha uma luz verde ambiente (a mesma da abertura), os botões principais brilham, o
    laboratório "acende" enquanto treina, e as caixas ganham um fio de luz no tema escuro.
    Tudo lê os tokens do tema. Para o celular: nada de desfoque animado, e as animações
    decorativas de hover só existem com mouse; "reduzir movimento" desliga o resto.
-   ================================================================================= */
+ */
 
 :root {
   --luz-verde-fraca: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
@@ -1436,7 +1436,7 @@
 }
 :root[data-tema='escuro'] { --luz-borda: rgba(255, 255, 255, 0.05); --luz-topo-forca: 1; }
 
-/* ---- cabeçalho de vidro fosco ---- */
+/* cabeçalho de vidro fosco */
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .cabecalho {
     background-color: color-mix(in srgb, var(--cor-superficie-tom) 74%, transparent);
@@ -1461,7 +1461,7 @@
 }
 .cabecalho--rolado::after { opacity: 0.8; }
 
-/* ---- luz ambiente no topo (a mesma da abertura, mais fraca e parada) ---- */
+/* luz ambiente no topo (a mesma da abertura, mais fraca e parada) */
 .hero::before {
   content: '';
   position: absolute;
@@ -1476,7 +1476,7 @@
 }
 .hero-enfase { text-shadow: 0 0 28px var(--luz-verde-fraca); }
 
-/* ---- botões ---- */
+/* botões */
 .botao-primario {
   position: relative;
   overflow: hidden;
@@ -1526,7 +1526,7 @@
 .botao-secundario:hover { border-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda)); color: var(--cor-primaria-forte); }
 .play-flutuante { box-shadow: 0 10px 30px -6px var(--luz-verde-forte), 0 0 0 4px var(--luz-verde-fraca), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
 
-/* ---- laboratório: fio de luz no escuro e um brilho verde enquanto treina ---- */
+/* laboratório: fio de luz no escuro e um brilho verde enquanto treina */
 .laboratorio {
   position: relative;
   box-shadow: var(--sombra-elevada), inset 0 1px 0 var(--luz-borda);
@@ -1544,10 +1544,10 @@
   box-shadow: inset 0 1px 0 var(--luz-borda);
 }
 
-/* ---- resposta do ato: o fechamento de cada ato ganha uma aura verde ---- */
+/* resposta do ato: o fechamento de cada ato ganha uma aura verde */
 .resposta-ato { box-shadow: 0 0 0 1px var(--luz-verde-fraca), 0 26px 60px -34px var(--luz-verde-forte), inset 0 1px 0 var(--luz-borda); }
 
-/* ---- conquista: aura e um reflexo que atravessa uma vez ao aparecer ---- */
+/* conquista: aura e um reflexo que atravessa uma vez ao aparecer */
 .conquista {
   overflow: hidden;
   box-shadow: var(--sombra-cartao), 0 0 0 4px var(--luz-verde-fraca), 0 18px 46px -22px var(--luz-verde-forte);
@@ -1565,13 +1565,13 @@
 }
 @keyframes reflexo { to { transform: translateX(120%); } }
 
-/* ---- abas e seletores: o estado ativo e o foco brilham de leve ---- */
+/* abas e seletores: o estado ativo e o foco brilham de leve */
 .aba[aria-selected='true'] { box-shadow: 0 0 14px -4px var(--luz-verde), inset 0 1px 0 var(--luz-borda); }
 .campo-controle:focus-visible { outline: 2px solid var(--cor-primaria); outline-offset: 1px; box-shadow: 0 0 0 5px var(--luz-verde-fraca); }
 
-/* ---- revelação ao rolar: no PC, os blocos também saem de um leve desfoque.
+/* revelação ao rolar: no PC, os blocos também saem de um leve desfoque.
    No telefone fica só o deslizar (desfoque em blocos grandes pesaria ao rolar). E o
-   filtro some por completo depois (filter: none), para não afetar nada posicionado. ---- */
+   filtro some por completo depois (filter: none), para não afetar nada posicionado. */
 @media (hover: hover) and (pointer: fine) and (min-width: 900px) and (prefers-reduced-motion: no-preference) {
   [data-revelar]:not(.arte-margem) {
     filter: blur(3px);
@@ -1580,7 +1580,7 @@
   [data-revelar].revelado:not(.arte-margem) { filter: none; }
 }
 
-/* ---- barra de rolagem e seleção no tom do site ---- */
+/* barra de rolagem e seleção no tom do site */
 html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-borda)) transparent; }
 ::selection { background-color: color-mix(in srgb, var(--cor-primaria) 30%, transparent); }
 
@@ -1588,7 +1588,7 @@ html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-bo
   .botao-primario::after, .conquista::after { display: none; }
 }
 
-/* ============================================ zoom nos dedos (zoom_leve.js) ===== */
+/* zoom nos dedos (zoom_leve.js) */
 
 /* Com a página ampliada, o navegador do celular rasteriza de novo, na escala nova, tudo
    que tem filtro, sombra grande ou animação: era o que congelava a tela. Enquanto há zoom,
@@ -1610,7 +1610,7 @@ html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-bo
 .zoom-ativo [data-revelar] { filter: none !important; }
 .zoom-ativo .play-flutuante { box-shadow: none; }
 
-/* ====== rede: controles das camadas em grade quando a rede é estreita ====== */
+/* rede: controles das camadas em grade quando a rede é estreita */
 
 /* No PC cada controle (− n +) fica em cima da coluna do desenho. Quando a rede é estreita,
    as colunas ficam mais próximas do que a largura de um controle e eles se sobrepõem. Isso
@@ -1691,12 +1691,12 @@ html { scrollbar-color: color-mix(in srgb, var(--cor-primaria) 40%, var(--cor-bo
   .rede-controle-camada .rede-coluna-titulo { font-size: 15px; }
 }
 
-/* ================================================ sem zoom de pinça (celular) ===== */
+/* sem zoom de pinça (celular) */
 
 /* Zoom de pinça liberado no celular (o viewport não trava a escala). A leitura do valor
    nos gráficos de erro usa `touch-action: pan-y` só no próprio gráfico. */
 
-/* ===================== plano de decisão: anel e legenda do ponto rente à reta ===== */
+/* plano de decisão: anel e legenda do ponto rente à reta */
 
 .plano-realce-anel { transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: no-preference) {

@@ -130,7 +130,7 @@ function montarTabelasVerdade() {
  * Cada ato abre o laboratório numa configuração escolhida para MOSTRAR O PROBLEMA
  * (roteiro do 04_planejamento.md): o Ato 1 no AND, que funciona, para o texto mandar
  * trocar para o XOR; o Ato 2 no AND com η = 0,7, em que o custo estabiliza com um ponto
- * errado (Aprendizado 8; conferido no JS em testes/gabaritos_site.json).
+ * errado (conferido no JS em testes/gabaritos_site.json).
  */
 function montarLaboratorios() {
   const todas = Object.keys(PORTAS);

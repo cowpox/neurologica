@@ -1,6 +1,6 @@
 /**
  * Rede multicamada com backpropagation: port de `prototipos/04_mlp_backprop_xor.py`
- * (Marco 4), generalizado para um número qualquer de camadas ocultas.
+ *, generalizado para um número qualquer de camadas ocultas.
  *
  * O protótipo tem uma camada oculta só, o suficiente para a história do XOR. No laboratório
  * livre a arquitetura é editável, então aqui ela é genérica: `camadas = [4, 2, 2]` são três
@@ -13,7 +13,7 @@
  *     oculta usa uma função não linear e diferenciável (sigmoide, tanh ou ReLU).
  *   TREINO: backpropagation, a regra da cadeia aplicada camada a camada.
  *
- * Convenções do Marco 4 (Decisão 6 do `06` e docstring do protótipo):
+ * Convenções do treino:
  *   - Saída SIGMOIDE, alvos 0/1, e a classe decidida por `degrau(z_saída)` (z ANTES da
  *     sigmoide; σ(z) ≥ 0,5 exatamente quando z ≥ 0), com a mesma tolerância dos Marcos 1 a 3.
  *   - Custo SSE = ½ Σ (alvo − saída)², a mesma definição do Adaline. A atualização usa a MÉDIA
@@ -22,12 +22,12 @@
  *     SSE < 0,04 e reinicia se, em 300 épocas, o SSE não caiu 0,006 (com 4 pontos).
  *   - Treino em LOTE: um `passo()` é uma época; `epoca` conta as atualizações já feitas
  *     (0 = pesos iniciais). Um reinício ocupa o lugar de uma atualização e NÃO aplica o passo
- *     de gradiente da rede antiga (a demo aplicava: era um defeito).
+ *     de gradiente da rede antiga.
  *
  * Arredondamento: a parte numérica (propagar, gradientes, aplicar) são funções puras,
  * separadas da lógica de parada (`JanelaDeReinicio`). A conferência contra o Python
  * (`testes/conferir_js.mjs`) usa isso para checar CADA época a partir do estado do Python,
- * sem deixar o erro de arredondamento se acumular (Decisão 10 do `06`).
+ * sem deixar o erro de arredondamento se acumular.
  */
 
 import { criarAleatorio, degrau, exponencial, sigmoide, tangenteHiperbolica } from './dados.js';
@@ -110,7 +110,7 @@ export const ATIVACOES = {
 export const LIMIAR_EQM = 0.02;
 
 /**
- * Detecção de mínimo local por JANELA (Aprendizado 9 da demo): se em JANELA épocas o erro não
+ * Detecção de mínimo local por JANELA: se em JANELA épocas o erro não
  * caiu pelo menos MELHORA_NA_JANELA_EQM, o treino está rastejando e vale recomeçar de outro
  * sorteio. Comparar com o "melhor erro já visto" não funciona: no mínimo local o erro continua
  * melhorando ~2,5·10⁻⁶ por época, e o contador zeraria para sempre.
@@ -119,9 +119,9 @@ export const JANELA = 300;
 export const MELHORA_NA_JANELA_EQM = 3e-3;
 
 /**
- * Quantas inicializações tentar antes de desistir. Era 6 (demo e Python); com 6, cada tentativa
+ * Quantas inicializações tentar antes de desistir. Era 6 (Python também); com 6, cada tentativa
  * presa com ~35–47% de chance fazia 2 de 200 sementes do XNOR com sigmoide esgotarem tudo. Com
- * 10, as 200 convergem (Aprendizado 13). O mesmo valor está no `04` (paridade).
+ * 10, as 200 convergem. O mesmo valor está no `04` (paridade).
  */
 export const MAX_TENTATIVAS = 10;
 
@@ -140,7 +140,7 @@ export function formatoDaRede(nEntradas, camadas) {
  * Pesos iniciais pela regra de Xavier: uniforme em ±√(6 / (entradas + saídas)) por camada.
  * A simetria precisa ser quebrada: neurônios que começam iguais recebem gradientes iguais e
  * continuam iguais para sempre. A ordem do sorteio (matriz linha a linha, depois o bias) é a
- * da demo, e é dela que dependem os gabaritos de época do site.
+ * do Python, e é dela que dependem os gabaritos de época do site.
  */
 export function inicializarXavier(formato, aleatorio) {
   const pesos = [];
@@ -504,7 +504,7 @@ export class TreinoMLP {
   /**
    * Confiança com sinal da rede no ponto, para pintar a região de decisão. A saída vive em
    * [0, 1]; recentrada em 0,5 e multiplicada por 4, fica na mesma faixa de valores da distância
-   * usada pelos modos de neurônio único (Decisão 8 da demo).
+   * usada pelos modos de neurônio único.
    */
   valorContinuo(ponto) {
     const { ativacoes } = propagar(this.rede, [ponto], this.ativacao);
@@ -524,7 +524,7 @@ export class TreinoMLP {
 
   /**
    * Saída de TODOS os neurônios sobre uma grade do plano de entrada, de uma vez só: alimenta os
-   * mini-gráficos de cada neurônio (Decisão 7 da demo). Devolve
+   * mini-gráficos de cada neurônio. Devolve
    * { resolucao, porCamada: [[Float32Array por neurônio]...], faixaAtivacao }.
    */
   mapaDeAtivacoes(resolucao = 22, faixa = this.faixaDoPlano ?? [-0.5, 1.5]) {

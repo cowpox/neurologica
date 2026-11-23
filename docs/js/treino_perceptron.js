@@ -1,5 +1,5 @@
 /**
- * Perceptron clássico: port de `prototipos/01_perceptron_gates.py` (Marco 1).
+ * Perceptron clássico: port de `prototipos/01_perceptron_gates.py`.
  *
  * Regra de aprendizagem: correção de erro DISCRETA, medida depois da ativação.
  *
@@ -14,7 +14,7 @@
  * unidade didática é a iteração: qual ponto está sendo olhado agora e o que ele fez com os
  * pesos.
  *
- * Contagens por época (Decisão 5, iguais às do Python):
+ * Contagens por época (iguais às do Python):
  *   - `correcoesNaEpoca`: correções feitas DURANTE a época, até o exemplo atual. É o critério
  *     de parada (uma época inteira sem correção = convergiu).
  *   - `errosNaEpoca`: só no último exemplo da época; quantos pontos ficam mal classificados
@@ -149,7 +149,7 @@ export class TreinoPerceptron {
   /**
    * Distância com sinal do ponto até a fronteira, para pintar a região de decisão.
    *
-   * Dividir por ‖w‖ importa (Decisão 8 da demo): o valor cru de z depende da ESCALA dos pesos,
+   * Dividir por ‖w‖ importa: o valor cru de z depende da ESCALA dos pesos,
    * e no começo do treino o plano inteiro ficaria de uma cor lavada. A distância geométrica não
    * muda quando todos os pesos são multiplicados pelo mesmo número.
    */

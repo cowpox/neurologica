@@ -1,5 +1,5 @@
 /**
- * Adaline (regra delta, versão online): port de `prototipos/02_adaline_gates.py` (Marco 2).
+ * Adaline (regra delta, versão online): port de `prototipos/02_adaline_gates.py`.
  *
  * A arquitetura é a do Perceptron: um neurônio, os mesmos pesos, o mesmo bias e a mesma
  * decisão de classe (`degrau(z)`, fronteira em z = 0). O que muda é ONDE o erro é medido:
@@ -10,17 +10,17 @@
  * Como z quase nunca é exatamente igual ao alvo, há correção em TODA iteração, mesmo quando o
  * ponto já está classificado certo: a reta desliza em vez de saltar.
  *
- * Convenções do Marco 2 (Decisões 3 e 4 do `06`), diferentes das da demo:
+ * Convenções do treino:
  *   - Alvos BIPOLARES dentro do treino: alvo = 2·y − 1 (classe 0 → −1, classe 1 → +1). Com
- *     alvos 0/1 e o degrau em z ≥ 0, o mínimo do erro quadrático classifica errado
- *     (Aprendizado 6). `y` continua 0/1 fora do treino.
+ *     alvos 0/1 e o degrau em z ≥ 0, o mínimo do erro quadrático classifica errado.
+ *     `y` continua 0/1 fora do treino.
  *   - Custo E = ½ Σ (alvo − z)², medido no FIM da época com os pesos finais (e não acumulado
  *     durante a época, que fica acima do mínimo e depende do η).
  *   - Parada quando |ΔE| < 1e-3 · η entre duas épocas (a queda do custo por época é
  *     proporcional ao η, então uma tolerância fixa pararia cedo demais com η pequeno), no
  *     limite de épocas, ou ao divergir (E não finito ou > 1e6).
  *   - "Convergiu" significa que o custo ESTABILIZOU, e não que acertou tudo: com η grande o
- *     Adaline online estabiliza com pontos errados (Aprendizado 8). Quem diz se resolveu é
+ *     Adaline online estabiliza com pontos errados. Quem diz se resolveu é
  *     `errosNaEpoca` / `errosAtuais()`.
  */
 
@@ -173,7 +173,7 @@ export class TreinoAdaline {
     return norma < 1e-9 ? 0 : z / norma;
   }
 
-  /** Com alvos −1/+1 a fronteira fica em z = 0, a mesma do Perceptron (na demo era 0,5). */
+  /** Com alvos −1/+1 a fronteira fica em z = 0, a mesma do Perceptron. */
   get limiar() {
     return 0;
   }

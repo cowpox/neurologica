@@ -3,7 +3,7 @@
   <!-- Marca original do projeto: um neurônio estilizado lido da esquerda para a
        direita — dendritos recebem, a soma integra, o axônio dispara e se ramifica.
        É a própria estrutura que o site ensina, reduzida a um símbolo. Desenhada do
-       zero para o trabalho (Decisão 4 em planejamento/06_detalhes_implementacao.md):
+       zero para o trabalho:
        deliberadamente NÃO deriva de nenhuma marca existente. -->
   <g fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
     <!-- dendritos (entradas) -->

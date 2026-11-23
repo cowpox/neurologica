@@ -3,7 +3,7 @@
  * pistas, registra as portas do Ato 1 e mostra a conquista quando o aluno resolve.
  *
  * O progresso fica só neste navegador (localStorage, com try/catch: sem ele, vale até
- * recarregar a página). Nada vai para a rede: sem nome, sem conta, sem banco (Decisão 9).
+ * recarregar a página). Nada vai para a rede: sem nome, sem conta, sem banco.
  * O botão "zerar progresso" do rodapé serve aos ensaios e às repetições da apresentação.
  */
 

@@ -100,7 +100,7 @@ export const PORTAS_NAO_SEPARAVEIS = ['XOR', 'XNOR'];
  *
  * Com hiperparâmetros redondos, um ponto pode cair matematicamente EXATO sobre a fronteira,
  * e aí é o resíduo de arredondamento (~1e-16) que decide de que lado ele fica
- * (Aprendizado 4). Sem esta tolerância, o número de épocas até convergir dependeria da ordem
+ *. Sem esta tolerância, o número de épocas até convergir dependeria da ordem
  * das operações de ponto flutuante, e não do algoritmo, e o JS poderia discordar do Python.
  */
 export const TOLERANCIA_ZERO = 1e-9;
@@ -124,8 +124,8 @@ export function produtoEscalar(a, b) {
 
 /**
  * Quantos pontos ficam mal classificados (degrau(z) != y) com estes pesos e bias: o veredito
- * da reta COMO ELA ESTÁ agora. Port de `contar_erros` (Marco 1), a medida de erro por época
- * comum ao Perceptron e ao Adaline (Decisão 5).
+ * da reta COMO ELA ESTÁ agora. Port de `contar_erros`, a medida de erro por época
+ * comum ao Perceptron e ao Adaline.
  */
 export function contarErros(X, y, pesos, bias) {
   let total = 0;

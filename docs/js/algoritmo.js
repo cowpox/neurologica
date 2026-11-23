@@ -2,7 +2,7 @@
  * Coluna do algoritmo: o que está acontecendo por dentro, em texto e em fórmula.
  *
  * É a metade do layout que o TensorFlow Playground não tem, e o principal
- * diferencial do projeto registrado em `planejamento/03_referencias.md`: mostrar a
+ * diferencial do projeto: mostrar a
  * equação do hiperplano com os pesos de agora, a linha de pseudocódigo que está
  * rodando, e o log de cada iteração.
  *
@@ -275,7 +275,7 @@ export function linhaLogDiscreto(passo) {
 
 /**
  * Uma linha de log para o Adaline, cujo erro é contínuo e medido antes da ativação. O alvo
- * é bipolar (−1 para a classe 0, +1 para a classe 1), como no Marco 2.
+ * é bipolar (−1 para a classe 0, +1 para a classe 1).
  */
 export function linhaLogContinuo(passo) {
   const x = `(${passo.x.map((v) => v.toFixed(0)).join(',')})`;

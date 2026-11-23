@@ -3,7 +3,7 @@
    hexadecimal solto aqui, com uma exceção anotada adiante (data URIs de SVG, que
    não enxergam variáveis CSS). */
 
-/* ============================================================== base ===== */
+/* base */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -93,7 +93,7 @@ a:hover { text-decoration: underline; }
 }
 .rolagem-discreta::-webkit-scrollbar-thumb:hover { background-color: var(--cor-borda-forte); }
 
-/* ============================================================== marca ===== */
+/* marca */
 
 /* O nome é composto por duas vozes tipográficas: "Neuro" na sans, sólido e
    técnico; "Lógica" na serifa itálica, em verde. A ideia é que a própria palavra
@@ -140,7 +140,7 @@ a:hover { text-decoration: underline; }
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6' preserveAspectRatio='none'%3E%3Cpath d='M1.5 4.2 C 22 1.4, 41 5.6, 61 3.1 S 86 1.6, 98.5 3.9' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M3 5 C 24 2.6, 44 5.9, 63 4 S 88 2.8, 97 4.6' fill='none' stroke='black' stroke-width='0.8' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
 }
 
-/* ================================================ tela de carregamento ==== */
+/* tela de carregamento */
 
 /* "O caderno abre": papel com uma retícula pontilhada que se apaga nas bordas, um anel
    de órbita riscado à mão, colchetes de mira e uma cota, e o logotipo sendo desenhado
@@ -222,7 +222,7 @@ a:hover { text-decoration: underline; }
 .carregamento--simples .carregamento-conteudo { animation: aparecer 0.4s ease-out; }
 @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
 
-/* ============================================================ cabeçalho === */
+/* cabeçalho */
 
 .cabecalho {
   position: sticky;
@@ -290,7 +290,7 @@ a:hover { text-decoration: underline; }
 /* Número do ato: só aparece no menu do telefone. */
 .navegacao-numero { display: none; }
 
-/* ---- Menu do telefone ----
+/* Menu do telefone
    Abaixo de 900px os links saem do cabeçalho e o botão de menu abre um painel logo
    abaixo dele. O cabeçalho continua com 68px; o painel flutua por cima da página. */
 /* .botao-icone.botao-menu (e não só .botao-menu): a regra genérica de .botao-icone vem
@@ -365,7 +365,7 @@ a:hover { text-decoration: underline; }
 :root[data-tema='escuro'] .botao-icone .icone-claro { display: none; }
 :root[data-tema='escuro'] .botao-icone .icone-escuro { display: block; }
 
-/* ================================================================= hero === */
+/* hero */
 
 .hero {
   position: relative;
@@ -448,7 +448,7 @@ a:hover { text-decoration: underline; }
 }
 .botao-vazado:hover { border-color: var(--cor-borda-forte); text-decoration: none; transform: translateY(-1px); }
 
-/* ============================================================== seções ==== */
+/* seções */
 
 .secao {
   padding: var(--esp-4xl) 0;
@@ -501,7 +501,7 @@ a:hover { text-decoration: underline; }
 }
 [data-revelar].revelado { opacity: 1; transform: none; }
 
-/* ============================================================= cartões ==== */
+/* cartões */
 
 .cartao-destaque {
   position: relative;
@@ -567,7 +567,7 @@ a:hover { text-decoration: underline; }
 .tabela-verdade .saida-1 { color: var(--cor-classe-1); font-weight: var(--peso-forte); }
 .tabela-verdade .saida-0 { color: var(--cor-classe-0); font-weight: var(--peso-forte); }
 
-/* ========================================================= laboratório ==== */
+/* laboratório */
 
 .lab-embrulho { margin-top: var(--esp-xl); }
 
@@ -720,7 +720,7 @@ a:hover { text-decoration: underline; }
 .estado--sucesso { background-color: color-mix(in srgb, var(--cor-acerto) 22%, transparent); color: var(--cor-acerto); }
 .estado--falha { background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent); color: var(--cor-erro); }
 
-/* ==================================================== painel algoritmo ==== */
+/* painel algoritmo */
 
 .painel-algoritmo { display: flex; flex-direction: column; gap: var(--esp-base); }
 .painel-bloco { min-width: 0; }
@@ -775,7 +775,7 @@ a:hover { text-decoration: underline; }
 .peso-resumo { display: flex; flex-wrap: wrap; gap: var(--esp-base); font-size: 14px; color: var(--cor-texto); }
 .peso-resumo strong { color: var(--cor-tinta); }
 
-/* ---- gavetas (pseudocódigo e log) ---- */
+/* gavetas (pseudocódigo e log) */
 
 .gaveta {
   background-color: var(--cor-superficie-tom);
@@ -871,7 +871,7 @@ a:hover { text-decoration: underline; }
 .log-linha--falha { color: var(--cor-erro); font-weight: 700; }
 .log-linha--reinicio { color: var(--cor-primaria-forte); }
 
-/* ======================================================= rede (ato 3) ===== */
+/* rede (ato 3) */
 
 .lab-rede-embrulho { margin-bottom: var(--esp-lg); }
 .lab-legenda-conexoes {
@@ -1002,7 +1002,7 @@ a:hover { text-decoration: underline; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ============================================================== ajuda ===== */
+/* ajuda */
 
 .ajuda { position: relative; display: inline-flex; }
 .ajuda-botao {
@@ -1058,7 +1058,7 @@ a:hover { text-decoration: underline; }
 }
 .ajuda--aberta .ajuda-balao { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-/* ============================================================== rodapé ==== */
+/* rodapé */
 
 .rodape {
   background-color: var(--cor-tinta);
@@ -1075,7 +1075,7 @@ a:hover { text-decoration: underline; }
 .rodape h4 { color: var(--cor-suave-clara); margin-bottom: var(--esp-md); }
 .rodape-marca p { max-width: 46ch; }
 
-/* ======================================================= responsividade === */
+/* responsividade */
 
 @media (max-width: 720px) {
   /* Controles em duas faixas: transporte numa linha própria, campos numa grade
@@ -1121,7 +1121,7 @@ a:hover { text-decoration: underline; }
   .ajuda--aberta .ajuda-balao { transform: translateY(0); }
 }
 
-/* ============================================= escopo de cor dos gráficos ==== */
+/* escopo de cor dos gráficos */
 
 /* Os gráficos mantêm a paleta ANTIGA (laranja-terracota, azul e os mesmos cinzas),
    enquanto a interface ficou verde. O código dos gráficos lê as cores das variáveis
@@ -1157,7 +1157,7 @@ a:hover { text-decoration: underline; }
   --cor-borda-forte: var(--tema-borda-forte);
 }
 
-/* ===================================================== ajuda: exceção H ==== */
+/* ajuda: exceção H */
 
 /* Os botões (?) do cabeçalho da rede ficam perto das bordas; centralizado, o balão
    seria cortado em telas entre 721 e ~900px. Por isso cada um abre alinhado ao lado
@@ -1197,7 +1197,7 @@ a:hover { text-decoration: underline; }
   .lab-rede-embrulho .lab-legenda-conexoes .ajuda { right: 3px; }
 }
 
-/* ================================================= camada decorativa ======== */
+/* camada decorativa */
 
 /* Tudo daqui para baixo é DECORAÇÃO: fica fora do fluxo, atrás do conteúdo e longe
    dos gráficos. Nenhuma regra abaixo mexe em tamanho ou posição de conteúdo.
@@ -1308,7 +1308,7 @@ body:not(.carregando) .hero-arte-movel.revelado.arte--visivel .arte-ferve,
   }
 }
 
-/* ---- Divisores: a linha reta entre seções vira uma onda riscada à mão ---- */
+/* Divisores: a linha reta entre seções vira uma onda riscada à mão */
 .secao--decorada.secao--tom::before,
 .secao--decorada.secao--tom::after {
   content: '';
@@ -1325,7 +1325,7 @@ body:not(.carregando) .hero-arte-movel.revelado.arte--visivel .arte-ferve,
 .secao--decorada.secao--tom::before { top: -8px; }
 .secao--decorada.secao--tom::after { bottom: -8px; -webkit-mask-position: 173px 0; mask-position: 173px 0; }
 
-/* ---- Marca-texto: canetinha passada sob uma expressão do título ---- */
+/* Marca-texto: canetinha passada sob uma expressão do título */
 .marca-texto { position: relative; }
 .marca-texto::before {
   content: '';
@@ -1344,7 +1344,7 @@ body:not(.carregando) .hero-arte-movel.revelado.arte--visivel .arte-ferve,
 }
 body:not(.carregando) .revelado .marca-texto::before { transform: scaleX(1); }
 
-/* ---- Rodapé: a borda de cima vira uma linha de horizonte ondulada ---- */
+/* Rodapé: a borda de cima vira uma linha de horizonte ondulada */
 .rodape { position: relative; }
 .rodape::before {
   content: '';
@@ -1359,7 +1359,7 @@ body:not(.carregando) .revelado .marca-texto::before { transform: scaleX(1); }
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 12'%3E%3Cpath d='M0 7 C 30 3, 60 3.5, 90 6 S 150 11, 180 8.5 S 240 3, 270 5 S 330 9, 360 7 L 360 12 L 0 12 Z' fill='black'/%3E%3C/svg%3E") repeat-x 0 0 / 360px 12px;
 }
 
-/* ========================================================== acabamento ====== */
+/* acabamento */
 
 /* Títulos equilibrados: evita a última linha com uma palavra só. Parágrafos com
    "pretty": o navegador evita deixar uma palavra órfã no fim. */
@@ -1369,7 +1369,7 @@ p, li { text-wrap: pretty; }
 /* Seleção de texto na cor de marca-texto do site. */
 ::selection { background-color: var(--cor-marca-texto); color: var(--cor-tinta); }
 
-/* ---- "Pular para o conteúdo": invisível até receber foco pelo teclado ---- */
+/* "Pular para o conteúdo": invisível até receber foco pelo teclado */
 .pular-conteudo {
   position: fixed;
   left: var(--esp-base);
@@ -1387,7 +1387,7 @@ p, li { text-wrap: pretty; }
 }
 .pular-conteudo:focus { opacity: 1; transform: none; text-decoration: none; }
 
-/* ---- Seletores do laboratório: seta desenhada no lugar da nativa ----
+/* Seletores do laboratório: seta desenhada no lugar da nativa
    O <select> ganha um invólucro (.campo-seletor, criado em laboratorio.js) só para
    ancorar a seta. A seta nativa, cinza e diferente em cada sistema, destoava do resto. */
 .campo-seletor { position: relative; display: block; }
@@ -1419,7 +1419,7 @@ p, li { text-wrap: pretty; }
   outline-offset: 1px;
 }
 
-/* ---- Campo com lista (taxa e máx. de épocas): digitar OU escolher um valor pronto ----
+/* Campo com lista (taxa e máx. de épocas): digitar OU escolher um valor pronto
    Montado por criarCampoComLista (laboratorio.js). A lista mostra sempre todos os valores
    prontos, ao contrário do <datalist> do navegador, que filtra pelo que está escrito. */
 .campo-combo { position: relative; display: block; }
@@ -1497,7 +1497,7 @@ p, li { text-wrap: pretty; }
   font-weight: var(--peso-forte);
 }
 
-/* ---- Termos difíceis: o botão (?) entra no meio do texto sem aumentar a linha ---- */
+/* Termos difíceis: o botão (?) entra no meio do texto sem aumentar a linha */
 .termo { text-decoration: underline dotted var(--cor-primaria-fraca); text-underline-offset: 3px; }
 .ajuda--termo {
   vertical-align: middle;
@@ -1505,7 +1505,7 @@ p, li { text-wrap: pretty; }
 }
 .ajuda--termo .ajuda-botao { width: 18px; height: 18px; font-size: 10px; }
 
-/* ---- Dica da primeira visita: seta desenhada apontando para o ▶ do Ato 1 ----
+/* Dica da primeira visita: seta desenhada apontando para o ▶ do Ato 1
    Fica no vão entre o texto e o laboratório (fora do fluxo) e some no primeiro toque em
    tocar ou avançar; a escolha é lembrada no navegador (js/acabamento.js). */
 .lab-transporte { position: relative; }

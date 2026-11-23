@@ -4,8 +4,7 @@
    Nenhum valor hexadecimal deve ser escrito direto em estilo.css — sempre referenciar
    um token daqui, para que reconfigurar o tema seja mexer só neste arquivo.
 
-   DUAS PALETAS CONVIVEM AQUI, de propósito (Decisão 15 em
-   planejamento/06_detalhes_implementacao.md):
+   DUAS PALETAS CONVIVEM AQUI, de propósito:
 
    - a da INTERFACE (--cor-*), que ficou verde;
    - a dos GRÁFICOS (--cor-classe-* e --grafico-*), que continua a ANTIGA: laranja-
@@ -18,36 +17,36 @@
    deles ficou com nome enganoso (--cor-superficie-areia, hoje um verde-claro). */
 
 :root {
-  /* ---- Interface: acento e marca ---- */
+  /* Interface: acento e marca */
   --cor-primaria: #00864a;          /* verde UEL. 4,42:1 no papel: NÃO usar como texto pequeno */
   --cor-primaria-forte: #006b3b;    /* verde de TEXTO (6,30:1) e hover */
   --cor-primaria-fraca: #7ccb9f;    /* verde suave: órbitas, "Lógica" no rodapé */
   --cor-primaria-profunda: #004d2a; /* traço de ênfase nas ilustrações */
   --cor-marca-texto: #bfe3cd;       /* faixa de canetinha sob títulos */
 
-  /* ---- Interface: tinta e texto ---- */
+  /* Interface: tinta e texto */
   --cor-tinta: #0d1411;
   --cor-texto: #3d4b43;
   --cor-suave: #5a6a61;
   --cor-suave-clara: #a9bcb0;
   --cor-suave-fraca: #7c8c83;
 
-  /* ---- Interface: superfícies (papel -> tom -> lavado) ---- */
+  /* Interface: superfícies (papel -> tom -> lavado) */
   --cor-superficie: #f6faf7;        /* o "papel". Nunca branco puro. */
   --cor-superficie-tom: #ebf3ee;
   --cor-superficie-areia: #dceae1;  /* nome legado: hoje é o papel-lavado */
   --cor-sobre-escuro: #ffffff;      /* rótulo sobre o acento; único branco puro */
 
-  /* ---- Interface: linhas ---- */
+  /* Interface: linhas */
   --cor-borda: #c8dccf;
   --cor-borda-forte: #a6c2b1;
 
-  /* ---- Interface: estados ---- */
+  /* Interface: estados */
   --cor-neutra: #bcd1ca;
   --cor-acerto: #006b3b;
   --cor-erro: #b3323f;
 
-  /* ---- Gráficos: dupla rosa/ciano ----
+  /* Gráficos: dupla rosa/ciano
      A dupla carrega o significado nos gráficos: rosa = classe 1 /
      peso positivo / ativado; ciano = classe 0 / peso negativo / desativado. As
      --grafico-* guardam o resto da paleta que o código dos gráficos lê. */
@@ -65,7 +64,7 @@
   --grafico-reta-4: #73726c;
   --grafico-realce: #ffd60a;        /* anel e botão "?" do ponto rente à reta: amarelo, que contrasta com o rosa e o ciano */
 
-  /* ---- Aliases dos neutros do tema ----
+  /* Aliases dos neutros do tema
      Propriedades personalizadas herdam o valor JÁ resolvido. Declarados aqui no :root,
      estes aliases guardam os neutros do tema mesmo dentro de um contêiner de gráfico
      que redeclara --cor-tinta & cia. — é o que permite devolver os controles da rede
@@ -76,7 +75,7 @@
   --tema-borda: var(--cor-borda);
   --tema-borda-forte: var(--cor-borda-forte);
 
-  /* ---- Tipografia ---- */
+  /* Tipografia */
   --fonte-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fonte-serif: 'Source Serif 4 Variable', ui-serif, Georgia, 'Times New Roman', serif;
   --fonte-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
@@ -86,7 +85,7 @@
   --peso-forte: 600;
   --peso-caps: 700;
 
-  /* ---- Espaçamento (escala de 8px com meio-passo de 4px) ---- */
+  /* Espaçamento (escala de 8px com meio-passo de 4px) */
   --esp-xs: 4px;
   --esp-sm: 8px;
   --esp-md: 12px;
@@ -98,7 +97,7 @@
   --esp-4xl: 64px;
   --esp-calha: 40px;
 
-  /* ---- Raios ---- */
+  /* Raios */
   --raio-xs: 4px;
   --raio-sm: 6px;
   --raio-md: 8px;
@@ -107,14 +106,14 @@
   --raio-2xl: 24px;
   --raio-pilula: 999px;
 
-  /* ---- Elevação (máx. 0.08 de alfa) ---- */
+  /* Elevação (máx. 0.08 de alfa) */
   --sombra-cartao: rgba(0, 0, 0, 0.05) 0 4px 24px 0;
   --sombra-elevada:
     rgba(0, 0, 0, 0.04) 0 1px 1px 0,
     rgba(0, 0, 0, 0.06) 0 4px 4px 0,
     rgba(0, 0, 0, 0.08) 0 16px 24px 0;
 
-  /* ---- Textura ----
+  /* Textura
      Intensidade do grão de papel sobreposto à página. No tema claro o ruído
      escurece (multiply) para imitar fibra de papel; no escuro ele clareia
      (screen), porque multiplicar sobre uma superfície já escura não apareceria. */
@@ -126,12 +125,12 @@
   --arte-opacidade: 0.9;
   --arte-giz: 1;
 
-  /* ---- Movimento ---- */
+  /* Movimento */
   --transicao-rapida: 140ms cubic-bezier(0.2, 0, 0.2, 1);
   --transicao-media: 280ms cubic-bezier(0.2, 0, 0.2, 1);
   --transicao-lenta: 620ms cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ---- Layout ---- */
+  /* Layout */
   --largura-max: 1240px;
   --largura-texto: 68ch;
   --altura-cabecalho: 68px;

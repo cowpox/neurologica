@@ -1,5 +1,5 @@
 /**
- * Editor visual da rede — implementação da Decisão 7 do planejamento.
+ * Editor visual da rede.
  *
  * Três ideias, todas emprestadas do TensorFlow Playground e adaptadas à paleta do
  * projeto:

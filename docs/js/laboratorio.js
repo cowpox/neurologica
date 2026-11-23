@@ -431,7 +431,7 @@ export class Laboratorio {
 
   /**
    * Os dois botões (?) que explicam o mini-gráfico de cada neurônio e as linhas entre
-   * eles (pedidos desde a Decisão 7). Tinham sumido quando a rede foi reescrita como um
+   * eles. Tinham sumido quando a rede foi reescrita como um
    * SVG único, sem que os testes percebessem. Os textos descrevem as cores dos gráficos,
    * que são rosa e ciano (a paleta dos dados).
    */
@@ -678,7 +678,7 @@ export class Laboratorio {
 
   /**
    * Controles do laboratório livre: a semente do sorteio dos pesos, o reinício automático
-   * (só na rede) e o limite de épocas. O `TreinoMLP` sempre aceitou os três; a demo só não
+   * (só na rede) e o limite de épocas. O `TreinoMLP` sempre aceitou os três; só não
    * os mostrava.
    */
   montarCamposExtras() {
@@ -936,7 +936,7 @@ export class Laboratorio {
         this.painel.adicionarLog(linhaLogDiscreto(passo), passo.houveAtualizacao ? 'log-linha--mudou' : '');
       }
       if (passo.fimDeEpoca) {
-        // erros contados com os pesos FINAIS da época (Decisão 5); as correções, durante ela
+        // erros contados com os pesos FINAIS da época; as correções, durante ela
         this.painel.adicionarLog(
           `fim da época ${passo.epoca}: ${plural(passo.correcoesNaEpoca, 'correção', 'correções')} · ` +
           `${plural(passo.errosNaEpoca, 'errado', 'errados')}`,
@@ -975,8 +975,8 @@ export class Laboratorio {
 
   /**
    * Como o treino terminou, em uma frase. "Convergiu" do Adaline quer dizer que o custo
-   * estabilizou, e não que acertou tudo (com η grande ele estabiliza com pontos errados,
-   * Aprendizado 8): por isso a mensagem olha os erros com os pesos finais.
+   * estabilizou, e não que acertou tudo (com η grande ele estabiliza com pontos errados),
+   * e a mensagem olha os erros com os pesos finais.
    */
   descreverDesfecho() {
     const treino = this.treino;
