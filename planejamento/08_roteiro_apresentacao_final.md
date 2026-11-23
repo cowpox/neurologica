@@ -89,14 +89,14 @@ O laboratório tem duas colunas, e é **igual em todos os atos**. Explicar uma v
 | **Algoritmo / Log de treino** | O pseudocódigo com a **linha que está executando acesa**; a outra aba mostra cada passo em texto. |
 | **▶ · ⏭ · ↺** | Tocar/pausar, avançar **um exemplo**, recomeçar. |
 | **Época · Acertos · estado** | Quantas passadas pelos 4 pontos, quantos estão certos (ex.: 4/4) e a pílula de estado (treinando, resolveu, parou sem resolver...). |
-| **O plano** | Os 4 pontos (o número em cima é a classe esperada), a **reta branca** e o **fundo colorido**, que é a região que o neurônio classifica como 1 (verde) ou 0 (azul). O ponto que está sendo visto fica com um anel. |
+| **O plano** | Os 4 pontos (o número em cima é a classe esperada), a **reta branca** e o **fundo colorido**, que é a região que o neurônio classifica como 1 (**rosa**) ou 0 (**ciano**). O ponto que está sendo avaliado ganha um **anel amarelo** durante o treino, e o anel some quando o treino termina. |
 | **Erro por época** | No Perceptron é uma **escada**: conta pontos errados (número inteiro). |
 | **Selos AND · OR · NOT · NAND · NOR** | Acima do laboratório: acendem conforme o Perceptron resolve cada porta linear. |
 | **Pistas** | Gaveta abaixo do laboratório. Abre **1 pista a cada 2 tentativas** sem resolver, ou com **"Estou travado"** (espera de 20 s). |
 
 > **Como falar (tour da tela, ≈ 40 s).** Não leia a tabela: faça um **tour com o mouse**, da esquerda para a direita, uma frase por elemento.
-> *"Aqui em cima vocês escolhem a porta lógica, que é o conjunto de dados: os quatro pontos da tabela-verdade. Aqui está a equação da reta com os pesos de agora: cada vez que o neurônio corrige, esses números mudam. Embaixo, o algoritmo: a linha acesa é a que está rodando. Do lado direito, o play, o botão de avançar um passo e o de recomeçar. O plano mostra os quatro pontos, o número em cima é a resposta certa, a reta branca é a fronteira e a cor do fundo é o que o neurônio responde em cada região: verde é 1, azul é 0. E aqui embaixo, quantos pontos ele erra em cada época."*
-> Feche com: *"Essa tela é a mesma nos três atos, então vale a pena entender agora."* Aperte **⏭ (um passo)** duas ou três vezes no AND antes de dar play: a turma vê o anel passar de ponto em ponto e a reta pular **só** quando há erro. É a forma mais rápida de mostrar a regra do Perceptron funcionando.
+> *"Aqui em cima vocês escolhem a porta lógica, que é o conjunto de dados: os quatro pontos da tabela-verdade. Aqui está a equação da reta com os pesos de agora: cada vez que o neurônio corrige, esses números mudam. Embaixo, o algoritmo: a linha acesa é a que está rodando. Do lado direito, o play, o botão de avançar um passo e o de recomeçar. O plano mostra os quatro pontos, o número em cima é a resposta certa, a reta branca é a fronteira e a cor do fundo é o que o neurônio responde em cada região: rosa é 1, ciano é 0. E aqui embaixo, quantos pontos ele erra em cada época."*
+> Feche com: *"Essa tela é a mesma nos três atos, então vale a pena entender agora."* Aperte **⏭ (um passo)** duas ou três vezes no AND antes de dar play: a turma vê o anel amarelo passar de ponto em ponto e a reta pular **só** quando há erro. É a forma mais rápida de mostrar a regra do Perceptron funcionando.
 > Aponte os **selos AND · OR · NOT · NAND · NOR** acima do laboratório e a gaveta **Pistas** abaixo: *"isso aqui é o placar de vocês, e aqui embaixo ficam as dicas, que vão abrindo conforme vocês tentam."*
 
 ### 3.3 O desafio (≈ 1:30 com a turma)
@@ -105,21 +105,21 @@ O laboratório tem duas colunas, e é **igual em todos os atos**. Explicar uma v
 **Roteiro ao vivo:**
 1. **AND** em velocidade normal, ▶. Converge na **época 7** (≈ 5 s). Mostre a reta parando e o selo **AND** acendendo.
 2. Peça à turma: *"cada um testa OR, NOT, NAND e NOR no celular"*. Resultado esperado: **todas convergem** (OR, NOT e NOR na época 4, NAND na 7). Quem fizer as cinco ganha a conquista "O Perceptron aprendeu as 5 portas lineares".
-3. **Dica primeiro** (pista 1 do site): *"Rodem o XOR e acompanhem a reta. A cada correção ela conserta um ponto e estraga outro. Quantos pontos erram no fim de cada época?"*
+3. **Dica primeiro** (pista 1 do site): *"Executem o XOR novamente e acompanhem a reta. A cada correção ela classifica corretamente um ponto e passa a errar outro. Quantos pontos erram no fim de cada época?"*
 4. **Resolvendo juntos:** no projetor, **XOR** em velocidade **rápida/turbo** (em normal, 40 épocas levam ≈ 27 s). A reta gira sem parar e o treino termina em **"parou sem resolver"** na época **40**, com **3 pontos errados** (no XNOR, 2).
-5. **Pista 2, a do lápis:** *"Tentem passar uma reta que deixe os dois pontos verdes de um lado e os dois azuis do outro."* Aponte que os pontos da mesma cor estão em **cantos opostos** do quadrado.
+5. **Pista 2, a do lápis:** *"Tentem passar uma reta que deixe os dois pontos rosa de um lado e os dois ciano do outro."* Aponte que os pontos da mesma cor estão em **cantos opostos** do quadrado.
 
 > **Como falar o desafio.**
 > - **Antes do AND:** peça uma previsão. *"Quem acha que ele aprende o AND? Levanta a mão."* Quase todos levantam: ótimo, a próxima previsão vai pegar a turma.
 > - **Durante o AND**, narre a reta: *"errou esse ponto, a reta pulou... errou de novo, pulou... e agora parou. Época 7, quatro de quatro."* Mostre o selo AND acendendo: *"o placar contou."*
 > - **Ao liberar a turma:** *"Agora é com vocês: testem OR, NOT, NAND e NOR. Quem conseguir as cinco ganha uma conquista."* Dê 30 s. Enquanto isso, pergunte em voz alta: *"Alguém achou uma que ele não resolve?"*
 > - **Antes do XOR**, a previsão de novo: *"E o XOR? Ele sai 1 quando as entradas são diferentes. Quem acha que o Perceptron aprende?"* Deixe a dúvida no ar.
-> - **Durante o XOR** (turbo), fale enquanto a reta gira: *"olhem: ele conserta esse ponto e estraga aquele. Conserta aquele e estraga outro. Não é falta de tempo: são 40 épocas e ele nunca passa de três de quatro."*
-> - **A dica do lápis** é o momento-chave: pegue a caneta ou desenhe no ar. *"Tentem passar uma reta que deixe os dois verdes de um lado e os dois azuis do outro."* Espere 3 segundos de silêncio. *"Não dá, né? Os verdes estão em cantos opostos."*
+> - **Durante o XOR** (turbo), fale enquanto a reta gira: *"olhem: ele acerta esse ponto e passa a errar aquele. Acerta aquele e erra outro. Não é falta de tempo: são 40 épocas e ele nunca passa de três de quatro."*
+> - **A dica do lápis** é o momento-chave: pegue a caneta ou desenhe no ar. *"Tentem passar uma reta que deixe os dois rosa de um lado e os dois ciano do outro."* Espere 3 segundos de silêncio. *"Não dá, né? Os rosa estão em cantos opostos."*
 > - Se alguém disser *"e se fosse uma curva?"* ou *"e se fossem duas retas?"*: **elogie e guarde** (*"segura essa ideia, ela é o Ato 3"*).
 
 ### 3.4 A resposta à Q2 (≈ 30 s)
-> Um neurônio só traça **uma reta**, e o XOR e o XNOR **não têm reta que os separe**. O Perceptron corrige um ponto, estraga outro, e nunca para. **Não falta treino: falta reta.**
+> Um neurônio só traça **uma reta**, e o XOR e o XNOR **não têm reta que os separe**. O Perceptron corrige um ponto, passa a errar outro, e nunca para. **Não falta treino: falta reta.**
 
 Das 16 funções booleanas de 2 entradas, um neurônio realiza **14**: todas menos XOR e XNOR (contamos por programação linear). Essas 14 são as **linearmente separáveis**, e para elas o Perceptron sempre converge (teorema de convergência).
 
@@ -144,32 +144,32 @@ Em **1960**, Widrow e Hoff propõem o **Adaline**: **o mesmo neurônio**, com os
 | O que ele sabe | "acertei ou errei" | **o quanto** errou e para que lado |
 | Quando corrige | só quando erra | sempre |
 
-Com o "quanto errou", dá para pensar no erro como um **terreno**: cada combinação de pesos é um lugar, e a altura é o erro. O **gradiente** aponta a subida mais íngreme, e andar no sentido contrário é descer. A cada exemplo o Adaline dá **um passo ladeira abaixo**, e o **η é o tamanho do passo**. Aponte a **ilustração animada do terreno** (curvas de nível, bolinha descendo).
+Com o "quanto errou", dá para pensar no erro como um **terreno**: cada combinação de pesos é um lugar, e a altura é o erro. O **gradiente** aponta a subida mais íngreme, e andar no sentido contrário é descer. A cada exemplo o Adaline dá **um passo no sentido de descida do erro**, e o **η é o tamanho do passo**. Aponte a **ilustração animada do terreno** (curvas de nível, bolinha descendo).
 
 > **Como falar.** O ponto central do ato cabe numa frase, então diga-a devagar: *"O Adaline é o mesmo neurônio, com a mesma reta. A única diferença é onde ele mede o erro."*
 > Explique com um exemplo, não com a tabela: *"O Perceptron olha a saída depois do degrau, que só diz certo ou errado. É como uma prova que só diz 'reprovado'. O Adaline olha antes do degrau, no número z. É como ver a nota: tirou 4,9 ou tirou 1? Agora dá para saber o quanto falta e para que lado."*
-> Na **ilustração do terreno**, conte a metáfora apontando a bolinha: *"Imaginem que cada combinação de pesos é um lugar nesse mapa, e a altura é o tamanho do erro. O gradiente aponta para onde o terreno sobe mais rápido, então o Adaline anda para o lado contrário: ladeira abaixo. E o η é o tamanho do passo que ele dá."*
+> Na **ilustração do terreno**, conte a metáfora apontando a bolinha: *"Imaginem que cada combinação de pesos é um lugar nesse mapa, e a altura é o tamanho do erro. O gradiente aponta para onde o terreno sobe mais rápido, então o Adaline anda para o lado contrário: desce o terreno. E o η é o tamanho do passo que ele dá."*
 > Termine com o gancho do desafio: *"E o tamanho do passo importa muito. Vamos ver."*
 
 ### 4.2 O que muda na tela
 - **Regra de treino:** agora dá para escolher Adaline ou Perceptron no mesmo laboratório (e comparar a reta "aos saltos" com a reta que **desliza**).
 - **Gráfico de baixo:** vira **"Custo E = ½ Σ (alvo − z)²"**, uma **curva lisa** em vez da escada.
-- **Algoritmo:** a linha `erro ← alvo − z (antes do degrau)` e as três paradas: "E explodiu", "E quase não mudou (estabilizou)", "máximo de épocas".
+- **Algoritmo:** a linha `erro ← alvo − z (antes do degrau)` e as três paradas: "E divergiu", "E quase não mudou (estabilizou)", "máximo de épocas".
 
 > **Como falar (≈ 15 s, só as diferenças).** *"A tela é a mesma de antes, com duas mudanças. O gráfico de baixo agora é uma curva lisa, não uma escada, porque o erro é um número contínuo e pode melhorar um pouquinho de cada vez. E no algoritmo, olhem essa linha: o erro é calculado antes do degrau."*
 > Aponte as três linhas de parada e antecipe o desafio: *"Reparem que ele para quando o erro quase não muda, e não quando acerta tudo. Isso vai fazer diferença agora."*
 
 ### 4.3 O desafio (≈ 1:30 com a turma)
-**Texto do site:** "O laboratório abre no AND com **η = 0,7**. Rode: o custo para de cair, mas um ponto continua do lado errado da reta. Mude o η até os quatro pontos ficarem certos."
+**Texto do site:** "O laboratório abre no AND com **η = 0,7**. Execute: o custo para de cair, mas um ponto continua do lado errado da reta. Mude o η até os quatro pontos ficarem certos."
 
 **Roteiro ao vivo:**
 1. ▶ com η = 0,7: o custo **estabiliza na época 12**, mas com **3/4 acertos** (pílula "estabilizou com erros", custo ≈ 4,58). *"O gradiente parou. Por que ele parou no lugar errado?"*
-2. **Dica primeiro** (pista 2 do site): *"Imaginem descer um vale de olhos fechados. Com passos longos demais, vocês vão de um lado ao outro do vale e nunca param no fundo."* Aponte de novo a ilustração do terreno.
+2. **Dica primeiro** (pista 2 do site): *"Imaginem descer um vale sem enxergar o fundo. Com passos longos demais, vocês vão de um lado ao outro do vale e nunca param no fundo."* Aponte de novo a ilustração do terreno.
 3. Turma testa outros η. **Valores medidos para o AND:**
 
 | η | Resultado |
 |---|---|
-| 1,2 | **diverge** na época 13 (o custo explode) |
+| 1,2 | **diverge** na época 13 (o custo diverge) |
 | 1,0 | oscila, não estabiliza, 2 erros |
 | 0,7 | estabiliza na época 12, **1 erro** (o ponto de partida) |
 | 0,5 | estabiliza na época 14, **1 erro** |
@@ -177,15 +177,15 @@ Com o "quanto errou", dá para pensar no erro como um **terreno**: cada combina�
 | 0,1 | resolve: época 43, 4/4 (custo 0,506, quase o mínimo 0,5) |
 | 0,05 | resolve: época 99 |
 
-4. **Resolvendo juntos:** coloque **η = 0,3** (resolve rápido) e depois **η = 0,1** (mais devagar, mas centraliza melhor a reta). Ganha a conquista "Você achou um η que funciona". Se der tempo, mostre o **1,2 explodindo**: é o "passo grande demais" ao vivo.
-5. **(Opcional, 20 s) O cartão "E no XOR?":** troque a porta para XOR. O custo **cai e estaciona** sem explodir, em ≈ 2,0. A saída fica `z ≈ [0,10 0,00 −0,11 −0,22]`, tudo perto de 0, que é o meio entre −1 e +1. A melhor reta para o XOR é **uma constante**: o neurônio responde "não sei". **As regras de treino funcionaram; o que falta é arquitetura.**
+4. **Resolvendo juntos:** coloque **η = 0,3** (resolve rápido) e depois **η = 0,1** (mais devagar, mas centraliza melhor a reta). Ganha a conquista "Você achou um η que funciona". Se der tempo, mostre o **1,2 divergindo**: é o "passo grande demais" ao vivo.
+5. **(Opcional, 20 s) O cartão "E no XOR?":** troque a porta para XOR. O custo **diminui e se estabiliza**, sem divergir, em ≈ 2,0. A saída fica `z ≈ [0,10 0,00 −0,11 −0,22]`, tudo perto de 0, que é o meio entre −1 e +1. A melhor reta para o XOR é **uma constante**: o neurônio responde "não sei". **As regras de treino funcionaram; o que falta é arquitetura.**
 
 > **Como falar o desafio.**
 > - **Rodando o η = 0,7**, crie o mistério: *"Olhem a curva: caiu e parou. O Adaline diz que convergiu. Mas olhem o plano: tem um ponto do lado errado. Três de quatro. Por que ele parou no lugar errado?"* Ouça um ou dois palpites antes de dar a dica.
 > - **A dica do vale:** use as mãos. Mostre um "V" com uma mão e faça a outra pular de uma borda à outra: *"passo grande demais, vocês pulam o fundo do vale de um lado para o outro e nunca chegam lá embaixo."*
 > - **Ao liberar a turma:** *"Mudem o η, que é a taxa aqui em cima, e procurem o maior valor que acerta os quatro pontos."* A palavra "maior" deixa o desafio mais interessante do que "um valor qualquer".
 > - **Resolvendo:** coloque 0,3 e narre: *"Época 13, quatro de quatro."* Depois 0,1: *"Mais devagar, mas olhem como a reta fica mais no meio, longe dos pontos."*
-> - **O 1,2 explodindo** é o momento visual mais forte do ato: *"E se o passo for enorme?"* Rode e deixe a curva disparar: *"Explodiu. Cada passo joga ele mais longe do vale."*
+> - **O 1,2 divergindo** é o momento visual mais forte do ato: *"E se o passo for enorme?"* Rode e deixe a curva disparar: *"Divergiu: cada passo joga ele mais longe do vale."*
 > - **No XOR (se houver tempo)**, faça a virada: *"E se a gente der ao Adaline o XOR? Ele tem o gradiente, tem o 'quanto errou'..."* Rode. *"O custo cai e para em 2. E a saída é quase zero para tudo: ele aprendeu a dizer 'não sei'. O gradiente fez o trabalho dele direitinho. O problema não é o método, é que uma reta não basta."*
 
 > Evitem η = 0,01 na demo: com o limite de 300 épocas o custo ainda está caindo quando o treino termina, e a versão publicada mostra "parou sem resolver" mesmo com 4/4.
@@ -205,7 +205,7 @@ Com o "quanto errou", dá para pensar no erro como um **terreno**: cada combina�
 ### 5.1 A pergunta (≈ 40 s)
 **"Por que existem diferentes funções de ativação?"**
 
-Contexto (**1969 → 1986**): Minsky e Papert mostram que um neurônio não resolve o XOR, e o entusiasmo esfria. Empilhar neurônios já era o palpite; faltava **treinar a camada escondida**. Isso se populariza em 1986 com o **backpropagation** (Rumelhart, Hinton e Williams): o erro da saída **volta camada por camada** pela regra da cadeia. **Ele só volta se a ativação tiver uma derivada útil.**
+Contexto (**1969 → 1986**): Minsky e Papert mostram que um neurônio não resolve o XOR, e o entusiasmo esfria. Empilhar neurônios já era uma hipótese; faltava **treinar a camada escondida**. Isso se populariza em 1986 com o **backpropagation** (Rumelhart, Hinton e Williams): o erro da saída **volta camada por camada** pela regra da cadeia. **Ele só volta se a ativação tiver uma derivada útil.**
 
 **O cartão de três passos do site (mostrar, sem fazer conta):**
 1. **Linear em cima de linear continua linear:** `W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂)`. Sem algo **não linear** no meio, duas camadas viram uma reta só.
@@ -230,7 +230,7 @@ O site tem **nove gavetas** (fórmula, derivada e gráfico de cada uma). Mostrem
 | **Sigmoide** | (0, 1) | Achata para algo que parece probabilidade; a **saída da nossa rede** é sempre sigmoide | **Satura** nas pontas; derivada máxima 0,25 |
 | **tanh** | (−1, 1) | Como a sigmoide, mas **centrada em zero**; derivada chega a 1 → costuma treinar mais rápido | Também satura |
 | **ReLU** | [0, ∞) | Passa o positivo, zera o resto; barata e não satura para z > 0 | **"Neurônio morto"**: preso no negativo, nunca mais recebe gradiente |
-| **Leaky ReLU** | ℝ | ReLU com um "fiozinho" de inclinação (0,01) no lado negativo | Resolve o neurônio morto; a inclinação é escolhida à mão |
+| **Leaky ReLU** | ℝ | ReLU com uma inclinação pequena (0,01) no lado negativo | Resolve o neurônio morto; a inclinação é escolhida à mão |
 
 (ELU, Swish e GELU também estão no site: *"variações mais recentes, a GELU é a dos modelos de linguagem atuais; fica para quem quiser explorar"*.)
 
@@ -240,7 +240,7 @@ O site tem **nove gavetas** (fórmula, derivada e gráfico de cada uma). Mostrem
 > - **Linear:** *"é a do Adaline. Derivada 1, mas empilhar linear dá linear."*
 > - **Sigmoide:** aponte as pontas achatadas: *"aqui nas pontas ela fica plana, e a derivada cai quase a zero. É a saturação, e ela vai aparecer no desafio."*
 > - **tanh:** *"a prima da sigmoide, mas centrada no zero e com derivada até 1. Costuma treinar mais rápido."*
-> - **ReLU / Leaky ReLU:** *"a ReLU deixa passar o positivo e zera o negativo. Simples e rápida, mas um neurônio que cai no lado negativo pode morrer: nunca mais recebe gradiente. A Leaky deixa um fiozinho de inclinação para evitar isso."*
+> - **ReLU / Leaky ReLU:** *"a ReLU deixa passar o positivo e zera o negativo. Simples e rápida, mas um neurônio que cai no lado negativo pode morrer: nunca mais recebe gradiente. A Leaky mantém uma inclinação pequena para evitar isso."*
 > Não tente explicar fórmulas. A turma precisa sair com uma ideia: **todas dobram e todas têm inclinação, e diferem em como saturam e em quão rápido treinam**.
 
 ### 5.3 O que é novo na tela
@@ -248,10 +248,11 @@ O site tem **nove gavetas** (fórmula, derivada e gráfico de cada uma). Mostrem
 |---|---|
 | **Modelo: 1 neurônio / rede 2-2-1** | Duas entradas, **dois neurônios ocultos**, uma saída. A arquitetura é fixa neste ato. |
 | **Ativação** | O seletor da função dos neurônios ocultos. |
-| **"A rede" (diagrama)** | **Linhas:** espessura = tamanho do peso; **verde = positivo, azul = negativo**; brilho = quanto o neurônio de origem está ativo. **Mini-gráfico em cada neurônio:** a região que aquele neurônio sozinho aprendeu (toque para ampliar). O da saída é a resposta final. |
-| **Curva de erro** | Custo SSE. Quando a rede **empaca**, ela sorteia pesos novos (**reinício**), e isso aparece na curva e no log. |
+| **"A rede" (diagrama)** | **Linhas:** espessura = tamanho do peso; **rosa = positivo, ciano = negativo**; brilho = quanto o neurônio de origem está ativo. **Mini-gráfico em cada neurônio:** a região que aquele neurônio sozinho aprendeu (toque para ampliar). O da saída é a resposta final. |
+| **Curva de erro** | Custo SSE. Quando a rede **estagna**, ela sorteia pesos novos (**reinício**), e isso aparece na curva e no log. |
+| **Algoritmo da rede (δ)** | No pseudocódigo da rede, **δ** é o termo de erro de cada camada: o "gradiente" que **volta** da saída para as camadas ocultas. Basta dizer isso em uma frase: *"esse δ é o erro andando para trás."* |
 
-> **Como falar (≈ 25 s).** O elemento novo é **"A rede"**, que fica em cima à direita. Aponte da esquerda para a direita: *"Duas entradas, dois neurônios escondidos, uma saída. Cada linha é um peso: quanto mais grossa, maior; verde é positivo, azul é negativo. E dentro de cada neurônio tem um mini-gráfico: o que aquele neurônio sozinho está enxergando no plano."*
+> **Como falar (≈ 25 s).** O elemento novo é **"A rede"**, que fica em cima à direita. Aponte da esquerda para a direita: *"Duas entradas, dois neurônios escondidos, uma saída. Cada linha é um peso: quanto mais grossa, maior; rosa é positivo, ciano é negativo. E dentro de cada neurônio tem um mini-gráfico: o que aquele neurônio sozinho está enxergando no plano."*
 > Avise o que observar: *"Durante o treino, fiquem de olho nos dois quadradinhos do meio. Cada um vai virar uma reta."* Mencione os botões **(?)** ao lado de "A rede" e da legenda: quem estiver no celular pode tocar para ler a explicação.
 
 ### 5.4 O desafio (≈ 1:30 com a turma)
@@ -259,25 +260,25 @@ O site tem **nove gavetas** (fórmula, derivada e gráfico de cada uma). Mostrem
 
 **Roteiro ao vivo:**
 1. ▶ com **1 neurônio**: falha (é o Adaline do Ato 2, 3 erros). *"Já sabíamos."*
-2. Troque para **rede 2-2-1** (sigmoide, η = 0,1), velocidade **turbo**. O erro empaca, a rede reinicia, empaca de novo e **desiste na época 6599, depois de 10 tentativas** ("esgotou"). Em velocidade normal isso leva ≈ 25 s, então use turbo.
+2. Troque para **rede 2-2-1** (sigmoide, η = 0,1), velocidade **turbo**. O erro estagna, a rede reinicia, estagna de novo e **é interrompida na época 6599, depois de 10 tentativas** (o log mostra "interrompido"). Em velocidade normal isso leva ≈ 25 s, então use turbo.
 3. **Dica primeiro** (pista 3 do site): *"Para o erro voltar até os neurônios ocultos, a ativação precisa ter inclinação. A sigmoide achata nas pontas e, com η pequeno, o passo quase some. Aumentem o η ou troquem a ativação."*
 4. Turma testa. **Medido no XOR com a rede 2-2-1:**
 
 | Ativação | η = 0,1 | η = 0,5 | η = 2 | η = 5 |
 |---|---|---|---|---|
-| sigmoide | **desiste** (6599) | resolve, ép. 5767 | resolve, ép. 2347 | resolve, **ép. 577**, sem reinício |
+| sigmoide | **interrompida** (6599) | resolve, ép. 5767 | resolve, ép. 2347 | resolve, **ép. 577**, sem reinício |
 | tanh | resolve, ép. 10 390 | resolve, ép. 3337 | resolve, **ép. 1294** (1 reinício) | resolve, ép. 757 |
 | ReLU | resolve, ép. 3938 | resolve, ép. 1326 | resolve, ép. 706 | resolve, ép. 644 |
 
-5. **Resolvendo juntos:** **tanh com η = 2** (a solução de referência do site: resolve na época 1294, com um reinício na época 899 que dá para apontar na curva). Alternativa que impressiona: **sigmoide com η = 5** resolve em 577 épocas. **A mesma ativação que desistiu passa a resolver só mudando o passo.**
+5. **Resolvendo juntos:** **tanh com η = 2** (a solução de referência do site: resolve na época 1294, com um reinício na época 899 que dá para apontar na curva). Alternativa que impressiona: **sigmoide com η = 5** resolve em 577 épocas. **A mesma ativação que foi interrompida passa a resolver só mudando o passo.**
 6. Ao terminar, **amplie os mini-gráficos dos dois neurônios ocultos**: cada um traçou **uma reta**, e a saída combina as duas numa **faixa** que recorta o XOR. É a ilustração "duas retas!" do topo do ato.
 
 > **Como falar o desafio.**
 > - **1 neurônio:** rode sem cerimônia: *"um neurônio só, já sabemos o final."* Não gaste mais de 10 s aqui.
-> - **Rede 2-2-1 com sigmoide e η = 0,1:** crie expectativa (*"agora temos duas retas, deve funcionar, certo?"*) e rode em turbo. Narre os reinícios: *"Olhem a curva: caiu um pouco e travou. A rede percebeu que empacou e sorteou pesos novos, aqui ó, a curva deu um salto. Travou de novo... e desistiu. Dez tentativas."*
+> - **Rede 2-2-1 com sigmoide e η = 0,1:** crie expectativa (*"agora temos duas retas, deve funcionar, certo?"*) e rode em turbo. Narre os reinícios: *"Olhem a curva: caiu um pouco e estagnou. A rede percebeu e sorteou pesos novos, aqui ó, a curva deu um salto. Estagnou de novo... e foi interrompida. Dez tentativas."*
 > - **A dica:** ligue ao que a turma acabou de ver nas gavetas. *"Lembram da sigmoide achatada nas pontas? Com derivada pequena e passo pequeno, o passo efetivo quase some. O que vocês mudariam?"* Deixe a turma responder: geralmente alguém diz "aumentar o η".
 > - **Ao liberar:** *"Testem: mudem a ativação, mudem o η. Quem resolver primeiro, fala aí qual combinação usou."*
-> - **Resolvendo juntos:** primeiro **sigmoide com η = 5**, porque o contraste é o argumento: *"mesma função que desistiu. Só aumentei o passo... resolveu em 577 épocas."* Depois **tanh com η = 2**: *"agora com a tanh: olhem que aqui ela também reinicia uma vez, na época 899, e depois desce direto."*
+> - **Resolvendo juntos:** primeiro **sigmoide com η = 5**, porque o contraste é o argumento: *"mesma função que foi interrompida. Só aumentei o passo... resolveu em 577 épocas."* Depois **tanh com η = 2**: *"agora com a tanh: olhem que aqui ela também reinicia uma vez, na época 899, e depois desce direto."*
 > - **Os mini-gráficos** são o fechamento visual do ato. Clique para ampliar cada neurônio oculto: *"Esse neurônio aprendeu essa reta. Esse aprendeu essa outra. E a saída combinou as duas numa faixa. Duas retas fazendo o que uma não conseguia."* Volte à ilustração do topo do ato se der tempo.
 
 **Cartão "Quando o treino trava" (10 s):** com só 2 ocultos, ≈ 1 em cada 5 inicializações com sigmoide cai num **mínimo local**. O gradiente desce a encosta que está sob os pés, e nada garante que ela leva ao fundo. Por isso o reinício. Isso **também responde à Q5**: o gradiente acha *uma* solução, não necessariamente a melhor.
@@ -304,8 +305,8 @@ O site tem **nove gavetas** (fórmula, derivada e gráfico de cada uma). Mostrem
 - Na classificação, o treino **para quando acerta os 200 pontos**.
 - Embaixo, a lista **"Desafios de classificação"**: cada gaveta tem uma solução medida e um botão **"Aplicar parâmetros"** que configura o laboratório (o treino só começa no ▶).
 
-> **Como falar (tour rápido).** O objetivo aqui é mostrar **liberdade**, não ensinar cada controle. Passe o mouse pelos seletores contando: *"Aqui vocês escolhem o problema: as portas ou conjuntos de classificação com 200 pontos. O modelo: Perceptron, Adaline ou rede. Quantas camadas e quantos neurônios, até quatro camadas de seis. A ativação, o η, a semente, que é o sorteio dos pesos iniciais, e se a rede pode reiniciar quando empaca."*
-> Faça o convite em tom de brincadeira, como no site: *"A ideia é: tentem quebrar a rede e depois consertem."*
+> **Como falar (tour rápido).** O objetivo aqui é mostrar **liberdade**, não ensinar cada controle. Passe o mouse pelos seletores contando: *"Aqui vocês escolhem o problema: as portas ou conjuntos de classificação com 200 pontos. O modelo: Perceptron, Adaline ou rede. Quantas camadas e quantos neurônios, até quatro camadas de seis. A ativação, o η, a semente, que é o sorteio dos pesos iniciais, e se a rede pode reiniciar quando estagna."*
+> Faça o convite como o site: *"A ideia é experimentar configurações que levem a rede a falhar e depois corrigi-las."*
 > Aponte a lista **"Desafios de classificação"**: *"Cada um desses tem uma solução que a gente mediu. Tentem antes de abrir a gaveta."*
 
 ### 6.2 Demonstração 1: espiral dupla (≈ 50 s)
