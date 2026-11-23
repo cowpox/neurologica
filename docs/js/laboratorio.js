@@ -554,7 +554,7 @@ export class Laboratorio {
     campoTaxa.querySelector('.campo-rotulo').appendChild(criarAjuda(
       'Taxa de aprendizado (η)',
       'O tamanho de cada correção. Pequena demais, o treino anda devagar; grande demais, os ' +
-      'pesos passam do ponto e o neurônio se acomoda num lugar ruim, ou o erro explode.',
+      'pesos passam do ponto e o neurônio converge para uma solução ruim, ou o erro diverge.',
     ));
     if (lista) campoTaxa.appendChild(lista);
     this.elCampos.appendChild(campoTaxa);
@@ -632,7 +632,7 @@ export class Laboratorio {
       ));
       campoReinicio.querySelector('.campo-rotulo').appendChild(criarAjuda(
         'Reinício automático',
-        'Se em 300 épocas o erro quase não cai, a rede desiste daquela tentativa e sorteia ' +
+        'Se em 300 épocas o erro quase não cai, a rede interrompe aquela tentativa e sorteia ' +
         'pesos novos. Desligue para ver a rede presa num mínimo local ou num platô.',
       ));
       this.elCampos.appendChild(campoReinicio);
@@ -753,7 +753,7 @@ export class Laboratorio {
       this.elAviso.innerHTML =
         `<strong>${porta.nome} não é linearmente separável.</strong> ` +
         'Este modo tem um neurônio só, ou seja, uma reta só, e nenhuma reta separa ' +
-        'estas classes. Rode assim mesmo: o que interessa aqui é ver COMO ele falha.';
+        'estas classes. Execute assim mesmo: o que interessa aqui é ver COMO ele falha.';
     } else {
       this.elAviso.hidden = true;
     }
@@ -872,7 +872,7 @@ export class Laboratorio {
           // A janela só vê que o erro quase não caiu em 300 épocas: pode ser um mínimo
           // local ou um platô (passo pequeno, ativação saturada). Não afirma qual.
           `⟳ época ${passo.epoca}: o erro quase não caiu em 300 épocas (SSE ${formatar(passo.sse, 4)}). ` +
-          'Empacou: sorteando pesos novos.', 'log-linha--reinicio',
+          'Estagnou: sorteando pesos novos.', 'log-linha--reinicio',
         );
       } else if (passo.epoca % 25 === 0) {
         const total = passo.saidas.length;
@@ -903,7 +903,7 @@ export class Laboratorio {
         : { texto: `✗ parou sem resolver: acabaram as ${treino.maxEpocas} épocas com ${plural(erros, 'ponto errado', 'pontos errados')}.`, resolveu: false };
     }
     if (this.modo === 'adaline') {
-      if (treino.divergiu) return { texto: `✗ divergiu na época ${epoca}: o custo explodiu, porque o η é grande demais.`, resolveu: false };
+      if (treino.divergiu) return { texto: `✗ divergiu na época ${epoca}: o custo divergiu, porque o η é grande demais.`, resolveu: false };
       if (treino.convergiu && erros === 0) return { texto: `✓ o custo estabilizou na época ${epoca} com os ${total} pontos certos.`, resolveu: true };
       if (treino.convergiu) return { texto: `≈ o custo estabilizou na época ${epoca}, mas ${plural(erros, 'ponto continua errado', 'pontos continuam errados')}.`, resolveu: false };
       // Limite de épocas com o custo ainda caindo devagar: o que importa para o aluno é a
@@ -916,7 +916,7 @@ export class Laboratorio {
     if (treino.estado === 'convergiu') return { texto: `✓ convergiu na época ${epoca}: ${total}/${total} certos.`, resolveu: erros === 0 };
     if (treino.estado === 'esgotou') {
       return {
-        texto: `✗ desistiu na época ${epoca}: em ${treino.reinicios.length + 1} tentativas seguidas o erro empacou ` +
+        texto: `✗ interrompido na época ${epoca}: em ${treino.reinicios.length + 1} tentativas seguidas o erro estagnou ` +
           '(mínimo local ou platô).',
         resolveu: false,
       };

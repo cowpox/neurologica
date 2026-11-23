@@ -32,7 +32,7 @@ function comSinal(numero) {
 
 /** Nome curto de cada passo, para aparecer ao lado das abas quando o log está aberto. */
 const NOMES_DE_PASSO = {
-  inicio: 'sorteando os pesos',
+  inicio: 'inicializando os pesos',
   cabecalho: 'início da época',
   amostra: 'lendo a amostra',
   alvo: 'definindo o alvo',
@@ -40,7 +40,7 @@ const NOMES_DE_PASSO = {
   frente: 'passo para a frente',
   ativacao: 'ativação',
   erro: 'medindo o erro',
-  delta_saida: 'culpa da saída',
+  delta_saida: 'gradiente da saída',
   delta_oculta: 'propagando para trás',
   atualiza: 'corrigindo os pesos',
   custo: 'medindo o custo',

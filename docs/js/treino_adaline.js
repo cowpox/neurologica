@@ -187,7 +187,7 @@ export class TreinoAdaline {
     { chave: 'erro', texto: '    erro ← alvo − z        (antes do degrau)', indent: 2 },
     { chave: 'atualiza', texto: '    w ← w + η·erro·x   e   b ← b + η·erro', indent: 2 },
     { chave: 'custo', texto: '  E ← ½ Σ (alvo − z)²     (com os pesos do fim da época)', indent: 1 },
-    { chave: 'divergiu', texto: '  se E explodiu: parar (η grande demais)', indent: 1 },
+    { chave: 'divergiu', texto: '  se E divergiu: parar (η grande demais)', indent: 1 },
     { chave: 'convergiu', texto: '  se E quase não mudou: parar (estabilizou)', indent: 1 },
     { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
   ];

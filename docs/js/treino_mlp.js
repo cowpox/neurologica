@@ -577,9 +577,9 @@ export class TreinoMLP {
     { chave: 'meta', texto: '  se atingiu a meta: parar   (erro pequeno, ou todos os pontos certos)', indent: 1 },
     { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
     { chave: 'reinicio', texto: '  se o SSE quase não caiu em 300 épocas: sortear pesos novos (até 10 vezes)', indent: 1 },
-    { chave: 'delta_saida', texto: '  culpa da saída ← (ŷ − y) · σ′(ŷ)', indent: 1 },
-    { chave: 'delta_oculta', texto: '  para trás: culpa ← (culpa · Wᵀ) · f′(a), camada a camada', indent: 1 },
-    { chave: 'atualiza', texto: '  W ← W − η · (aᵀ · culpa) / n   e   b ← b − η · média(culpa)', indent: 1 },
+    { chave: 'delta_saida', texto: '  δ da saída ← (ŷ − y) · σ′(ŷ)', indent: 1 },
+    { chave: 'delta_oculta', texto: '  para trás: δ ← (δ · Wᵀ) · f′(a), camada a camada', indent: 1 },
+    { chave: 'atualiza', texto: '  W ← W − η · (aᵀ · δ) / n   e   b ← b − η · média(δ)', indent: 1 },
   ];
 
   /** As linhas que a época mais recente percorreu, em ordem (ver TreinoPerceptron). */

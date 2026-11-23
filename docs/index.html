@@ -387,7 +387,7 @@
         </p>
         <p class="convite">
           <span class="convite-rotulo">O desafio</span>
-          Treine o Perceptron em cada uma das <strong>sete portas</strong> (aperte ▶ e
+          Treine o Perceptron em cada uma das <strong>sete portas</strong> (execute com ▶ e
           troque a porta) e descubra quais ele consegue resolver. Comece pelo AND e termine no
           <strong>XOR</strong>: o que muda?
         </p>
@@ -448,7 +448,7 @@
           combinação de pesos é um lugar, e a altura é o tamanho do erro. O
           <span class="termo" data-termo="gradiente">gradiente</span> aponta a subida mais
           íngreme; andar no sentido contrário é descer. A cada exemplo, o Adaline dá um
-          passo ladeira abaixo, e a <strong>taxa de aprendizado η</strong> é o tamanho desse
+          passo no sentido de descida do erro, e a <strong>taxa de aprendizado η</strong> é o tamanho desse
           passo. A reta passa a deslizar, e o gráfico de erro troca a escada por uma curva.
         </p>
       </div>
@@ -460,7 +460,7 @@
       <div class="texto-coluna" data-revelar>
         <p class="convite">
           <span class="convite-rotulo">O problema</span>
-          O laboratório abre no AND com <strong>η = 0,7</strong>. Rode: o custo para de
+          O laboratório abre no AND com <strong>η = 0,7</strong>. Execute: o custo para de
           cair, mas um ponto continua do lado errado da reta. Mude o η até os quatro pontos
           ficarem certos.
         </p>
@@ -474,7 +474,7 @@
       <div class="cartao-destaque cartao-destaque--alerta" data-revelar>
         <h3>E no XOR? O gradiente acha o melhor ajuste, e ele é inútil</h3>
         <p>
-          Troque a porta para XOR. Dessa vez o custo cai e estaciona, sem explodir. O
+          Troque a porta para XOR. Dessa vez o custo diminui e se estabiliza, sem divergir. O
           gradiente fez tudo certo. Medimos a saída linear nos quatro pontos depois que ele
           parou:
         </p>
@@ -570,7 +570,7 @@
           <span class="contexto-ano">1969 → 1986</span>
           Minsky e Papert mostraram que um neurônio só não resolve problemas como o
           XOR, e o entusiasmo pela área esfria. A saída (empilhar neurônios) já era
-          palpite; o que faltava era um jeito de treinar a camada escondida. Ele se
+          uma hipótese; o que faltava era um jeito de treinar a camada escondida. Ele se
           populariza em 1986, com Rumelhart, Hinton e Williams: o
           <span class="termo" data-termo="backprop">backpropagation</span>.
         </p>
@@ -619,8 +619,8 @@
           <span class="convite-rotulo">O problema</span>
           O laboratório abre no XOR com <strong>1 neurônio</strong>: ele falha de novo.
           Troque para a <strong>rede 2-2-1</strong>. Ela começa com a sigmoide e
-          <strong>η = 0,1</strong>, e também não resolve: o erro empaca, a rede
-          sorteia pesos novos, empaca de novo e desiste. Mude a ativação e o η até as
+          <strong>η = 0,1</strong>, e também não resolve: o erro estagna, a rede
+          sorteia pesos novos, estagna de novo e interrompe o treino. Mude a ativação e o η até as
           duas retas recortarem o XOR.
         </p>
       </div>
@@ -672,7 +672,7 @@
           ocultas com até seis neurônios cada, a função de ativação, a taxa de aprendizado,
           a semente e o reinício automático. E dois tipos de problema: as sete
           <strong>portas lógicas</strong> ou sete conjuntos de <strong>classificação</strong>
-          com 200 pontos cada. Tente quebrar a rede e depois consertá-la.
+          com 200 pontos cada. Experimente configurações que levem a rede a falhar e depois corrija-as.
         </p>
       </div>
 

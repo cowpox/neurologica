@@ -26,7 +26,7 @@ const formatarNumero = (valor) => String(valor).replace('.', ',');
 const TEXTOS = {
   ato1: {
     pistas: [
-      'Rode o XOR de novo e acompanhe a reta. A cada correção ela conserta um ponto e estraga outro. Quantos pontos erram no fim de cada época?',
+      'Execute o XOR novamente e acompanhe a reta. A cada correção ela classifica corretamente um ponto e passa a errar outro. Quantos pontos erram no fim de cada época?',
       'Pegue um lápis: passe uma reta que deixe os dois pontos de uma cor de um lado e os da outra cor do outro. Repare <em>onde</em> ficam os pontos da mesma cor.',
       'Os pontos da mesma cor estão em cantos opostos do quadrado, e nenhuma reta separa dois cantos opostos dos outros dois. Não falta treino: falta reta. Para o XOR vai ser preciso <strong>mais de uma</strong>. Antes, veja se saber <em>o quanto</em> errou ajuda (Ato 2).',
     ],
@@ -38,9 +38,9 @@ const TEXTOS = {
   },
   ato2: {
     pistas: [
-      'Olhe os pontos e a curva de custo. O custo parou de cair, mas num valor alto, e um ponto continua do lado errado da reta. O neurônio se acomodou num lugar ruim.',
-      'O η é o tamanho do passo. Imagine descer um vale de olhos fechados: com passos longos demais você vai de um lado ao outro do vale e nunca para no fundo (veja a ilustração acima).',
-      'Diminua o η e rode de novo. Com um passo menor o neurônio chega mais perto do fundo, mas leva mais tempo. Procure o maior η em que os quatro pontos ficam certos.',
+      'Olhe os pontos e a curva de custo. O custo parou de cair, mas num valor alto, e um ponto continua do lado errado da reta. O neurônio convergiu para uma solução ruim.',
+      'O η é o tamanho do passo. Imagine descer um vale sem enxergar o fundo: com passos longos demais você vai de um lado ao outro do vale e nunca para no fundo (veja a ilustração acima).',
+      'Diminua o η e execute novamente. Com um passo menor o neurônio chega mais perto do fundo, mas leva mais tempo. Procure o maior η em que os quatro pontos ficam certos.',
     ],
     porque: 'Com o passo certo, cada correção desce um pouco o vale do erro até perto do fundo, e ali a reta separa o AND. Passo grande demais pula o fundo; passo pequeno demais chega, mas devagar.',
     conquista: ({ taxa, treino }) => ({

@@ -40,8 +40,8 @@ const TERMOS = {
   ],
   gradiente: [
     'Gradiente descendente',
-    'Um jeito de achar bons pesos andando sempre "ladeira abaixo" no erro: a cada passo, ' +
-    'cada peso é ajustado um pouquinho na direção que mais reduz o erro.',
+    'Um jeito de achar bons pesos descendo sempre na direção em que o erro diminui: a cada passo, ' +
+    'cada peso é ajustado levemente no sentido que mais reduz o erro.',
   ],
   derivada: [
     'Derivada',

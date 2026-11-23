@@ -50,7 +50,7 @@ const FUNCOES = [
     formula: 'f(z) = \\sigma(z) = \\dfrac{1}{1+e^{-z}}',
     derivada: "f'(z) = \\sigma(z)\\,\\bigl(1-\\sigma(z)\\bigr)",
     faz: 'Achata qualquer número para o intervalo (0, 1), que dá para ler como uma probabilidade. A saída da nossa rede é sempre uma sigmoide.',
-    limite: 'Nas pontas ela fica quase plana (satura): a derivada, que no máximo vale 0,25, cai para perto de zero e o aprendizado emperra.',
+    limite: 'Nas pontas ela fica quase plana (satura): a derivada, que no máximo vale 0,25, cai para perto de zero e o aprendizado se torna muito lento.',
     eixoY: [-0.3, 1.3],
   },
   {
@@ -80,7 +80,7 @@ const FUNCOES = [
     uso: 'rede',
     formula: 'f(z) = \\begin{cases} z & z > 0 \\\\ 0{,}01\\,z & z \\le 0 \\end{cases}',
     derivada: "f'(z) = \\begin{cases} 1 & z > 0 \\\\ 0{,}01 & z < 0 \\end{cases}",
-    faz: 'A ReLU com uma correção: o lado negativo não é zerado, ganha uma inclinação pequena (aqui 0,01). Assim sobra sempre um fiozinho de gradiente.',
+    faz: 'A ReLU com uma correção: o lado negativo não é zerado, ganha uma inclinação pequena (aqui 0,01). Assim permanece sempre um gradiente pequeno.',
     limite: 'Resolve o neurônio morto, mas a inclinação (0,01) é um número escolhido à mão, e a quina em z = 0 continua. No XOR com dois neurônios ocultos ela se comporta quase igual à ReLU (η = 2: mediana de 844 épocas contra 843 da ReLU), porque aqui o que atrapalha não é o neurônio morto.',
     eixoY: [-0.6, 4.2],
     saltos: { df: [{ z: 0, aberto: 0.01, fechado: 0.01 }] },
@@ -92,7 +92,7 @@ const FUNCOES = [
     formula: 'f(z) = \\begin{cases} z & z > 0 \\\\ e^{z} - 1 & z \\le 0 \\end{cases}',
     derivada: "f'(z) = \\begin{cases} 1 & z > 0 \\\\ e^{z} & z < 0 \\end{cases}",
     faz: 'Igual à ReLU para z > 0. Para z < 0 ela curva suavemente até −1, sem quina: a derivada passa de 0 a 1 sem salto.',
-    limite: 'Calcular e^z custa mais que uma comparação, e para z muito negativo ela satura em −1, como a sigmoide. No laboratório (XOR, dois ocultos, η = 2, 40 sementes) ela empacou 6 vezes; a ReLU, 101.',
+    limite: 'Calcular e^z custa mais que uma comparação, e para z muito negativo ela satura em −1, como a sigmoide. No laboratório (XOR, dois ocultos, η = 2, 40 sementes) ela estagnou 6 vezes; a ReLU, 101.',
     eixoY: [-1.4, 4.2],
   },
   {
