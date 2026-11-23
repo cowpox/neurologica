@@ -322,7 +322,7 @@ export class Laboratorio {
    * Os dois botões (?) que explicam o mini-gráfico de cada neurônio e as linhas entre
    * eles (pedidos desde a Decisão 7). Tinham sumido quando a rede foi reescrita como um
    * SVG único, sem que os testes percebessem. Os textos descrevem as cores dos gráficos,
-   * que são verde e azul-royal (a paleta dos dados).
+   * que são rosa e ciano (a paleta dos dados).
    */
   montarAjudaDaRede() {
     const titulo = this.container.querySelector('.lab-rede-embrulho .lab-secao-titulo');
@@ -333,7 +333,7 @@ export class Laboratorio {
     const ajudaMiniatura = criarAjuda(
       'O mini-gráfico',
       'Cada quadradinho mostra a saída daquele neurônio em todo o plano de entrada: ' +
-      'verde onde ele responde alto, azul onde responde baixo. É o recorte que aquele ' +
+      'rosa onde ele responde alto, ciano onde responde baixo. É o recorte que aquele ' +
       'neurônio sozinho aprendeu. O da saída é a resposta final da rede. Toque para ' +
       'ampliar e toque de novo para voltar.',
     );
@@ -343,7 +343,7 @@ export class Laboratorio {
 
     const ajudaLinhas = criarAjuda(
       'As linhas entre neurônios',
-      'A espessura é o tamanho do peso. Verde é peso positivo e azul é peso negativo. ' +
+      'A espessura é o tamanho do peso. Rosa é peso positivo e ciano é peso negativo. ' +
       'O brilho é a ativação real do neurônio de origem: linha apagada, neurônio calado.',
     );
     // fica junto à borda direita: o balão abre alinhado à direita para não ser cortado
@@ -906,7 +906,12 @@ export class Laboratorio {
       if (treino.divergiu) return { texto: `✗ divergiu na época ${epoca}: o custo explodiu, porque o η é grande demais.`, resolveu: false };
       if (treino.convergiu && erros === 0) return { texto: `✓ o custo estabilizou na época ${epoca} com os ${total} pontos certos.`, resolveu: true };
       if (treino.convergiu) return { texto: `≈ o custo estabilizou na época ${epoca}, mas ${plural(erros, 'ponto continua errado', 'pontos continuam errados')}.`, resolveu: false };
-      return { texto: `✗ acabaram as ${treino.maxEpocas} épocas antes de o custo estabilizar.`, resolveu: false };
+      // Limite de épocas com o custo ainda caindo devagar: o que importa para o aluno é a
+      // classificação. Se todos os pontos estão certos, o Adaline resolveu (só não "poliu" o custo).
+      if (erros === 0) {
+        return { texto: `✓ acertou os ${total} pontos; o custo ainda caía devagar quando acabaram as ${treino.maxEpocas} épocas.`, resolveu: true };
+      }
+      return { texto: `✗ acabaram as ${treino.maxEpocas} épocas antes de o custo estabilizar, com ${plural(erros, 'ponto errado', 'pontos errados')}.`, resolveu: false };
     }
     if (treino.estado === 'convergiu') return { texto: `✓ convergiu na época ${epoca}: ${total}/${total} certos.`, resolveu: erros === 0 };
     if (treino.estado === 'esgotou') {
@@ -997,7 +1002,7 @@ export class Laboratorio {
     if (Math.abs(melhor.z) < TOLERANCIA_ZERO) {
       return {
         indice: melhor.indice,
-        titulo,
+        titulo: 'A reta passa exatamente sobre este ponto',
         paragrafos: [
           `O ponto ${rotulo} está <strong>exatamente sobre a reta</strong>: z = 0, distância ${distancia}.`,
           `Por convenção, o degrau devolve 1 quando z ≥ 0. Como a classe dele é ${classe}, a classificação está certa.`,
@@ -1026,7 +1031,9 @@ export class Laboratorio {
   renderizar(passo, { msPorLinha = null, msDoPasso = 0 } = {}) {
     this.plano.desenhar(this.treino, {
       retas: this.retasAtuais(),
-      destaque: passo && this.modo !== 'mlp' && !this.emNuvem ? passo.indice : -1,
+      // O anel do ponto em avaliação some quando o treino termina: nesse momento o único anel
+      // na tela deve ser o do ponto rente à reta (realce), senão os dois se confundem.
+      destaque: passo && !this.treino.terminou && this.modo !== 'mlp' && !this.emNuvem ? passo.indice : -1,
       realce: this.realceDoPontoRente(),
       rapido: this.rodando,
     });

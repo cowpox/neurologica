@@ -44,11 +44,11 @@ const NOMES_DE_PASSO = {
   delta_oculta: 'propagando para trás',
   atualiza: 'corrigindo os pesos',
   custo: 'medindo o custo',
-  convergiu: 'testando a parada',
-  divergiu: 'testando a parada',
-  meta: 'testando a parada',
-  limite: 'testando o limite',
-  reinicio: 'testando se empacou',
+  convergiu: 'verificando o critério de parada',
+  divergiu: 'verificando o critério de parada',
+  meta: 'verificando o critério de parada',
+  limite: 'verificando o limite de épocas',
+  reinicio: 'verificando estagnação',
 };
 
 export class PainelAlgoritmo {

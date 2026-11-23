@@ -10,7 +10,7 @@
  *    ativação, porque mostra a geometria.
  *
  * 2. CONEXÕES QUE CARREGAM INFORMAÇÃO. A espessura da linha é a magnitude do peso,
- *    a cor é o sinal (verde positivo, azul negativo) e o brilho acompanha a
+ *    a cor é o sinal (rosa positivo, ciano negativo) e o brilho acompanha a
  *    ativação real do neurônio de origem. O brilho não é enfeite: é calculado a
  *    partir da ativação média nos dados de treino, então uma linha apagada
  *    significa mesmo um neurônio calado.
