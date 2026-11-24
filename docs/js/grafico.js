@@ -16,6 +16,8 @@ import { densidadeSegura } from './zoom_leve.js';
 /** Faixa padrão do plano: a das portas lógicas (entradas 0/1, com folga). */
 export const FAIXA_PORTAS = [-0.5, 1.5];
 const RESOLUCAO_REGIAO = 60;
+/** O que é o anel amarelo: título no mouse e balão no toque. */
+const TEXTO_PONTO_EM_AVALIACAO = 'Exemplo em avaliação neste passo';
 
 /** Lê as cores do tema atual direto das variáveis CSS, para o canvas acompanhar
  *  a troca claro/escuro sem duplicar a paleta em JavaScript. */
@@ -73,6 +75,8 @@ export class PlanoDeDecisao {
 
   destruir() {
     this._observador.disconnect();
+    clearTimeout(this._tempoDaDica);
+    this.dicaDoPonto?.remove();
   }
 
   /**
@@ -283,7 +287,17 @@ export class PlanoDeDecisao {
 
     // Título (dica nativa do navegador) do ponto em avaliação: explica o que é o anel amarelo.
     todos.select('title').remove();
-    todos.filter((d) => d.indice === destaque).append('title').text('Exemplo em avaliação neste passo');
+    const emAvaliacao = todos.filter((d) => d.indice === destaque);
+    emAvaliacao.append('title').text(TEXTO_PONTO_EM_AVALIACAO);
+    // Telas de toque não têm hover, então o título nativo nunca aparece: ali, tocar no anel
+    // mostra o mesmo texto num balão curto, que some sozinho.
+    todos.on('click', null);
+    if (window.matchMedia?.('(hover: none)').matches) {
+      emAvaliacao.on('click', (evento, d) => {
+        evento.stopPropagation();
+        this.mostrarDicaDoPonto(escalaX(d.x), escalaY(d.y));
+      });
+    }
 
     todos.select('.ponto-corpo')
       .attr('r', 9)
@@ -409,6 +423,34 @@ export class PlanoDeDecisao {
 
     if (this.realceAberto) this.mostrarBalaoRealce(realce, bx, by);
     else this.fecharBalaoRealce();
+  }
+
+  /** Balão curto sobre o ponto em avaliação (telas de toque). Some sozinho em 2,5 s. */
+  mostrarDicaDoPonto(px, py) {
+    this.dicaDoPonto?.remove();
+    clearTimeout(this._tempoDaDica);
+    const balao = document.createElement('div');
+    balao.className = 'plano-balao';
+    balao.setAttribute('role', 'status');
+    const texto = document.createElement('strong');
+    texto.textContent = TEXTO_PONTO_EM_AVALIACAO;
+    balao.appendChild(texto);
+    balao.style.width = 'max-content';
+    balao.style.maxWidth = `${this.lado - 12}px`;
+    this.container.appendChild(balao);
+    this.dicaDoPonto = balao;
+
+    const largura = balao.offsetWidth;
+    const altura = balao.offsetHeight;
+    const esquerda = Math.max(6, Math.min(this.lado - largura - 6, px - largura / 2));
+    // acima do anel; perto da borda de cima, abaixo dele
+    const topo = py - 26 - altura >= 0 ? py - 26 - altura : py + 26;
+    balao.style.left = `${Math.round(esquerda)}px`;
+    balao.style.top = `${Math.round(topo)}px`;
+    this._tempoDaDica = setTimeout(() => {
+      balao.remove();
+      if (this.dicaDoPonto === balao) this.dicaDoPonto = null;
+    }, 2500);
   }
 
   alternarBalaoRealce(realce, bx, by) {
