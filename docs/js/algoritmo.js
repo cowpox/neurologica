@@ -71,8 +71,10 @@ function marcarPseudocodigo(texto) {
       classe = 'pseudo-variavel';
       conteudo = [document.createTextNode(parte.slice(1, -1))];
     } else if (parte.startsWith('{')) {
-      classe = 'pseudo-comentario';
-      conteudo = marcarPseudocodigo(parte.slice(1, -1));
+      const miolo = parte.slice(1, -1);
+      classe = miolo.replace(/\*/g, '').length <= MAX_COMENTARIO_SEM_QUEBRA
+        ? 'pseudo-comentario pseudo-bloco' : 'pseudo-comentario';
+      conteudo = marcarPseudocodigo(miolo);
     } else {
       return document.createTextNode(parte);
     }
@@ -81,6 +83,43 @@ function marcarPseudocodigo(texto) {
     span.append(...conteudo);
     return span;
   });
+}
+
+/** Atribuições curtas (até este tamanho, em caracteres) não quebram no meio, nem no celular. */
+const MAX_BLOCO_SEM_QUEBRA = 34;
+/** Comentários curtos também não partem ao meio; os longos quebram entre as palavras. */
+const MAX_COMENTARIO_SEM_QUEBRA = 22;
+
+/**
+ * Monta uma linha do pseudocódigo para telas estreitas. Os espaços do texto que alinham
+ * "cláusulas" (2 ou mais seguidos) viram uma quebra possível entre elas, e cada cláusula
+ * curta vira um bloco que não quebra por dentro: `w ← w + η·erro·x` ou sai inteira ou vai
+ * inteira para a linha de baixo. Um "e" solto cola na cláusula seguinte, em vez de ficar no
+ * fim da linha. O que for mais longo que o limite (e os comentários) quebra normalmente.
+ */
+function montarLinhaDePseudocodigo(texto) {
+  const clausulas = [];
+  texto.split(/ {2,}/).filter(Boolean).forEach((clausula) => {
+    const anterior = clausulas[clausulas.length - 1];
+    if (anterior === 'e') clausulas[clausulas.length - 1] = `e ${clausula}`;
+    else clausulas.push(clausula);
+  });
+
+  const nos = [];
+  clausulas.forEach((clausula, i) => {
+    if (i > 0) nos.push(document.createTextNode(' '));
+    const conteudo = marcarPseudocodigo(clausula);
+    const plano = clausula.replace(/[*{}]/g, '');
+    if (clausula.includes('{') || plano.length > MAX_BLOCO_SEM_QUEBRA) {
+      nos.push(...conteudo);
+    } else {
+      const bloco = document.createElement('span');
+      bloco.className = 'pseudo-bloco';
+      bloco.append(...conteudo);
+      nos.push(bloco);
+    }
+  });
+  return nos;
 }
 
 export class PainelAlgoritmo {
@@ -180,7 +219,7 @@ export class PainelAlgoritmo {
       // linha que quebra continua alinhada, com a continuação um pouco mais para dentro.
       const recuo = linha.texto.match(/^ */)[0].length;
       item.style.setProperty('--recuo', String(recuo));
-      item.append(...marcarPseudocodigo(linha.texto.slice(recuo)));
+      item.append(...montarLinhaDePseudocodigo(linha.texto.slice(recuo)));
       this.elPseudo.appendChild(item);
     });
   }

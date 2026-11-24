@@ -851,6 +851,12 @@ a:hover { text-decoration: underline; }
 /* Pseudocódigo: negrito = controle (para cada, se, parar), itálico = variável,
    verde = comentário. Operações ficam no estilo normal. O verde é o de texto
    (--cor-primaria-forte): o verde puro não tem contraste para texto pequeno. */
+.pseudo-bloco { white-space: nowrap; }
+/* telas estreitas: fonte e folgas menores, para as linhas quebrarem menos */
+@media (max-width: 480px) {
+  .painel-pseudocodigo { font-size: 11.5px; padding-inline: var(--esp-sm); }
+  .pseudo-linha { padding-right: 2px; }
+}
 .pseudo-controle { font-weight: var(--peso-forte); color: var(--cor-tinta); }
 .pseudo-variavel { font-style: italic; }
 .pseudo-comentario { color: var(--cor-primaria-forte); }
