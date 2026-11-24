@@ -570,26 +570,28 @@ export class TreinoMLP {
 
   // A ordem é a do código: mede e testa a parada ANTES de calcular o gradiente.
   static pseudocodigo = [
-    { chave: 'inicio', texto: 'W, b ← sorteio de Xavier' },
-    { chave: 'cabecalho', texto: 'para cada época:' },
-    { chave: 'frente', texto: '  para a frente: a ← f(a · W + b), camada a camada (na saída, f = σ)', indent: 1 },
-    { chave: 'erro', texto: '  SSE ← ½ Σ (y − ŷ)²', indent: 1 },
-    { chave: 'meta', texto: '  se atingiu a meta: parar   (erro pequeno, ou todos os pontos certos)', indent: 1 },
-    { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
-    { chave: 'reinicio', texto: '  se o SSE quase não caiu em 300 épocas: sortear pesos novos (até 10 vezes)', indent: 1 },
-    { chave: 'delta_saida', texto: '  δ da saída ← (ŷ − y) · σ′(ŷ)', indent: 1 },
-    { chave: 'delta_oculta', texto: '  para trás: δ ← (δ · Wᵀ) · f′(a), camada a camada', indent: 1 },
-    { chave: 'atualiza', texto: '  W ← W − η · (aᵀ · δ) / n   e   b ← b − η · média(δ)', indent: 1 },
+    { chave: 'inicio', texto: '*W*, *b* ← sorteio de Xavier' },
+    { chave: 'cabecalho', texto: '**para cada** época:' },
+    { chave: 'frente', texto: '  **para a frente:** *a* ← f(*a* · *W* + *b*), {camada a camada (na saída, f = σ)}', indent: 1 },
+    { chave: 'erro', texto: '  *SSE* ← ½ Σ (*y* − *ŷ*)²', indent: 1 },
+    { chave: 'meta', texto: '  **se** atingiu a meta: **parar**   {(erro pequeno, ou todos os pontos certos)}', indent: 1 },
+    { chave: 'limite', texto: '  **se** chegou ao máx. de épocas: **parar**', indent: 1 },
+    { chave: 'reinicio', texto: '  **se** o *SSE* quase não caiu em 300 épocas: sortear pesos novos {(até 10 vezes)}', indent: 1 },
+    { chave: 'delta_saida', texto: '  *δ* da saída ← (*ŷ* − *y*) · σ′(*ŷ*)', indent: 1 },
+    { chave: 'delta_oculta', texto: '  **para trás:** *δ* ← (*δ* · *W*ᵀ) · f′(*a*), {camada a camada}', indent: 1 },
+    { chave: 'atualiza', texto: '  *W* ← *W* − *η* · (*a*ᵀ · *δ*) / *n*   e   *b* ← *b* − *η* · média(*δ*)', indent: 1 },
   ];
 
-  /** As linhas que a época mais recente percorreu, em ordem (ver TreinoPerceptron). */
+  /**
+   * As linhas que a época mais recente percorreu, em ordem (ver TreinoPerceptron). Dos testes
+   * de parada e de reinício, só acende o que disparou; sem nenhum, a época segue direto para
+   * o gradiente.
+   */
   static sequenciaDoPasso(passo, treino) {
-    const linhas = ['cabecalho', 'frente', 'erro', 'meta'];
-    if (passo.estado === 'convergiu') return linhas;
-    linhas.push('limite');
-    if (passo.estado === 'limite') return linhas;
-    if (treino.reiniciarAoEmpacar) linhas.push('reinicio');
-    if (passo.estado === 'esgotou' || passo.reiniciou) return linhas;
+    const linhas = ['cabecalho', 'frente', 'erro'];
+    if (passo.estado === 'convergiu') return [...linhas, 'meta'];
+    if (passo.estado === 'limite') return [...linhas, 'limite'];
+    if (passo.estado === 'esgotou' || passo.reiniciou) return [...linhas, 'reinicio'];
     linhas.push('delta_saida', 'delta_oculta', 'atualiza');
     return linhas;
   }

@@ -179,31 +179,33 @@ export class TreinoAdaline {
   }
 
   static pseudocodigo = [
-    { chave: 'inicio', texto: 'w ← valores aleatórios pequenos;  b ← 0' },
-    { chave: 'cabecalho', texto: 'para cada época:' },
-    { chave: 'amostra', texto: '  para cada exemplo (x, y):', indent: 1 },
-    { chave: 'alvo', texto: '    alvo ← −1 se y = 0, +1 se y = 1', indent: 2 },
-    { chave: 'soma', texto: '    z ← w · x + b          (saída linear)', indent: 2 },
-    { chave: 'erro', texto: '    erro ← alvo − z        (antes do degrau)', indent: 2 },
-    { chave: 'atualiza', texto: '    w ← w + η·erro·x   e   b ← b + η·erro', indent: 2 },
-    { chave: 'custo', texto: '  E ← ½ Σ (alvo − z)²     (com os pesos do fim da época)', indent: 1 },
-    { chave: 'divergiu', texto: '  se E divergiu: parar (η grande demais)', indent: 1 },
-    { chave: 'convergiu', texto: '  se E quase não mudou: parar (estabilizou)', indent: 1 },
-    { chave: 'limite', texto: '  se chegou ao máx. de épocas: parar', indent: 1 },
+    { chave: 'inicio', texto: '*w* ← valores aleatórios pequenos;  *b* ← 0' },
+    { chave: 'cabecalho', texto: '**para cada** época:' },
+    { chave: 'amostra', texto: '  **para cada** exemplo (*x*, *y*):', indent: 1 },
+    { chave: 'alvo', texto: '    *alvo* ← −1 **se** *y* = 0, +1 **se** *y* = 1', indent: 2 },
+    { chave: 'soma', texto: '    *z* ← *w* · *x* + *b*          {(saída linear)}', indent: 2 },
+    { chave: 'erro', texto: '    *erro* ← *alvo* − *z*        {(antes do degrau)}', indent: 2 },
+    { chave: 'atualiza', texto: '    *w* ← *w* + *η*·*erro*·*x*   e   *b* ← *b* + *η*·*erro*', indent: 2 },
+    { chave: 'custo', texto: '  *E* ← ½ Σ (*alvo* − *z*)²     {(com os pesos do fim da época)}', indent: 1 },
+    { chave: 'divergiu', texto: '  **se** *E* divergiu: **parar** {(*η* grande demais)}', indent: 1 },
+    { chave: 'convergiu', texto: '  **se** *E* quase não mudou: **parar** {(estabilizou)}', indent: 1 },
+    { chave: 'limite', texto: '  **se** chegou ao máx. de épocas: **parar**', indent: 1 },
   ];
 
-  /** As linhas que o passo mais recente percorreu, em ordem (ver TreinoPerceptron). */
+  /**
+   * As linhas que o passo mais recente percorreu, em ordem (ver TreinoPerceptron). O custo é
+   * calculado em toda época; das paradas, só acende a que disparou.
+   */
   static sequenciaDoPasso(passo, treino) {
     const linhas = passo.indice === 0 ? ['cabecalho'] : [];
     linhas.push('amostra', 'alvo', 'soma', 'erro', 'atualiza');
     if (passo.fimDeEpoca) {
-      linhas.push('custo', 'divergiu');
-      if (!treino.divergiu) {
-        linhas.push('convergiu');
-        if (!treino.convergiu) linhas.push('limite');
-      }
+      linhas.push('custo');
+      if (treino.divergiu) linhas.push('divergiu');
+      else if (treino.convergiu) linhas.push('convergiu');
+      else if (treino.terminou) linhas.push('limite');
       // nenhuma parada disparou: a execução volta ao início do laço, e é aí que fica
-      if (!treino.terminou) linhas.push('cabecalho');
+      else linhas.push('cabecalho');
     }
     return linhas;
   }

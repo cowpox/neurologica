@@ -51,6 +51,38 @@ const NOMES_DE_PASSO = {
   reinicio: 'verificando estagnação',
 };
 
+/**
+ * Transforma a marcação mínima do pseudocódigo em nós do DOM (sem innerHTML):
+ *   **se**   palavra de controle (negrito)
+ *   *w*      variável (itálico)
+ *   {(...)}  comentário (verde); pode conter variáveis
+ * O resto (←, ·, +, degrau, σ...) é operação e fica no estilo normal.
+ */
+const MARCACAO_PSEUDO = /(\*\*[^*]+\*\*|\*[^*]+\*|\{[^}]*\})/;
+
+function marcarPseudocodigo(texto) {
+  return texto.split(MARCACAO_PSEUDO).filter(Boolean).map((parte) => {
+    let classe = null;
+    let conteudo = null;
+    if (parte.startsWith('**')) {
+      classe = 'pseudo-controle';
+      conteudo = [document.createTextNode(parte.slice(2, -2))];
+    } else if (parte.startsWith('*')) {
+      classe = 'pseudo-variavel';
+      conteudo = [document.createTextNode(parte.slice(1, -1))];
+    } else if (parte.startsWith('{')) {
+      classe = 'pseudo-comentario';
+      conteudo = marcarPseudocodigo(parte.slice(1, -1));
+    } else {
+      return document.createTextNode(parte);
+    }
+    const span = document.createElement('span');
+    span.className = classe;
+    span.append(...conteudo);
+    return span;
+  });
+}
+
 export class PainelAlgoritmo {
   constructor(container, { pseudocodigo = [], titulo = '' } = {}) {
     this.container = container;
@@ -144,7 +176,11 @@ export class PainelAlgoritmo {
       const item = document.createElement('li');
       item.className = 'pseudo-linha';
       item.dataset.chave = linha.chave;
-      item.textContent = linha.texto;
+      // O recuo vai para o CSS (--recuo, em caracteres), e não em espaços no texto: assim a
+      // linha que quebra continua alinhada, com a continuação um pouco mais para dentro.
+      const recuo = linha.texto.match(/^ */)[0].length;
+      item.style.setProperty('--recuo', String(recuo));
+      item.append(...marcarPseudocodigo(linha.texto.slice(recuo)));
       this.elPseudo.appendChild(item);
     });
   }
@@ -166,19 +202,34 @@ export class PainelAlgoritmo {
    * Percorre as linhas `chaves` na ordem em que o algoritmo as executou, `msPorLinha` em cada
    * uma, e termina acesa na última. Com `msPorLinha` <= 0 (ou uma linha só) acende direto a
    * última: é o caso do treino rápido, em que não haveria tempo de ler nada.
+   *
+   * `aoAcender(chave, i)` é chamado a cada linha acesa e `aoTerminar()` depois da última: é
+   * assim que o passo a passo dos atos sincroniza o gráfico com a linha que está rodando.
+   * `pararAnimacao()` cancela os dois; quem passou os ganchos cuida do que ficou pendente.
    */
-  animarLinhas(chaves, msPorLinha) {
+  animarLinhas(chaves, msPorLinha, { aoAcender = null, aoTerminar = null } = {}) {
     this.pararAnimacao();
-    if (!chaves.length) return;
+    if (!chaves.length) {
+      aoTerminar?.();
+      return;
+    }
     if (msPorLinha <= 0 || chaves.length === 1) {
+      chaves.forEach((chave, i) => aoAcender?.(chave, i));
       this.acenderLinha(chaves[chaves.length - 1]);
+      aoTerminar?.();
       return;
     }
     let i = 0;
     const proxima = () => {
       this.acenderLinha(chaves[i]);
+      aoAcender?.(chaves[i], i);
       i += 1;
-      this.temporizador = i < chaves.length ? setTimeout(proxima, msPorLinha) : null;
+      if (i < chaves.length) {
+        this.temporizador = setTimeout(proxima, msPorLinha);
+      } else {
+        this.temporizador = null;
+        aoTerminar?.();
+      }
     };
     proxima();
   }

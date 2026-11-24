@@ -834,7 +834,10 @@ a:hover { text-decoration: underline; }
 }
 .pseudo-linha {
   white-space: pre-wrap;
-  padding: 1px var(--esp-sm);
+  /* recuo do bloco (--recuo, definido por linha em algoritmo.js) + 2 caracteres de recuo
+     pendurado: se a linha quebrar, a continuação fica alinhada, um pouco para dentro */
+  padding: 1px var(--esp-sm) 1px calc(var(--esp-sm) + (var(--recuo, 0) + 2) * 1ch);
+  text-indent: -2ch;
   border-left: 2px solid transparent;
   border-radius: var(--raio-xs);
   color: var(--cor-texto);
@@ -845,6 +848,12 @@ a:hover { text-decoration: underline; }
   border-left-color: var(--cor-primaria);
   color: var(--cor-tinta);
 }
+/* Pseudocódigo: negrito = controle (para cada, se, parar), itálico = variável,
+   verde = comentário. Operações ficam no estilo normal. O verde é o de texto
+   (--cor-primaria-forte): o verde puro não tem contraste para texto pequeno. */
+.pseudo-controle { font-weight: var(--peso-forte); color: var(--cor-tinta); }
+.pseudo-variavel { font-style: italic; }
+.pseudo-comentario { color: var(--cor-primaria-forte); }
 
 .painel-log {
   height: 168px;

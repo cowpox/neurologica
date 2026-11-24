@@ -236,7 +236,10 @@ export class Laboratorio {
       controlesExtras: false, // semente, reinício automático e máximo de épocas (laboratório livre)
       semente: 42,
       problemas: ['portas'], // ['portas', 'classificacao'] no laboratório livre
-      dataset: 'circulo',
+      dataset: 'gaussianas',
+      // "Próximo passo" em duas fases (atos): o gráfico só muda quando a linha que corrige os
+      // pesos acende no pseudocódigo. Desligado no laboratório livre.
+      passoSincronizado: true,
       ...config,
     };
     this.problema = this.config.problemas[0];
@@ -264,7 +267,12 @@ export class Laboratorio {
     // cores no momento de desenhar, então é preciso redesenhar. Sem isso, ao passar do
     // escuro para o claro com o treino parado, a reta continuava branca (e o fundo e a
     // rede com as cores antigas) até o próximo passo.
-    this.aoMudarTema = () => requestAnimationFrame(() => { if (this.treino) this.renderizar(null); });
+    // Com um passo sincronizado em andamento, redesenha o estado de ANTES do passo: o novo só
+    // aparece quando a linha de correção acender.
+    this.aoMudarTema = () => requestAnimationFrame(() => {
+      if (this.passoPendente) this.passoPendente.desenharAntes();
+      else if (this.treino) this.renderizar(null);
+    });
     document.addEventListener('neurologica:tema', this.aoMudarTema);
     this.temaDoSistema = window.matchMedia('(prefers-color-scheme: dark)');
     this.temaDoSistema.addEventListener('change', this.aoMudarTema);
@@ -763,6 +771,9 @@ export class Laboratorio {
   // ------------------------------------------------------------------- treino
 
   construirTreino() {
+    // Um passo sincronizado ainda animando termina antes: se ele encerrou o treino, o
+    // desfecho (e o evento 'terminou') precisa sair agora, ou se perderia.
+    this.concluirPassoPendente();
     // Um treino trocado no meio (parâmetro, porta ou modo mudou, ou ↺) é uma tentativa
     // abandonada; quem conta tentativas para liberar pistas precisa saber disso.
     const anterior = this.treino;
@@ -855,6 +866,7 @@ export class Laboratorio {
   tocar() {
     // Um laboratório rodando por vez: os outros pausam e guardam o próprio estado.
     LABORATORIOS.forEach((outro) => { if (outro !== this && outro.rodando) outro.pausar(); });
+    this.concluirPassoPendente();
     if (this.treino.terminou) this.construirTreino();
     this.rodando = true;
     this.container.classList.add('laboratorio--rodando');
@@ -915,6 +927,7 @@ export class Laboratorio {
   }
 
   avancarUmPasso(renderizar = true) {
+    if (renderizar && this.config.passoSincronizado) return this.avancarUmPassoSincronizado();
     if (this.treino.terminou) return null;
     const passo = this.treino.passo();
     this.registrarLog(passo);
@@ -925,6 +938,80 @@ export class Laboratorio {
       if (this.treino.terminou) this.registrarDesfecho();
     }
     return passo;
+  }
+
+  /**
+   * "Próximo passo" dos atos, em duas fases. Primeiro o pseudocódigo anima as linhas que o
+   * passo percorreu, com o gráfico ainda no estado de antes (só o anel marca o ponto em
+   * avaliação). Quando a linha que corrige os pesos acende, a reta, os pesos, a curva de
+   * erro, o log e o estado mudam juntos. O desfecho (✓/✗) sai depois da última linha.
+   */
+  avancarUmPassoSincronizado() {
+    this.concluirPassoPendente();
+    if (this.treino.terminou) return null;
+
+    const treino = this.treino;
+    const neuronio = this.modo !== 'mlp';
+    // cópia ANTES do passo: o treino altera o vetor de pesos no próprio lugar
+    const pesosAntes = neuronio ? [...treino.pesos] : null;
+    const biasAntes = neuronio ? treino.bias : null;
+
+    const passo = treino.passo();
+    const linhas = MODOS[this.modo].classe.sequenciaDoPasso(passo, treino);
+
+    // Uma "foto" do treino com os pesos de antes: prever() e valorContinuo() leem this.pesos
+    // e this.bias, então a região e a reta saem como estavam. Na rede não há anel no ponto,
+    // e o plano simplesmente fica como está.
+    const desenharAntes = () => {
+      if (!neuronio) return;
+      const foto = Object.create(treino, {
+        pesos: { value: pesosAntes },
+        bias: { value: biasAntes },
+        terminou: { value: false },
+      });
+      this.plano.desenhar(foto, {
+        retas: this.retasAtuais(foto),
+        destaque: this.emNuvem ? -1 : passo.indice,
+        realce: null,
+        rapido: false,
+      });
+    };
+
+    let revelado = false;
+    const revelar = () => {
+      if (revelado || this.treino !== treino) return;
+      revelado = true;
+      this.registrarLog(passo);
+      this.desenharEstado(passo);
+      this.atualizarEstado();
+    };
+    const pendente = {
+      ultimaLinha: linhas[linhas.length - 1],
+      desenharAntes: () => (revelado ? this.desenharEstado(passo) : desenharAntes()),
+      concluir: () => {
+        if (this.passoPendente !== pendente) return;
+        this.passoPendente = null;
+        revelar();
+        if (treino.terminou && this.treino === treino) this.registrarDesfecho();
+      },
+    };
+    this.passoPendente = pendente;
+
+    desenharAntes();
+    this.painel.animarLinhas(linhas, MS_POR_LINHA_PASSO_MANUAL, {
+      aoAcender: (chave) => { if (chave === 'atualiza') revelar(); },
+      aoTerminar: pendente.concluir,
+    });
+    return passo;
+  }
+
+  /** Aplica na hora um passo sincronizado que ainda está animando (clique rápido, ▶, ↺...). */
+  concluirPassoPendente() {
+    if (!this.passoPendente) return;
+    const pendente = this.passoPendente;
+    this.painel.pararAnimacao();
+    if (pendente.ultimaLinha) this.painel.acenderLinha(pendente.ultimaLinha);
+    pendente.concluir();
   }
 
   registrarLog(passo) {
@@ -1018,7 +1105,7 @@ export class Laboratorio {
 
   // --------------------------------------------------------------- desenho
 
-  retasAtuais() {
+  retasAtuais(treino = this.treino) {
     // As cores vêm de --grafico-reta-*, e não das variáveis da interface: os gráficos
     // mantêm a paleta antiga, e este contêiner é o do laboratório inteiro (interface,
     // agora verde), onde --cor-acerto e --cor-primaria-forte viraram o mesmo verde.
@@ -1033,7 +1120,7 @@ export class Laboratorio {
       const faixa = this.dadosAtuais().faixa ?? FAIXA_PORTAS;
       return this.camadas[0] <= 4
         ? Array.from({ length: this.camadas[0] }, (_, i) => ({
-          pontos: this.treino.retaDoNeuronio(i, faixa),
+          pontos: treino.retaDoNeuronio(i, faixa),
           cor: paleta[i % paleta.length],
           tracejada: true,
           espessura: 2,
@@ -1042,8 +1129,8 @@ export class Laboratorio {
         : [];
     }
 
-    const pesos = this.treino.pesos;
-    const bias = this.treino.bias - this.treino.limiar;
+    const pesos = treino.pesos;
+    const bias = treino.bias - treino.limiar;
     const dados = this.dadosAtuais();
     const faixa = dados.faixa ?? FAIXA_PORTAS;
     if (dados.entradas === 1) {
@@ -1115,6 +1202,20 @@ export class Laboratorio {
    * linha acesa não muda.
    */
   renderizar(passo, { msPorLinha = null, msDoPasso = 0 } = {}) {
+    this.desenharEstado(passo);
+
+    // As linhas do algoritmo que este passo percorreu, na ordem. A última é onde a execução
+    // está agora: ao terminar, é a condição de parada que disparou.
+    if (passo) {
+      const linhas = MODOS[this.modo].classe.sequenciaDoPasso(passo, this.treino);
+      let ms = msPorLinha ?? msDoPasso / linhas.length;
+      if (ms < MS_MINIMO_POR_LINHA) ms = 0; // rápido demais para ler: acende direto a última
+      this.painel.animarLinhas(linhas, ms);
+    }
+  }
+
+  /** Plano, curva de erro, equação, pesos e rede com o estado atual do treino (sem animar o algoritmo). */
+  desenharEstado(passo) {
     this.plano.desenhar(this.treino, {
       retas: this.retasAtuais(),
       // O anel do ponto em avaliação some quando o treino termina: nesse momento o único anel
@@ -1139,15 +1240,6 @@ export class Laboratorio {
       this.painel.renderizarPesosNeuronio(
         this.treino.pesos, this.treino.bias, passo?.houveAtualizacao,
       );
-    }
-
-    // As linhas do algoritmo que este passo percorreu, na ordem. A última é onde a execução
-    // está agora: ao terminar, é a condição de parada que disparou.
-    if (passo) {
-      const linhas = MODOS[this.modo].classe.sequenciaDoPasso(passo, this.treino);
-      let ms = msPorLinha ?? msDoPasso / linhas.length;
-      if (ms < MS_MINIMO_POR_LINHA) ms = 0; // rápido demais para ler: acende direto a última
-      this.painel.animarLinhas(linhas, ms);
     }
   }
 
@@ -1190,6 +1282,8 @@ export class Laboratorio {
     LABORATORIOS.delete(this);
     document.removeEventListener('neurologica:tema', this.aoMudarTema);
     this.temaDoSistema?.removeEventListener('change', this.aoMudarTema);
+    this.painel.pararAnimacao();
+    this.passoPendente = null;
     this.pausar();
     this.plano.destruir();
     this.grafico.destruir();

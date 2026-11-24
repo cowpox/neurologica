@@ -185,8 +185,9 @@ function montarLaboratorios() {
       ativacao: 'tanh',
       arquiteturaEditavel: true,
       controlesExtras: true,
+      passoSincronizado: false,
       problemas: ['portas', 'classificacao'],
-      dataset: 'circulo',
+      dataset: 'gaussianas',
     });
   }
 

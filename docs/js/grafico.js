@@ -253,6 +253,7 @@ export class PlanoDeDecisao {
     const pontos = X.map((x, i) => ({
       x: x[0],
       y: entradas === 1 ? 0.5 : x[1],
+      coordenadas: x,
       rotulo: y[i],
       indice: i,
       errado: previsoes ? previsoes[i] !== y[i] : false,
@@ -274,7 +275,15 @@ export class PlanoDeDecisao {
       .attr('stroke-width', 2.8)
       // contorno escuro suave: o amarelo continua legível sobre o rosa, o ciano e o papel
       .style('filter', 'drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.85))')
-      .attr('opacity', (d) => (d.indice === destaque ? 1 : 0));
+      .attr('opacity', (d) => (d.indice === destaque ? 1 : 0))
+      // o anel em destaque responde ao mouse na área toda (e não só no traço fino), para o
+      // título abaixo aparecer; os anéis apagados não interceptam nada
+      .style('pointer-events', (d) => (d.indice === destaque ? 'all' : 'none'))
+      .style('cursor', (d) => (d.indice === destaque ? 'help' : null));
+
+    // Título (dica nativa do navegador) do ponto em avaliação: explica o que é o anel amarelo.
+    todos.select('title').remove();
+    todos.filter((d) => d.indice === destaque).append('title').text('Exemplo em avaliação neste passo');
 
     todos.select('.ponto-corpo')
       .attr('r', 9)
